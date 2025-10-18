@@ -1,0 +1,136 @@
+{% extends 'master.html' %}
+{% load static %}
+
+{% block title %}Home - AgriLink{% endblock %}
+
+{% block body %}
+
+<!-- 🏠 HOME SECTION - Carousel Slider -->
+<section id="home" class="position-relative">
+  <div id="homeCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+    <div class="carousel-inner">
+
+      <!-- Slide 1 -->
+      <div class="carousel-item active">
+        <div class="d-flex align-items-center justify-content-center text-center text-white" style="
+          background: linear-gradient(rgba(25,135,84,0.7), rgba(25,135,84,0.7)), url('{% static 'images/agri1.jpeg' %}') center/cover no-repeat;
+          height: 100vh;">
+          <div>
+            <h1 class="display-3 fw-bold">Welcome to AgriLink 🌾</h1>
+            <p class="lead">Connecting Farmers and Retailers — Fair Price, Direct Access, Real-time Tracking.</p>
+            <a href="/farmer_register/" class="btn btn-warning btn-lg mt-3">Join as Farmer</a>
+            <a href="/retailer_register/" class="btn btn-outline-light btn-lg mt-3 ms-3">Join as Retailer</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 2 -->
+      <div class="carousel-item">
+        <div class="d-flex align-items-center justify-content-center text-center text-white" style="
+          background: linear-gradient(rgba(25,135,84,0.7), rgba(25,135,84,0.7)), url('{% static 'images/agri2.jpeg' %}') center/cover no-repeat;
+          height: 100vh;">
+          <div>
+            <h1 class="display-3 fw-bold">Empower Farmers 👨‍🌾</h1>
+            <p class="lead">Upload your products, set your price, and reach retailers directly.</p>
+            <a href="/farmer_register/" class="btn btn-warning btn-lg mt-3">Register Now</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 3 -->
+      <div class="carousel-item">
+        <div class="d-flex align-items-center justify-content-center text-center text-white" style="
+          background: linear-gradient(rgba(25,135,84,0.7), rgba(25,135,84,0.7)), url('{% static 'images/agri3.jpeg' %}') center/cover no-repeat;
+          height: 100vh;">
+          <div>
+            <h1 class="display-3 fw-bold">Smart Retail Solutions 🏪</h1>
+            <p class="lead">Browse fresh products and place bulk orders easily.</p>
+            <a href="/retailer_register/" class="btn btn-outline-light btn-lg mt-3">Get Started</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 4 -->
+      <div class="carousel-item">
+        <div class="d-flex align-items-center justify-content-center text-center text-white" style="
+          background: linear-gradient(rgba(25,135,84,0.7), rgba(25,135,84,0.7)), url('{% static 'images/agri4.jpeg' %}') center/cover no-repeat;
+          height: 100vh;">
+          <div>
+            <h1 class="display-3 fw-bold">Track Products in Real-Time 📍</h1>
+            <p class="lead">Know where your product is — from farm to shop.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Controls -->
+    <button class="carousel-control-prev" type="button" data-bs-target="#homeCarousel" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#homeCarousel" data-bs-slide="next">
+      <span class="carousel-control-next-icon"></span>
+    </button>
+  </div>
+</section>
+
+<!-- ℹ ABOUT SECTION -->
+<section id="about" class="py-5">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-4">About AgriLink</h2>
+    <div class="row align-items-center">
+      <div class="col-md-6">
+        <img src="{% static 'images/about.jpeg' %}" class="img-fluid rounded shadow" alt="Farming">
+      </div>
+      <div class="col-md-6">
+        <p class="lead">
+          AgriLink is a smart agriculture platform built to connect farmers directly with retailers. Farmers can upload product details, set prices, and track orders. Retailers can browse products, place orders, and track deliveries — all from one platform.
+        </p>
+        <ul>
+          <li>🚜 Direct farmer-to-retailer trading</li>
+          <li>📍 Live product tracking</li>
+          <li>📦 Transparent order system</li>
+          <li>💰 Fair pricing without middlemen</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 📞 CONTACT SECTION -->
+<section id="contact" class="bg-light py-5">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-4">Contact Us</h2>
+    <div class="row">
+      <div class="col-md-6">
+        <form action="" method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="name" class="form-label">Full Name</label>
+            <input type="text" class="form-control" id="name" placeholder="Enter your full name">
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email Address</label>
+            <input type="email" class="form-control" id="email" placeholder="Enter your email">
+          </div>
+          <div class="mb-3">
+            <label for="message" class="form-label">Message</label>
+            <textarea class="form-control" id="message" rows="4" placeholder="Write your message"></textarea>
+          </div>
+          <button type="submit" class="btn btn-success w-100">Send Message</button>
+        </form>
+      </div>
+
+      <div class="col-md-6 d-flex flex-column justify-content-center">
+        <h4>📍 Address:</h4>
+        <p>AgriLink Office, Pune, Maharashtra, India</p>
+        <h4>📞 Phone:</h4>
+        <p>+91 8928958677</p>
+        <h4>✉ Email:</h4>
+        <p>support@agrilink.com</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

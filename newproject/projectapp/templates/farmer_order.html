@@ -1,0 +1,63 @@
+{% extends 'master.html' %}
+{% block title %}Farmer Orders{% endblock %}
+{% block body %}
+
+<div class="container mt-5">
+  <div class="card shadow p-4">
+    <h2 class="text-center mb-4">📦 Orders for Your Products</h2>
+
+    <table class="table table-bordered table-striped text-center">
+      <thead class="table-success">
+        <tr>
+          <th>Order ID</th>
+          <th>Product</th>
+          <th>Retailer</th>
+          <th>Quantity</th>
+          <th>Total Price</th>
+          <th>Status</th>
+          <th>Chat</th>
+          <th>Update Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+        <tr>
+          <td>#{{ order.id }}</td>
+          <td>{{ order.product.product }}</td>
+          <td>{{ order.retailer.name }}</td>
+          <td>{{ order.quantity }} kg</td>
+          <td>₹{{ order.quantity|floatformat:0|add:"0"|floatformat:0|add:order.product.price }}</td>
+
+          <td>
+            {% if order.status == "Pending" %}
+              <span class="badge bg-secondary">{{ order.status }}</span>
+            {% elif order.status == "Accepted" %}
+              <span class="badge bg-primary">{{ order.status }}</span>
+            {% elif order.status == "Packed" %}
+              <span class="badge bg-info">{{ order.status }}</span>
+            {% elif order.status == "Dispatched" %}
+              <span class="badge bg-warning text-dark">{{ order.status }}</span>
+            {% elif order.status == "Delivered" %}
+              <span class="badge bg-success">{{ order.status }}</span>
+            {% endif %}
+          </td>
+
+          <td>
+            <a href="{% url 'chat' order.id %}" class="btn btn-outline-primary btn-sm">💬 Chat</a>
+          </td>
+
+          <td>
+            {% if order.status != "Delivered" %}
+              <a href="{% url 'update_status' order.id %}" class="btn btn-sm btn-warning">Update Status</a>
+            {% else %}
+              ✅ Delivered
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

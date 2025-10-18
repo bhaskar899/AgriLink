@@ -1,0 +1,37 @@
+{% extends 'master.html' %}
+{% block title %}Track Order{% endblock %}
+{% block body %}
+
+<div class="container mt-5">
+  <h2>📍 Track Order #{{ order.id }}</h2>
+  <p><strong>Product:</strong> {{ order.product.product }}</p>
+  <p><strong>Status:</strong> {{ order.status }}</p>
+
+  {% if order.current_lat and order.current_lng %}
+    <div id="map" style="height: 400px;"></div>
+  {% else %}
+    <p class="text-danger">📍 Location not updated yet by farmer.</p>
+  {% endif %}
+</div>
+
+{% if order.current_lat and order.current_lng %}
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<script>
+  var lat = {{ order.current_lat }};
+  var lng = {{ order.current_lng }};
+
+  var map = L.map('map').setView([lat, lng], 13);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+  }).addTo(map);
+
+  L.marker([lat, lng]).addTo(map)
+    .bindPopup("📦 Current Location of Your Order")
+    .openPopup();
+</script>
+{% endif %}
+
+{% endblock %}

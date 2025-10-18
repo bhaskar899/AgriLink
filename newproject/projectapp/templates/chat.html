@@ -1,0 +1,35 @@
+{% extends "master.html" %}
+{% block title %}Chat{% endblock %}
+{% block body %}
+<div class="container mt-5">
+  <h3 class="text-center">💬 Chat for Order #{{ order.id }}</h3>
+  <p class="text-center text-muted">Product: {{ order.product.product }}</p>
+
+  <div style="max-height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 15px;">
+    {% for msg in messages %}
+      {% if msg.sender_farmer %}
+        <div style="text-align: left;">
+          <strong>👨‍🌾 {{ msg.sender_farmer.name }}:</strong> {{ msg.message }} <br>
+          <small>{{ msg.timestamp }}</small>
+        </div>
+      {% elif msg.sender_retailer %}
+        <div style="text-align: right;">
+          <strong>🏪 {{ msg.sender_retailer.name }}:</strong> {{ msg.message }} <br>
+          <small>{{ msg.timestamp }}</small>
+        </div>
+      {% endif %}
+      <hr>
+    {% empty %}
+      <p class="text-center text-muted">No messages yet. Start the conversation 👋</p>
+    {% endfor %}
+  </div>
+
+  <form method="post" class="mt-3">
+    {% csrf_token %}
+    <div class="input-group">
+      <input type="text" name="message" class="form-control" placeholder="Type your message...">
+      <button type="submit" class="btn btn-success">Send</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

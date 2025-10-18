@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+{% load static %}
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}AgriLink - Connecting Farmers & Retailers{% endblock %}</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Segoe UI', sans-serif; padding-top: 70px; }
+    .navbar-brand { font-weight: bold; font-size: 1.6rem; letter-spacing: 1px; }
+    .nav-link { font-size: 1.1rem; transition: color 0.3s; }
+    .nav-link:hover { color: #fff200 !important; }
+    footer { background: #198754; color: white; padding: 40px 0; margin-top: 60px; }
+    footer a { color: #f8f9fa; text-decoration: none; display: block; margin-bottom: 8px; }
+    footer a:hover { color: #fff200; }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.2); margin-top: 20px; padding-top: 15px; text-align: center; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+
+<!-- 🎵 Click Sound -->
+<audio id="clickSound" src="{% static 'audio/air-whoosh-380651.mp3' %}" preload="auto"></audio>
+
+<!-- 🧭 Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-success shadow-sm fixed-top">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/home/">🌿 AgriLink</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav ms-auto" style="margin-right:70px">
+
+        <!-- Home / About / Contact -->
+        <li class="nav-item"><a class="nav-link" href="/home/">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="/home/#about">About</a></li>
+        <li class="nav-item"><a class="nav-link" href="/home/#contact">Contact</a></li>
+
+        <!-- IF NOT LOGGED IN: Show Register/Login only -->
+        {% if not request.session.name %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="" role="button" data-bs-toggle="dropdown">Farmer</a>
+          <ul class="dropdown-menu" aria-labelledby="farmerMenu">
+            <li><a class="dropdown-item" href="/farmer_register/">Register</a></li>
+            <li><a class="dropdown-item" href="/farmer_login/">Login</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="retailerMenu" role="button" data-bs-toggle="dropdown">Retailer</a>
+          <ul class="dropdown-menu" aria-labelledby="retailerMenu">
+            <li><a class="dropdown-item" href="/retailer_register/">Register</a></li>
+            <li><a class="dropdown-item" href="/retailer_login/">Login</a></li>
+          </ul>
+        </li>
+        {% endif %}
+
+        <!-- IF FARMER LOGGED IN -->
+        {% if request.session.name and request.session.user_type == "farmer" %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="farmerMenu" role="button" data-bs-toggle="dropdown">Farmer</a>
+          <ul class="dropdown-menu" aria-labelledby="farmerMenu">
+            <li><a class="dropdown-item" href="/farmer_dashboard/">Dashboard</a></li>
+            <li><a class="dropdown-item" href="/add_product/">Add Product</a></li>
+            <li><a class="dropdown-item" href="/show_products/">My Products</a></li>
+            <li><a class="dropdown-item" href="/farmer_order/">View Orders</a> </li>
+          </ul>
+        </li>
+        {% endif %}
+
+        <!-- IF RETAILER LOGGED IN -->
+        {% if request.session.name and request.session.user_type == "retailer" %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="" role="button" data-bs-toggle="dropdown">Retailer</a>
+          <ul class="dropdown-menu" aria-labelledby="retailerMenu">
+            <li><a class="dropdown-item" href="/retailer_dashboard/">Dashboard</a></li>
+            <li><a class="dropdown-item" href="/browse_products/">Browse Products</a></li>
+            <li><a class="dropdown-item" href="/retailer_products/">My Orders</a></li>
+          </ul>
+        </li>
+        {% endif %}
+
+        <!-- LOGOUT button (Only if logged in) -->
+        {% if request.session.name %}
+        <li class="nav-item">
+          <a class="nav-link text-warning fw-bold" href="/logout/">Logout ({{ request.session.name }})</a>
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- 📄 Page Content -->
+<div class="container-fluid p-0">
+  {% block body %}{% endblock %}
+</div>
+
+<!-- 🌿 Footer -->
+<footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4">
+        <h5>About AgriLink</h5>
+        <p>Agrilink connects farmers and retailers directly, removing middlemen and enabling fair pricing.</p>
+      </div>
+      <div class="col-md-4">
+        <h5>Quick Links</h5>
+        <a href="/home/">Home</a>
+        <a href="/home/#about">About</a>
+        <a href="/home/#contact">Contact</a>
+        <a href="/farmer_register/">Farmer Register</a>
+        <a href="/retailer_register/">Retailer Register</a>
+      </div>
+      <div class="col-md-4">
+        <h5>Contact Info</h5>
+        <p>📍 Pune, Maharashtra, India</p>
+        <p>📞 +91 8928958677</p>
+        <p>✉ support@agrilink.com</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2025 AgriLink. All Rights Reserved.
+    </div>
+  </div>
+</footer>
+
+<!-- 📜 Scripts -->
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const links = document.querySelectorAll(".nav-link, .dropdown-item");
+  const originalSound = document.getElementById("clickSound");
+
+  links.forEach(link => {
+    link.addEventListener("click", function () {
+      // Har click pe audio ka clone banayenge
+      const sound = originalSound.cloneNode(true);
+      sound.play().catch(() => {}); // play the cloned audio
+    });
+  });
+});
+</script>
+
+</body>
+</html>

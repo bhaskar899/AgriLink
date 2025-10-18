@@ -1,0 +1,36 @@
+{% extends 'master.html' %}
+{% load static %}
+{% block title %}Browse Products{% endblock %}
+{% block body %}
+
+<div class="container mt-5">
+  <h2 class="text-center mb-4">🌾 Available Products</h2>
+  <div class="row">
+    {% for p in products %}
+    <div class="col-md-4 mb-4">
+      <div class="card shadow-sm">
+
+        {% if p.image %}
+          <img src="{{ p.image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+        {% else %}
+          <img src="{% static 'images/no-image.jpg' %}" class="card-img-top" style="height: 200px; object-fit: cover;">
+        {% endif %}
+
+        <div class="card-body">
+          <h5 class="card-title">{{ p.product }}</h5>
+          <p class="card-text">{{ p.description|truncatewords:20 }}</p>
+
+          <p>👨‍🌾 Farmer: {{ p.farmer.name }}</p>
+          <p>💰 Price: ₹{{ p.price }} / kg</p>
+          <p>📦 Quantity: {{ p.quantity }} kg</p>
+          <p>📍 Location: {{ p.location }}</p>
+
+          <a href="{% url 'place_order' p.id %}" class="btn btn-primary btn-sm w-100">Buy Now</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}
