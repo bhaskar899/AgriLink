@@ -1,6 +1,5 @@
 from django.db import models
 
-# Farmer Model
 class Farmer(models.Model):
     name = models.CharField(max_length=100, unique=True)
     email = models.EmailField(unique=True)
@@ -9,11 +8,10 @@ class Farmer(models.Model):
     address = models.TextField()
     gender = models.CharField(max_length=10)
 
-    def _str_(self):
+    def __str__(self):
         return self.name
 
 
-# Retailer Model
 class Retailer(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
@@ -22,11 +20,10 @@ class Retailer(models.Model):
     address = models.TextField()
     gender = models.CharField(max_length=10)
 
-    def _str_(self):
+    def __str__(self):
         return self.name
 
 
-# Product Model
 class Product(models.Model):
     product = models.CharField(max_length=100)
     description = models.TextField()
@@ -36,11 +33,10 @@ class Product(models.Model):
     image = models.ImageField(upload_to='product_images/', blank=True, null=True)
     farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE)
 
-    def _str_(self):
+    def __str__(self):
         return self.product
 
 
-# Order Model
 class Order(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE)
@@ -49,18 +45,16 @@ class Order(models.Model):
     order_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=30, default="Pending")
 
-    # Tracking ke liye location fields
     current_lat = models.FloatField(null=True, blank=True)
     current_lng = models.FloatField(null=True, blank=True)
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.product.product} - {self.retailer.name}"
 
 
-# ✅ ChatMessage ko alag class banao (nested nahi)
 class ChatMessage(models.Model):
     sender_farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE, null=True, blank=True,
-                                       related_name='sent_messages_farmer')
+                                      related_name='sent_messages_farmer')
     receiver_retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, null=True, blank=True,
                                           related_name='received_messages_retailer')
     sender_retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, null=True, blank=True,
@@ -71,6 +65,6 @@ class ChatMessage(models.Model):
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
-    def _str_(self):
+    def __str__(self):
         sender = self.sender_farmer or self.sender_retailer
         return f"Message from {sender} at {self.timestamp}"
