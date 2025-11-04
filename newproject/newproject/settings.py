@@ -2,20 +2,20 @@ from pathlib import Path
 import os
 import ssl
 import certifi
-from django.conf.global_settings import EMAIL_USE_TLS
-import dj_database_url  # ✅ for PostgreSQL connection
+import dj_database_url  # <— important for Render PostgreSQL
 
+# Fix SSL verification issues (for local only)
 ssl._create_default_https_context = lambda: ssl._create_unverified_context()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-EMAIL_BACKEND = 'projectapp.email_backend.CustomEmailBackend'
 
 SECRET_KEY = 'django-insecure-your-secret-key'
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 
+# ---------------------
 # Application definition
+# ---------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -56,16 +56,27 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'newproject.wsgi.application'
 
-# ✅ DATABASE (Render PostgreSQL)
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600,  # keeps connection alive
-        ssl_require=True   # required for Render
-    )
-}
+# ---------------------
+# ✅ DATABASE CONFIGURATION
+# ---------------------
+if os.environ.get('RENDER'):  # running on Render
+    DATABASES = {
+        'default': dj_database_url.config(
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
+else:  # running locally
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
+# ---------------------
 # Password validation
+# ---------------------
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -73,11 +84,17 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# ---------------------
+# Localization
+# ---------------------
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
+# ---------------------
+# Static & Media files
+# ---------------------
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
@@ -85,21 +102,25 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / "media"
 
-# ✅ Razorpay Keys
+# ---------------------
+# Razorpay
+# ---------------------
 RAZORPAY_KEY_ID = "rzp_test_RaUbYZKXoHR2IT"
 RAZORPAY_KEY_SECRET = "s7EwhvUXxwl9ieMzM69r7d4W"
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# ✅ EMAIL CONFIGURATION (TLS Mode — Works with Gmail)
-import smtplib
-ssl._create_default_https_context = ssl._create_unverified_context
-
+# ---------------------
+# Email Configuration (Gmail)
+# ---------------------
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_HOST_USER = 'bhaskaryhubale.899@gmail.com'
-EMAIL_HOST_PASSWORD = 'your_16_digit_app_password'  # App password
+EMAIL_HOST_PASSWORD = 'your_16_digit_app_password'  # Gmail App Password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# ---------------------
+# Default Primary Key Field Type
+# ---------------------
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
