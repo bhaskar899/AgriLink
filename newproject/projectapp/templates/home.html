@@ -97,39 +97,37 @@
   </div>
 </section>
 
-<!-- 📞 CONTACT SECTION -->
-<section id="contact" class="bg-light py-5">
+<!-- 🌿 Contact Section -->
+<section id="contact" class="py-5 bg-light">
   <div class="container">
-    <h2 class="text-center fw-bold mb-4">Contact Us</h2>
-    <div class="row">
-      <div class="col-md-6">
-        <form action="" method="post">
-          {% csrf_token %}
-          <div class="mb-3">
-            <label for="name" class="form-label">Full Name</label>
-            <input type="text" class="form-control" id="name" placeholder="Enter your full name">
-          </div>
-          <div class="mb-3">
-            <label for="email" class="form-label">Email Address</label>
-            <input type="email" class="form-control" id="email" placeholder="Enter your email">
-          </div>
-          <div class="mb-3">
-            <label for="message" class="form-label">Message</label>
-            <textarea class="form-control" id="message" rows="4" placeholder="Write your message"></textarea>
-          </div>
-          <button type="submit" class="btn btn-success w-100">Send Message</button>
-        </form>
+    <h2 class="text-center mb-4">📩 Contact Us</h2>
+    <form method="post" action="{% url 'contact_submit' %}" class="shadow p-4 bg-white rounded">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="name" class="form-label">Full Name</label>
+        <input type="text" class="form-control" id="name" name="name" placeholder="Enter your name" required>
       </div>
 
-      <div class="col-md-6 d-flex flex-column justify-content-center">
-        <h4>📍 Address:</h4>
-        <p>AgriLink Office, Pune, Maharashtra, India</p>
-        <h4>📞 Phone:</h4>
-        <p>+91 8928958677</p>
-        <h4>✉ Email:</h4>
-        <p>support@agrilink.com</p>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email Address</label>
+        <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
       </div>
-    </div>
+
+      <div class="mb-3">
+        <label for="message" class="form-label">Your Message</label>
+        <textarea class="form-control" id="message" name="message" rows="4" placeholder="Write your message here..." required></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-success w-100">Send Message</button>
+    </form>
+
+    {% if messages %}
+      <div class="mt-4">
+        {% for message in messages %}
+          <div class="alert alert-info text-center">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
   </div>
 </section>
 

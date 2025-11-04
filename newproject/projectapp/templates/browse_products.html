@@ -25,8 +25,7 @@
           <p>📦 Quantity: {{ p.quantity }} kg</p>
           <p>📍 Location: {{ p.location }}</p>
 
-          <a href="{% url 'place_order' p.id %}" class="btn btn-primary btn-sm w-100">Buy Now</a>
-        </div>
+<a href="{% url 'place_order' p.id %}" class="btn btn-primary btn-sm w-100">Buy Now</a> </div>
       </div>
     </div>
     {% endfor %}

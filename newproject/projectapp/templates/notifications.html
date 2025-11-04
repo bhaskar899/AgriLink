@@ -1,0 +1,24 @@
+{% extends 'master.html' %}
+{% block title %}Notifications{% endblock %}
+{% block body %}
+<div class="container mt-4">
+  <h2 class="mb-4">🔔 Notifications</h2>
+  <div class="list-group">
+    {% for note in notifications %}
+      <div class="list-group-item d-flex justify-content-between align-items-start {% if not note.is_read %}list-group-item-warning{% endif %}">
+        <div>
+          <div class="fw-bold">{{ note.timestamp|date:"d M Y H:i" }}</div>
+          <div>{{ note.message }}</div>
+        </div>
+        <div>
+          {% if not note.is_read %}
+            <a href="{% url 'mark_notification_read' note.id %}" class="btn btn-sm btn-outline-primary">Mark read</a>
+          {% endif %}
+        </div>
+      </div>
+    {% empty %}
+      <p class="text-center text-muted">No notifications yet.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

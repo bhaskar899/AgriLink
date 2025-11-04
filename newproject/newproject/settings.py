@@ -1,13 +1,23 @@
 from pathlib import Path
 import os
 
+import ssl
+import certifi
+from django.conf.global_settings import EMAIL_USE_TLS
+
+ssl._create_default_https_context = lambda: ssl._create_unverified_context()
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-your-secret-key'  # change if needed
+EMAIL_BACKEND = 'projectapp.email_backend.CustomEmailBackend'
+
+
+
+SECRET_KEY = 'django-insecure-your-secret-key'
 DEBUG = True
+ALLOWED_HOSTS = ['*']
 
-ALLOWED_HOSTS = ['*']  # or add your Render URL here later
-
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -15,7 +25,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'projectapp',  # your app
+    'projectapp',
 ]
 
 MIDDLEWARE = [
@@ -33,7 +43,7 @@ ROOT_URLCONF = 'newproject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # for global templates
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -69,13 +79,43 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# Static files (CSS, JS, images)
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# Media files (uploaded images)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / "media"
 
+# ✅ Razorpay Keys
+RAZORPAY_KEY_ID = "rzp_test_RaUbYZKXoHR2IT"
+RAZORPAY_KEY_SECRET = "s7EwhvUXxwl9ieMzM69r7d4W"
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ✅ EMAIL CONFIGURATION (TLS Mode — Works with Gmail)
+# EMAIL SETTINGS (for Gmail)
+import ssl
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# --- EMAIL SETTINGS ---
+import ssl
+import smtplib
+
+# ✅ Disable strict SSL verification safely
+ssl._create_default_https_context = ssl._create_unverified_context
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_HOST_USER = 'bhaskaryhubale.899@gmail.com'
+EMAIL_HOST_PASSWORD = 'your_16_digit_app_password'  # App password
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# --- Fix SSL verification issue ---
+ssl._create_default_https_context = ssl._create_unverified_context
+
+# ✅ Disable certificate check (for local dev only)

@@ -1,4 +1,5 @@
 {% extends 'master.html' %}
+{% load custom_filters %}
 {% block title %}My Orders{% endblock %}
 {% block body %}
 
@@ -27,8 +28,11 @@
           <td>{{ order.product.product }}</td>
           <td>{{ order.farmer.name }}</td>
           <td>{{ order.quantity }} kg</td>
-          <td>₹{{ order.quantity|floatformat:0|add:"0"|floatformat:0|add:order.product.price }}</td>
 
+          <!-- ✅ Correct total price -->
+          <td>₹{{ order.quantity|mul:order.product.price }}</td>
+
+          <!-- ✅ Show all statuses including Paid -->
           <td>
             {% if order.status == "Pending" %}
               <span class="badge bg-secondary">{{ order.status }}</span>
@@ -40,16 +44,26 @@
               <span class="badge bg-warning text-dark">{{ order.status }}</span>
             {% elif order.status == "Delivered" %}
               <span class="badge bg-success">{{ order.status }}</span>
+            {% elif order.status == "Paid" %}
+              <span class="badge bg-success">Paid</span>
+            {% else %}
+              <span class="badge bg-dark">{{ order.status }}</span>
             {% endif %}
           </td>
 
+          <!-- ✅ Track Button -->
           <td>
             <a href="{% url 'track_order' order.id %}" class="btn btn-outline-info btn-sm">Track</a>
           </td>
 
+          <!-- ✅ Chat Button -->
           <td>
             <a href="{% url 'chat' order.id %}" class="btn btn-outline-primary btn-sm">💬 Chat</a>
           </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" class="text-center text-muted">No orders found yet.</td>
         </tr>
         {% endfor %}
       </tbody>

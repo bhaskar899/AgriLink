@@ -15,6 +15,7 @@ urlpatterns = [
     path("home/", views.home, name="home"),
     path("about/", views.about, name="about"),
     path("contact/", views.contact, name="contact"),
+    path("contact_submit/",views.contact_submit,name="contact_submit"),
 
     # Farmer
     path("farmer_register/", views.farmer_register, name="farmer_register"),
@@ -34,11 +35,21 @@ urlpatterns = [
     path("track_order/<int:order_id>/", views.track_order, name="track_order"),
     path("place_order/<int:product_id>/", views.place_order, name="place_order"),
 
-    # Chat
+    # chat + notifications
     path('chat/<int:order_id>/', views.chat_view, name='chat'),
+    path('notifications/', views.notifications, name='notifications'),
+    path('notifications/read/<int:nid>/', views.mark_notification_read, name='mark_notification_read'),
 
     # Logout
     path("logout/", views.logout, name="logout"),
+
+    # Real time Payments
+# urls.py (update)
+path('payment/<int:order_id>/', views.payment_page, name='payment_page'),
+path('payment_success/<int:order_id>/', views.payment_success, name='payment_success'),
+    path("place_order/<int:product_id>/",views.place_order,name="place_order"),
+
+    path("generate_receipt/<int:order_id>/",views.generate_receipt,name="generate_receipt"),
 ]
 
 # ✅ Serve media files in development only

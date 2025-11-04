@@ -3,26 +3,24 @@ from django.db import models
 class Farmer(models.Model):
     name = models.CharField(max_length=100, unique=True)
     email = models.EmailField(unique=True)
-    password = models.CharField(max_length=50)
-    contact = models.CharField(max_length=15)
-    address = models.TextField()
-    gender = models.CharField(max_length=10)
+    password = models.CharField(max_length=128)
+    contact = models.CharField(max_length=15, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    gender = models.CharField(max_length=10, blank=True, null=True)
 
-    def __str__(self):
+    def _str_(self):
         return self.name
-
 
 class Retailer(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     email = models.EmailField(unique=True)
-    password = models.CharField(max_length=50)
-    contact = models.CharField(max_length=15)
-    address = models.TextField()
-    gender = models.CharField(max_length=10)
+    password = models.CharField(max_length=128)
+    contact = models.CharField(max_length=15, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    gender = models.CharField(max_length=10, blank=True, null=True)
 
-    def __str__(self):
+    def _str_(self):
         return self.name
-
 
 class Product(models.Model):
     product = models.CharField(max_length=100)
@@ -31,40 +29,69 @@ class Product(models.Model):
     quantity = models.IntegerField()
     location = models.CharField(max_length=50)
     image = models.ImageField(upload_to='product_images/', blank=True, null=True)
-    farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE)
+    farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE, related_name='products')
 
-    def __str__(self):
+    def _str_(self):
         return self.product
 
-
 class Order(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE)
-    retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE)
-    quantity = models.IntegerField()
-    order_date = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=30, default="Pending")
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Accepted', 'Accepted'),
+        ('Packed', 'Packed'),
+        ('Dispatched', 'Dispatched'),
+        ('Delivered', 'Delivered'),
+    ]
 
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='orders')
+    farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE, related_name='orders')
+    retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, related_name='orders')
+    quantity = models.IntegerField(default=1)
+    order_date = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='Pending')
+
+    # ✅ Add these new fields:
+    address = models.TextField(blank=True, null=True)
+    contact = models.CharField(max_length=20, blank=True, null=True)
+
+    # optional current location for tracking
     current_lat = models.FloatField(null=True, blank=True)
     current_lng = models.FloatField(null=True, blank=True)
 
-    def __str__(self):
-        return f"{self.product.product} - {self.retailer.name}"
-
+    def _str_(self):
+        return f"Order#{self.id} - {self.product.product} ({self.retailer.name})"
 
 class ChatMessage(models.Model):
-    sender_farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE, null=True, blank=True,
-                                      related_name='sent_messages_farmer')
-    receiver_retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, null=True, blank=True,
-                                          related_name='received_messages_retailer')
-    sender_retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, null=True, blank=True,
-                                        related_name='sent_messages_retailer')
-    receiver_farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE, null=True, blank=True,
-                                        related_name='received_messages_farmer')
+    # either sender_farmer OR sender_retailer will be set
+    sender_farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE, null=True, blank=True, related_name='sent_msgs')
+    receiver_farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE, null=True, blank=True, related_name='received_msgs_farmer')
+    sender_retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, null=True, blank=True, related_name='sent_msgs_retailer')
+    receiver_retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, null=True, blank=True, related_name='received_msgs_retailer')
 
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
+    def _str_(self):
         sender = self.sender_farmer or self.sender_retailer
-        return f"Message from {sender} at {self.timestamp}"
+        return f"Msg from {sender} at {self.timestamp}"
+
+class Notification(models.Model):
+    # user_type: 'farmer' or 'retailer'
+    user_type = models.CharField(max_length=10)
+    user_name = models.CharField(max_length=100)
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    def _str_(self):
+        return f"{self.user_name} - {self.message[:30]}"
+
+
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def _str_(self):
+        return f"Message from {self.name} ({self.email})"

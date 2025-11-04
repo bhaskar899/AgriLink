@@ -1,0 +1,28 @@
+{% extends 'master.html' %}
+{% block title %}Payment Successful{% endblock %}
+{% block body %}
+<div class="container text-center mt-5">
+  <div class="card shadow-lg p-5 border-0">
+    <div class="card-body">
+      <img src="https://cdn-icons-png.flaticon.com/512/845/845646.png" width="120" alt="Success" class="mb-4">
+      <h2 class="text-success fw-bold">Payment Successful 🎉</h2>
+      <p class="lead mt-3">
+        Thank you, {{ request.session.name }}! Your payment for <strong>{{ order.product.product }}</strong> is complete.
+      </p>
+
+      <div class="alert alert-success mt-4 text-start">
+        <p><strong>Order ID:</strong> #{{ order.id }}</p>
+        <p><strong>Product:</strong> {{ order.product.product }}</p>
+        <p><strong>Farmer:</strong> {{ order.farmer.name }}</p>
+        <p><strong>Quantity:</strong> {{ order.quantity }} kg</p>
+        <p><strong>Total Paid:</strong> ₹{{ order.quantity|floatformat:0|add:0|floatformat:0|add:0|floatformat:0|default:"0" }} * {{ order.product.price }} = ₹{{ order.quantity|floatformat:0|add:0|floatformat:0|add:0|floatformat:0|default:"0" }}</p>
+        <p><strong>Status:</strong> Paid ✅</p>
+      </div>
+
+      <a href="{% url 'generate_receipt' order.id %}" class="btn btn-outline-success btn-lg mt-3">🧾 Generate Receipt</a>
+      <a href="/retailer_products/" class="btn btn-success btn-lg mt-3 ms-2">View My Orders</a>
+      <a href="/home/" class="btn btn-outline-secondary btn-lg mt-3 ms-2">Back to Home</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

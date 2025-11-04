@@ -3,32 +3,76 @@
 {% block body %}
 
 <div class="container mt-5">
-  <h2>Update Order Status - Order #{{ order.id }}</h2>
-  <form method="post">
-    {% csrf_token %}
-    <div class="mb-3">
-      <label>Status</label>
-      <select name="status" class="form-control">
-        <option value="Pending" {% if order.status == "Pending" %}selected{% endif %}>Pending</option>
-        <option value="Packed" {% if order.status == "Packed" %}selected{% endif %}>Packed</option>
-        <option value="Dispatched" {% if order.status == "Dispatched" %}selected{% endif %}>Dispatched</option>
-        <option value="Out for Delivery" {% if order.status == "Out for Delivery" %}selected{% endif %}>Out for Delivery</option>
-        <option value="Delivered" {% if order.status == "Delivered" %}selected{% endif %}>Delivered</option>
-      </select>
-    </div>
+  <div class="card shadow p-4">
+    <h3 class="text-center mb-4">🚚 Update Order Status</h3>
 
-    <div class="mb-3">
-      <label>Current Latitude</label>
-      <input type="text" class="form-control" name="current_lat" placeholder="e.g., 18.5204" value="{{ order.current_lat }}">
-    </div>
+    <form method="POST" action="">
+      {% csrf_token %}
 
-    <div class="mb-3">
-      <label>Current Longitude</label>
-      <input type="text" class="form-control" name="current_lng" placeholder="e.g., 73.8567" value="{{ order.current_lng }}">
-    </div>
+      <!-- Order Info -->
+      <div class="mb-3">
+        <label class="form-label"><strong>Order ID:</strong></label>
+        <input type="text" class="form-control" value="{{ order.id }}" readonly>
+      </div>
 
-    <button type="submit" class="btn btn-success">Update Status</button>
-  </form>
+      <div class="mb-3">
+        <label class="form-label"><strong>Product:</strong></label>
+        <input type="text" class="form-control" value="{{ order.product.product }}" readonly>
+      </div>
+
+      <!-- Status dropdown -->
+      <div class="mb-3">
+        <label class="form-label"><strong>Status</strong></label>
+        <select class="form-select" name="status" required>
+          <option value="">-- Select Status --</option>
+          {% for s, label in order.STATUS_CHOICES %}
+            <option value="{{ s }}" {% if order.status == s %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Location -->
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label"><strong>Current Latitude</strong></label>
+          <input type="text" class="form-control" id="lat" name="current_lat" readonly>
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label"><strong>Current Longitude</strong></label>
+          <input type="text" class="form-control" id="lng" name="current_lng" readonly>
+        </div>
+      </div>
+
+      <!-- Get location button -->
+      <div class="mb-3 text-center">
+        <button type="button" class="btn btn-outline-primary" onclick="getLocation()">📍 Get My Location</button>
+      </div>
+
+      <!-- Submit -->
+      <div class="text-center">
+        <button type="submit" class="btn btn-success btn-lg">Update</button>
+        <a href="/farmer_order/" class="btn btn-secondary btn-lg ms-2">Back</a>
+      </div>
+    </form>
+  </div>
 </div>
+
+<script>
+function getLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        document.getElementById("lat").value = position.coords.latitude.toFixed(6);
+        document.getElementById("lng").value = position.coords.longitude.toFixed(6);
+      },
+      function(error) {
+        alert("Unable to retrieve location. Please allow GPS access and try again.");
+      }
+    );
+  } else {
+    alert("Geolocation is not supported by this browser.");
+  }
+}
+</script>
 
 {% endblock %}
