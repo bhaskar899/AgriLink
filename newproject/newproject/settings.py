@@ -7,7 +7,7 @@ import dj_database_url  # ✅ for PostgreSQL connection
 
 ssl._create_default_https_context = lambda: ssl._create_unverified_context()
 
-BASE_DIR = Path(_file_).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 EMAIL_BACKEND = 'projectapp.email_backend.CustomEmailBackend'
 
