@@ -1,17 +1,15 @@
 from pathlib import Path
 import os
-
 import ssl
 import certifi
 from django.conf.global_settings import EMAIL_USE_TLS
+import dj_database_url  # ✅ for PostgreSQL connection
 
 ssl._create_default_https_context = lambda: ssl._create_unverified_context()
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(_file_).resolve().parent.parent
 
 EMAIL_BACKEND = 'projectapp.email_backend.CustomEmailBackend'
-
-
 
 SECRET_KEY = 'django-insecure-your-secret-key'
 DEBUG = True
@@ -58,12 +56,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'newproject.wsgi.application'
 
-# Database
+# ✅ DATABASE (Render PostgreSQL)
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600,  # keeps connection alive
+        ssl_require=True   # required for Render
+    )
 }
 
 # Password validation
@@ -93,17 +92,7 @@ RAZORPAY_KEY_SECRET = "s7EwhvUXxwl9ieMzM69r7d4W"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ✅ EMAIL CONFIGURATION (TLS Mode — Works with Gmail)
-# EMAIL SETTINGS (for Gmail)
-import ssl
-from pathlib import Path
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-# --- EMAIL SETTINGS ---
-import ssl
 import smtplib
-
-# ✅ Disable strict SSL verification safely
 ssl._create_default_https_context = ssl._create_unverified_context
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -114,8 +103,3 @@ EMAIL_USE_SSL = False
 EMAIL_HOST_USER = 'bhaskaryhubale.899@gmail.com'
 EMAIL_HOST_PASSWORD = 'your_16_digit_app_password'  # App password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-# --- Fix SSL verification issue ---
-ssl._create_default_https_context = ssl._create_unverified_context
-
-# ✅ Disable certificate check (for local dev only)
