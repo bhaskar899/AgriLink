@@ -2,19 +2,27 @@ from pathlib import Path
 import os
 import ssl
 import certifi
-import dj_database_url  # <— important for Render PostgreSQL
-
-# Fix SSL verification issues (for local only)
-ssl._create_default_https_context = lambda: ssl._create_unverified_context()
-
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-SECRET_KEY = 'django-insecure-your-secret-key'
-DEBUG = True
-ALLOWED_HOSTS = ['*']
+import dj_database_url  # ✅ For Render PostgreSQL support
 
 # ---------------------
-# Application definition
+# SSL Fix (for local only)
+# ---------------------
+ssl._create_default_https_context = lambda: ssl._create_unverified_context()
+
+# ---------------------
+# Base Directory
+# ---------------------
+BASE_DIR = Path(_file_).resolve().parent.parent
+
+# ---------------------
+# Security
+# ---------------------
+SECRET_KEY = 'django-insecure-your-secret-key'
+DEBUG = 'RENDER' not in os.environ  # Debug False on Render
+ALLOWED_HOSTS = ['*']  # Keep * for now, can later restrict to your domain
+
+# ---------------------
+# Installed Apps
 # ---------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -26,6 +34,9 @@ INSTALLED_APPS = [
     'projectapp',
 ]
 
+# ---------------------
+# Middleware
+# ---------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -36,8 +47,15 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# ---------------------
+# URLs & WSGI
+# ---------------------
 ROOT_URLCONF = 'newproject.urls'
+WSGI_APPLICATION = 'newproject.wsgi.application'
 
+# ---------------------
+# Templates
+# ---------------------
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -54,19 +72,17 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'newproject.wsgi.application'
-
 # ---------------------
 # ✅ DATABASE CONFIGURATION
 # ---------------------
-if os.environ.get('RENDER'):  # running on Render
+if os.environ.get('DATABASE_URL'):
     DATABASES = {
         'default': dj_database_url.config(
             conn_max_age=600,
             ssl_require=True
         )
     }
-else:  # running locally
+else:  # local SQLite fallback
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -103,7 +119,7 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / "media"
 
 # ---------------------
-# Razorpay
+# Razorpay Keys
 # ---------------------
 RAZORPAY_KEY_ID = "rzp_test_RaUbYZKXoHR2IT"
 RAZORPAY_KEY_SECRET = "s7EwhvUXxwl9ieMzM69r7d4W"
