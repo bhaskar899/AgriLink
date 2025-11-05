@@ -108,16 +108,26 @@ USE_I18N = True
 USE_TZ = True
 
 # ---------------------
-# STATIC FILES
+# Static & Media files
 # ---------------------
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# ---------------------
-# MEDIA (Handled via Cloudinary)
-# ---------------------
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / "media"
+
+# ✅ Cloudinary integration (for Render)
+if os.environ.get('RENDER'):
+    INSTALLED_APPS += ['cloudinary', 'cloudinary_storage']
+
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+    CLOUDINARY_STORAGE = {
+        'CLOUD_NAME': os.environ.get('dhjactcwx'),
+        'API_KEY': os.environ.get('543344718597668'),
+        'API_SECRET': os.environ.get('5hrZqEM1zB3qTfZa8oNzvSCDzF8'),
+    }
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dhjactcwx',
     'API_KEY': '543344718597668',
