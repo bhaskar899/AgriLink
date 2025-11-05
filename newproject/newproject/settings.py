@@ -1,28 +1,26 @@
 from pathlib import Path
 import os
 import ssl
-import certifi
-import dj_database_url  # ✅ For Render PostgreSQL support
+import dj_database_url
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+import cloudinary_storage
 
 # ---------------------
-# SSL Fix (for local only)
-# ---------------------
-ssl._create_default_https_context = lambda: ssl._create_unverified_context()
-
-# ---------------------
-# Base Directory
+# BASE DIRECTORY
 # ---------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ---------------------
-# Security
+# SECURITY
 # ---------------------
 SECRET_KEY = 'django-insecure-your-secret-key'
-DEBUG = 'RENDER' not in os.environ  # Debug False on Render
-ALLOWED_HOSTS = ['*']  # Keep * for now, can later restrict to your domain
+DEBUG = True  # ✅ You can change to False after testing
+ALLOWED_HOSTS = ['*']
 
 # ---------------------
-# Installed Apps
+# APPLICATIONS
 # ---------------------
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -32,13 +30,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'projectapp',
+    'cloudinary',
+    'cloudinary_storage',
 ]
 
 # ---------------------
-# Middleware
+# MIDDLEWARE
 # ---------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ for static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -47,14 +48,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# ---------------------
-# URLs & WSGI
-# ---------------------
 ROOT_URLCONF = 'newproject.urls'
-WSGI_APPLICATION = 'newproject.wsgi.application'
 
 # ---------------------
-# Templates
+# TEMPLATES
 # ---------------------
 TEMPLATES = [
     {
@@ -72,17 +69,19 @@ TEMPLATES = [
     },
 ]
 
+WSGI_APPLICATION = 'newproject.wsgi.application'
+
 # ---------------------
-# ✅ DATABASE CONFIGURATION
+# DATABASE
 # ---------------------
-if os.environ.get('DATABASE_URL'):
+if os.environ.get('RENDER'):
     DATABASES = {
         'default': dj_database_url.config(
             conn_max_age=600,
             ssl_require=True
         )
     }
-else:  # local SQLite fallback
+else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -91,7 +90,7 @@ else:  # local SQLite fallback
     }
 
 # ---------------------
-# Password validation
+# PASSWORD VALIDATION
 # ---------------------
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -101,7 +100,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # ---------------------
-# Localization
+# LOCALIZATION
 # ---------------------
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
@@ -109,23 +108,31 @@ USE_I18N = True
 USE_TZ = True
 
 # ---------------------
-# Static & Media files
+# STATIC FILES
 # ---------------------
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+# ---------------------
+# MEDIA (Handled via Cloudinary)
+# ---------------------
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dhjactcwx',
+    'API_KEY': '543344718597668',
+    'API_SECRET': '5hrZqEM1zB3qTfZa8oNzvSCDzF8',
+}
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / "media"
 
 # ---------------------
-# Razorpay Keys
+# RAZORPAY
 # ---------------------
 RAZORPAY_KEY_ID = "rzp_test_RaUbYZKXoHR2IT"
 RAZORPAY_KEY_SECRET = "s7EwhvUXxwl9ieMzM69r7d4W"
 
 # ---------------------
-# Email Configuration (Gmail)
+# EMAIL CONFIGURATION
 # ---------------------
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -133,10 +140,15 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_HOST_USER = 'bhaskaryhubale.899@gmail.com'
-EMAIL_HOST_PASSWORD = 'your_16_digit_app_password'  # Gmail App Password
+EMAIL_HOST_PASSWORD = 'your_16_digit_app_password'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 # ---------------------
-# Default Primary Key Field Type
+# DEFAULT FIELD TYPE
 # ---------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# ---------------------
+# SSL FIX (Local Only)
+# ---------------------
+ssl._create_default_https_context = lambda: ssl._create_unverified_context()
