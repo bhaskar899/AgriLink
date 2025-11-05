@@ -2,10 +2,6 @@ from pathlib import Path
 import os
 import ssl
 import dj_database_url
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
-import cloudinary_storage
 
 # ---------------------
 # BASE DIRECTORY
@@ -16,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 # ---------------------
 SECRET_KEY = 'django-insecure-your-secret-key'
-DEBUG = True  # ✅ You can change to False after testing
+DEBUG = True  # change to False when done testing
 ALLOWED_HOSTS = ['*']
 
 # ---------------------
@@ -30,8 +26,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'projectapp',
-    'cloudinary',
     'cloudinary_storage',
+    'cloudinary',
 ]
 
 # ---------------------
@@ -39,7 +35,7 @@ INSTALLED_APPS = [
 # ---------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # ✅ for static files
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # for static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -48,7 +44,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# ---------------------
+# URLS & WSGI
+# ---------------------
 ROOT_URLCONF = 'newproject.urls'
+WSGI_APPLICATION = 'newproject.wsgi.application'
 
 # ---------------------
 # TEMPLATES
@@ -68,8 +68,6 @@ TEMPLATES = [
         },
     },
 ]
-
-WSGI_APPLICATION = 'newproject.wsgi.application'
 
 # ---------------------
 # DATABASE
@@ -108,7 +106,7 @@ USE_I18N = True
 USE_TZ = True
 
 # ---------------------
-# Static & Media files
+# STATIC & MEDIA FILES
 # ---------------------
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
@@ -117,23 +115,16 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / "media"
 
-# ✅ Cloudinary integration (for Render)
-if os.environ.get('RENDER'):
-    INSTALLED_APPS += ['cloudinary', 'cloudinary_storage']
+# ---------------------
+# CLOUDINARY SETTINGS
+# ---------------------
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-    CLOUDINARY_STORAGE = {
-        'CLOUD_NAME': os.environ.get('dhjactcwx'),
-        'API_KEY': os.environ.get('543344718597668'),
-        'API_SECRET': os.environ.get('5hrZqEM1zB3qTfZa8oNzvSCDzF8'),
-    }
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dhjactcwx',
     'API_KEY': '543344718597668',
     'API_SECRET': '5hrZqEM1zB3qTfZa8oNzvSCDzF8',
 }
-MEDIA_URL = '/media/'
 
 # ---------------------
 # RAZORPAY
