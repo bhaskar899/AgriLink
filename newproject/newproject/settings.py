@@ -12,7 +12,7 @@ ssl._create_default_https_context = lambda: ssl._create_unverified_context()
 # ---------------------
 # Base Directory
 # ---------------------
-BASE_DIR = Path(_file_).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ---------------------
 # Security
