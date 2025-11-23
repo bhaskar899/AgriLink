@@ -50,6 +50,27 @@ path('payment_success/<int:order_id>/', views.payment_success, name='payment_suc
     path("place_order/<int:product_id>/",views.place_order,name="place_order"),
 
     path("generate_receipt/<int:order_id>/",views.generate_receipt,name="generate_receipt"),
+
+    # search & fiter
+
+    path("ajax_search/",views.ajax_search,name="ajax_search"),
+
+    # training mode
+
+    path('training/', views.training, name='training'),
+path("training_complete/", views.training_complete, name="training_complete"),
+
+path("profile/", views.profile, name="profile"),
+path("profile_update/", views.profile_update, name="profile_update"),
+path("profile_delete/", views.profile_delete, name="profile_delete"),
+path("profile_delete_confirm/", views.profile_delete_confirm, name="profile_delete_confirm"),
+
+    #forget password
+
+path("forgot_password/", views.forgot_password, name="forgot_password"),
+path("verify_otp/", views.verify_otp, name="verify_otp"),
+path("reset_password/", views.reset_password, name="reset_password"),
+
 ]
 
 # ✅ Serve media files in development only

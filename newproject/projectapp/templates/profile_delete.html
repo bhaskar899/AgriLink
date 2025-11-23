@@ -1,0 +1,11 @@
+{% extends "master.html" %}
+
+{% block body %}<br><br>
+<div class="container mt-5 text-center">
+  <h3>Are you sure you want to delete your profile?</h3>
+  <p class="text-danger">This action cannot be undone.</p>
+
+  <a href="/profile_delete_confirm/" class="btn btn-danger">Yes, Delete</a>
+  <a href="/profile/" class="btn btn-secondary">Cancel</a>
+</div>
+{% endblock %}

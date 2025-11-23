@@ -135,15 +135,18 @@ RAZORPAY_KEY_SECRET = "s7EwhvUXxwl9ieMzM69r7d4W"
 # ---------------------
 # EMAIL CONFIGURATION
 # ---------------------
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# 📧 EMAIL SETTINGS
+# IMPORTANT — Use custom backend
+EMAIL_BACKEND = 'newproject.email_backend.CustomEmailBackend'
+# ↑ project folder name EXACT same jisme settings.py hai
+
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_USE_SSL = False
-EMAIL_HOST_USER = 'bhaskaryhubale.899@gmail.com'
-EMAIL_HOST_PASSWORD = 'your_16_digit_app_password'
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
+EMAIL_HOST_USER = 'bhaskaryhubale.899@gmail.com'
+EMAIL_HOST_PASSWORD = 'liox giwz dlvz mpov'
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # ---------------------
 # DEFAULT FIELD TYPE
 # ---------------------

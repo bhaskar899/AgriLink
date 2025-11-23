@@ -1,0 +1,125 @@
+{% extends 'master.html' %}
+{% load static %}
+{% block title %}Training Mode - AgriLink{% endblock %}
+
+{% block body %}
+
+<style>
+    .training-box {
+        max-width: 600px;
+        margin: 80px auto;
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        text-align: center;
+    }
+
+    .step-title {
+        font-size: 1.6rem;
+        font-weight: bold;
+        color: #198754;
+    }
+
+    .step-desc {
+        font-size: 1.1rem;
+        margin-top: 10px;
+        line-height: 1.5;
+        color: #555;
+    }
+
+    .btn-area {
+        margin-top: 25px;
+    }
+
+    .btn-area button {
+        min-width: 120px;
+    }
+</style>
+
+<div class="training-box">
+    <h2 class="step-title" id="stepTitle">Welcome to AgriLink 👋</h2>
+    <p class="step-desc" id="stepDesc">
+        This short training will guide you on how to use the platform.
+    </p>
+
+    <div class="btn-area">
+        <button class="btn btn-secondary" id="backBtn" onclick="prevStep()" disabled>Back</button>
+        <button class="btn btn-success" id="nextBtn" onclick="nextStep()">Next</button>
+    </div>
+</div>
+
+<script>
+    const steps = [
+        // ... (Your 9 steps array is here, including the last step: "Training Complete 🎉")
+        {
+            title: "Welcome to AgriLink 👋",
+            desc: "This short training will help you understand how to use the platform easily."
+        },
+        {
+            title: "Farmer Dashboard",
+            desc: "Farmers can add products, update details, check orders and respond to retailers."
+        },
+        {
+            title: "Add Product",
+            desc: "Farmers can upload product name, image, quantity, description and price."
+        },
+        {
+            title: "Browse Products",
+            desc: "Retailers can browse all farmer products and use Search + Filter options."
+        },
+        {
+            title: "Order & Payment",
+            desc: "Retailers place orders and pay securely using Razorpay."
+        },
+        {
+            title: "Order Tracking 🚚",
+            desc: "Farmers update delivery location and retailer can track live."
+        },
+        {
+            title: "Chat Feature 💬",
+            desc: "Farmers and Retailers can communicate directly for any questions."
+        },
+        {
+            title: "Notifications 🔔",
+            desc: "Both users receive updates for orders, status changes and messages."
+        },
+        {
+            title: "Training Complete 🎉",
+            desc: "You are now ready to use AgriLink! Click Finish to continue."
+        }
+    ];
+
+    let current = 0;
+
+    function updateUI() {
+        document.getElementById("stepTitle").innerText = steps[current].title;
+        document.getElementById("stepDesc").innerText = steps[current].desc;
+
+        document.getElementById("backBtn").disabled = current === 0;
+
+        // Correctly label the last button
+        document.getElementById("nextBtn").innerText = current === steps.length - 1 ? "Finish Training" : "Next";
+    }
+
+    function nextStep() {
+        if (current < steps.length - 1) {
+            current++;
+            updateUI();
+        } else {
+            // ⭐ CRITICAL: Redirect to the view that updates the database (training_complete) ⭐
+            window.location.href = "/training_complete/";
+        }
+    }
+
+    function prevStep() {
+        if (current > 0) {
+            current--;
+            updateUI();
+        }
+    }
+
+    updateUI();
+</script>
+
+{% endblock %}

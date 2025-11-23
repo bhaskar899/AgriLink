@@ -1,19 +1,64 @@
 {% extends 'master.html' %}
 {% load static %}
+
 {% block title %}Browse Products{% endblock %}
+
 {% block body %}
 
-<div class="container mt-5">
-  <h2 class="text-center mb-4">🌾 Available Products</h2>
+<div class="container mt-5"><br><br>
+
+
+  <h2 class="text-center mb-4">🌾 Available Products</h2><br>
+
+
+  <!-- 🔍 Search + Filter -->
+  <form method="get" action="/browse_products/" class="row g-3 mb-4">
+
+    <!-- 🔎 Auto-search -->
+    <div class="col-md-4 position-relative">
+      <label class="form-label">Search Product</label>
+      <input type="text" id="searchBox" name="q" value="{{ request.GET.q }}" class="form-control"
+             placeholder="Enter product name">
+
+      <div id="suggestBox"
+           class="list-group position-absolute w-100"
+           style="z-index: 999; display:none;"></div>
+    </div>
+
+    <!-- 📍 Location -->
+    <div class="col-md-4">
+      <label class="form-label">Filter by Location</label>
+      <input type="text" name="location" value="{{ request.GET.location }}" class="form-control"
+             placeholder="Enter location">
+    </div>
+
+    <!-- 💰 Min Price -->
+    <div class="col-md-2">
+      <label class="form-label">Min Price</label>
+      <input type="number" name="min_price" value="{{ request.GET.min_price }}" class="form-control" placeholder="0">
+    </div>
+
+    <!-- 💰 Max Price -->
+    <div class="col-md-2">
+      <label class="form-label">Max Price</label>
+      <input type="number" name="max_price" value="{{ request.GET.max_price }}" class="form-control" placeholder="10000">
+    </div>
+
+    <div class="col-md-12 d-flex align-items-end">
+      <button type="submit" class="btn btn-success w-100">Apply Filters</button>
+    </div>
+  </form>
+
+  <!-- 🟩 Products -->
   <div class="row">
     {% for p in products %}
     <div class="col-md-4 mb-4">
       <div class="card shadow-sm">
 
         {% if p.image %}
-          <img src="{{ p.image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+          <img src="{{ p.image.url }}" class="card-img-top" style="height:200px; object-fit:cover;">
         {% else %}
-          <img src="{% static 'images/no-image.jpg' %}" class="card-img-top" style="height: 200px; object-fit: cover;">
+          <img src="{% static 'images/no-image.jpg' %}" class="card-img-top" style="height:200px; object-fit:cover;">
         {% endif %}
 
         <div class="card-body">
@@ -21,15 +66,56 @@
           <p class="card-text">{{ p.description|truncatewords:20 }}</p>
 
           <p>👨‍🌾 Farmer: {{ p.farmer.name }}</p>
-          <p>💰 Price: ₹{{ p.price }} / kg</p>
-          <p>📦 Quantity: {{ p.quantity }} kg</p>
-          <p>📍 Location: {{ p.location }}</p>
+          <p>💰 Price: ₹{{ p.price }}/kg</p>
+          <p>📦 Available: {{ p.quantity }} kg</p>
+          <p>📍 {{ p.location }}</p>
 
-<a href="{% url 'place_order' p.id %}" class="btn btn-primary btn-sm w-100">Buy Now</a> </div>
+          <a href="{% url 'place_order' p.id %}" class="btn btn-primary btn-sm w-100">Buy Now</a>
+        </div>
       </div>
     </div>
     {% endfor %}
   </div>
 </div>
+
+<!-- 🌟 Auto Suggest Script -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const searchBox = document.getElementById("searchBox");
+  const suggestBox = document.getElementById("suggestBox");
+
+  searchBox.addEventListener("keyup", function () {
+      let query = this.value;
+
+      if (query.length === 0) {
+          suggestBox.style.display = "none";
+          suggestBox.innerHTML = "";
+          return;
+      }
+
+      fetch(`/ajax/search/?q=${query}`)
+          .then(response => response.json())
+          .then(data => {
+              suggestBox.innerHTML = "";
+
+              if (data.length === 0) {
+                  suggestBox.style.display = "none";
+                  return;
+              }
+
+              data.forEach(item => {
+                  let option = document.createElement("a");
+                  option.href = `/browse_products/?q=${item}`;
+                  option.className = "list-group-item list-group-item-action";
+                  option.textContent = item;
+                  suggestBox.appendChild(option);
+              });
+
+              suggestBox.style.display = "block";
+          });
+  });
+});
+</script>
 
 {% endblock %}

@@ -1,0 +1,18 @@
+{% extends "master.html" %}
+{% block title %}Verify OTP{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+  <div class="card p-4 shadow mx-auto" style="max-width:400px">
+    <h4 class="text-center mb-3">Verify OTP</h4>
+
+    <form method="POST">
+      {% csrf_token %}
+      <label>Enter OTP</label>
+      <input type="number" name="otp" class="form-control mb-3" required>
+
+      <button class="btn btn-success w-100">Verify</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

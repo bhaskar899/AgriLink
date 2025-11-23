@@ -4,199 +4,264 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}AgriLink - Connecting Farmers & Retailers{% endblock %}</title>
+  <title>{% block title %}AgriLink{% endblock %}</title>
 
-  <!-- Bootstrap CSS -->
   <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      scroll-behavior: smooth;
+    /* Fix Google Translate Top Bar */
+    .goog-te-banner-frame.skiptranslate {display:none !important;}
+    body > .skiptranslate {display:none !important;}
+    body {top:0 !important;}
+
+    /* Floating Translate Button */
+    #translate-floating-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: #198754;
+        color: white;
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 99999;
+        transition: 0.25s;
+    }
+    #translate-floating-btn:hover {
+        transform: scale(1.15);
+        background: #157347;
     }
 
-    body {
-      display: flex;
-      flex-direction: column;
-      font-family: 'Segoe UI', sans-serif;
-      padding-top: 70px; /* space for fixed navbar */
+    #translate-popup {
+        position: fixed;
+        bottom: 90px;
+        right: 20px;
+        background: white;
+        padding: 12px 15px;
+        border-radius: 10px;
+        z-index: 99999;
+        display: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
     }
 
-    /* Make main content flexible to push footer down */
-    .container-fluid.p-0 {
-      flex: 1;
+    .goog-logo-link {display:none !important;}
+    .goog-te-gadget {font-size:0 !important;}
+
+    /* Navigation improvements */
+    .navbar-nav .nav-link {
+        position: relative;
+        padding: 8px 15px !important;
+        transition: 0.25s ease;
+    }
+    .navbar-nav .nav-link:hover {
+        color: #fff000 !important;
+        transform: translateY(-2px);
     }
 
-    .navbar-brand {
-      font-weight: bold;
-      font-size: 1.6rem;
-      letter-spacing: 1px;
+    .dropdown-menu {
+        background: #e8f6ec;
+        border-radius: 10px;
+        border: 1px solid #c6e6d0;
+        padding: 10px;
+        transition: 0.25s ease;
+        box-shadow: 0px 5px 15px rgba(0,0,0,0.15);
     }
 
-    .nav-link {
-      font-size: 1.1rem;
-      transition: color 0.3s;
+    .dropdown-item {
+        border-radius: 6px;
+        padding: 8px 14px;
+        color: #165f3f !important;
+        font-weight: 500;
+        transition: 0.25s ease;
+    }
+    .dropdown-item:hover {
+        background: #198754 !important;
+        color: white !important;
+        transform: translateX(4px);
     }
 
-    .nav-link:hover {
-      color: #fff200 !important;
+    .navbar img {
+        transition: 0.3s ease;
+    }
+    .navbar img:hover {
+        transform: scale(1.12);
+        border-color: #fff000 !important;
     }
 
-    /* 🌿 Sticky Footer */
+    /* FIX Footer background issue */
     footer {
-      background: #198754;
-      color: white;
-      padding: 40px 0;
-      margin-top: 60px;
+      background: #198754 !important;
+      color: white !important;
+      padding: 30px 0;
+      margin-top: 50px;
     }
 
-    footer a {
-      color: #f8f9fa;
-      text-decoration: none;
-      display: block;
-      margin-bottom: 8px;
-    }
+    footer a {color: #e0e0e0 !important;}
+    footer a:hover {color: #fff000 !important; text-decoration: underline !important;}
 
-    footer a:hover {
-      color: #fff200;
-    }
-
-    .footer-bottom {
-      border-top: 1px solid rgba(255,255,255,0.2);
-      margin-top: 20px;
-      padding-top: 15px;
-      text-align: center;
-      font-size: 0.9rem;
-    }
+    .content-wrapper {padding-top: 80px;}
   </style>
 </head>
 
 <body>
 
-  <!-- 🎵 Click Sound -->
-  <audio id="clickSound" src="{% static 'audio/air-whoosh-380651.mp3' %}" preload="auto"></audio>
+<audio id="clickSound" src="{% static 'audio/air-whoosh-380651.mp3' %}" preload="auto"></audio>
 
-  <!-- 🧭 Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-success shadow-sm fixed-top">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="/home/">🌿 AgriLink</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+<div id="translate-floating-btn">🌐</div>
+<div id="translate-popup">
+  <div id="google_translate_element"></div>
+</div>
 
-      <div class="collapse navbar-collapse" id="mainNav">
-        <ul class="navbar-nav ms-auto" style="margin-right:70px">
+<nav class="navbar navbar-expand-lg navbar-dark bg-success fixed-top shadow-sm">
+  <div class="container-fluid">
 
-          <!-- Home / About / Contact -->
-          <li class="nav-item"><a class="nav-link" href="/home/">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="/home/#about">About</a></li>
-          <li class="nav-item"><a class="nav-link" href="/home/#contact">Contact</a></li>
+    <a class="navbar-brand fw-bold" href="/home/" style="font-size:22px;">🌿 AgriLink</a>
 
-          <!-- IF NOT LOGGED IN -->
-          {% if not request.session.name %}
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Farmer</a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="/farmer_register/">Register</a></li>
-              <li><a class="dropdown-item" href="/farmer_login/">Login</a></li>
-            </ul>
-          </li>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Retailer</a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="/retailer_register/">Register</a></li>
-              <li><a class="dropdown-item" href="/retailer_login/">Login</a></li>
-            </ul>
-          </li>
-          {% endif %}
+    <div class="collapse navbar-collapse" id="navMenu">
 
-          <!-- IF FARMER LOGGED IN -->
-          {% if request.session.name and request.session.user_type == "farmer" %}
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="farmerMenu" role="button" data-bs-toggle="dropdown">Farmer</a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="/farmer_dashboard/">Dashboard</a></li>
-              <li><a class="dropdown-item" href="/add_product/">Add Product</a></li>
-              <li><a class="dropdown-item" href="/show_products/">My Products</a></li>
-              <li><a class="dropdown-item" href="/farmer_order/">View Orders</a></li>
-            </ul>
-          </li>
-          {% endif %}
+      <!-- Navigation Right Side -->
+      <ul class="navbar-nav ms-auto align-items-center" style="gap:14px;">
 
-          <!-- IF RETAILER LOGGED IN -->
-          {% if request.session.name and request.session.user_type == "retailer" %}
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="retailerMenu" role="button" data-bs-toggle="dropdown">Retailer</a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="/retailer_dashboard/">Dashboard</a></li>
-              <li><a class="dropdown-item" href="/browse_products/">Browse Products</a></li>
-              <li><a class="dropdown-item" href="/retailer_products/">My Orders</a></li>
-            </ul>
-          </li>
-          {% endif %}
+        <li class="nav-item"><a class="nav-link" href="/home/">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="/home/#about">About</a></li>
+        <li class="nav-item"><a class="nav-link" href="/home/#contact">Contact</a></li>
 
-          <!-- LOGOUT -->
-          {% if request.session.name %}
-          <li class="nav-item">
-            <a class="nav-link text-warning fw-bold" href="/logout/">Logout ({{ request.session.name }})</a>
-          </li>
-          {% endif %}
-        </ul>
-      </div>
+        {% if not request.session.name %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Farmer</a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="/farmer_register/">Register</a></li>
+            <li><a class="dropdown-item" href="/farmer_login/">Login</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Retailer</a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="/retailer_register/">Register</a></li>
+            <li><a class="dropdown-item" href="/retailer_login/">Login</a></li>
+          </ul>
+        </li>
+        {% endif %}
+
+        {% if request.session.user_type == "farmer" %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Farmer</a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="/farmer_dashboard/">Dashboard</a></li>
+            <li><a class="dropdown-item" href="/add_product/">Add Product</a></li>
+            <li><a class="dropdown-item" href="/show_products/">My Products</a></li>
+            <li><a class="dropdown-item" href="/farmer_order/">Orders</a></li>
+          </ul>
+        </li>
+        {% endif %}
+
+        {% if request.session.user_type == "retailer" %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Retailer</a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="/retailer_dashboard/">Dashboard</a></li>
+            <li><a class="dropdown-item" href="/browse_products/">Browse Products</a></li>
+            <li><a class="dropdown-item" href="/retailer_products/">My Orders</a></li>
+          </ul>
+        </li>
+        {% endif %}
+
+        {% if request.session.name %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
+            <img src="{{ request.session.profile_image|default:'/media/profiles/default.jpg' }}"
+              style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid white;">
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="/profile/">My Profile</a></li>
+            <li><a class="dropdown-item" href="/profile_update/">Update Profile</a></li>
+            <li><a class="dropdown-item text-danger" href="/profile_delete/">Delete Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-warning" href="/logout/">Logout</a></li>
+          </ul>
+        </li>
+        {% endif %}
+
+      </ul>
     </div>
-  </nav>
-
-  <!-- 📄 Page Content -->
-  <div class="container-fluid p-0">
-    {% block body %}{% endblock %}
   </div>
+</nav>
+<div class="container-fluid p-0 content-wrapper">
+  {% block body %}{% endblock %}
+</div>
 
-  <!-- 🌿 Footer -->
-  <footer>
-    <div class="container">
-      <div class="row">
-        <div class="col-md-4">
-          <h5>About AgriLink</h5>
-          <p>Agrilink connects farmers and retailers directly, removing middlemen and enabling fair pricing.</p>
-        </div>
-        <div class="col-md-4">
-          <h5>Quick Links</h5>
-          <a href="/home/">Home</a>
-          <a href="/home/#about">About</a>
-          <a href="/home/#contact">Contact</a>
-          <a href="/farmer_register/">Farmer Register</a>
-          <a href="/retailer_register/">Retailer Register</a>
-        </div>
-        <div class="col-md-4">
-          <h5>Contact Info</h5>
-          <p>📍 Pune, Maharashtra, India</p>
-          <p>📞 +91 8928958677</p>
-          <p>✉ support@agrilink.com</p>
-        </div>
+<footer>
+  <div class="container">
+    <div class="row">
+
+      <div class="col-md-4">
+        <h5>About AgriLink</h5>
+        <p>Agrilink connects farmers and retailers directly, removing middlemen and enabling fair pricing.</p>
       </div>
-      <div class="footer-bottom">
-        &copy; 2025 AgriLink. All Rights Reserved.
+
+      <div class="col-md-4">
+        <h5>Quick Links</h5>
+        <a href="/home/">Home</a><br>
+        <a href="/home/#about">About</a><br>
+        <a href="/home/#contact">Contact</a><br>
+        <a href="/farmer_register/">Farmer Register</a><br>
+        <a href="/retailer_register/">Retailer Register</a><br><br>
       </div>
+
+      <div class="col-md-4">
+        <h5>Contact Info</h5>
+        <p>📍 Pune, Maharashtra</p>
+        <p>📞 +91 8928958677</p>
+        <p>✉ support@agrilink.com</p>
+        <p>✉ bhaskaryhubale.899gmail.com</p>
+      </div>
+
     </div>
-  </footer>
+    <div class="footer-bottom text-center">
+      &copy; 2025 AgriLink. All Rights Reserved.
+    </div>
+  </div>
+</footer>
 
-  <!-- 📜 Scripts -->
-  <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const links = document.querySelectorAll(".nav-link, .dropdown-item");
-      const originalSound = document.getElementById("clickSound");
-      links.forEach(link => {
-        link.addEventListener("click", function () {
-          const sound = originalSound.cloneNode(true);
-          sound.play().catch(() => {});
-        });
-      });
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+
+<!-- 🔊 FIX SOUND PLAY -->
+<script>
+document.querySelectorAll("a, button").forEach(el=>{
+    el.addEventListener("click", ()=>{
+        document.getElementById("clickSound").play();
     });
-  </script>
+});
+</script>
+
+<script>
+document.getElementById("translate-floating-btn").onclick = function() {
+    let box = document.getElementById("translate-popup");
+    box.style.display = box.style.display === "block" ? "none" : "block";
+};
+</script>
+
+<script type="text/javascript">
+function googleTranslateElementInit() {
+  new google.translate.TranslateElement({
+    pageLanguage: 'en',
+    includedLanguages: 'en,hi,mr,ta,te,gu,pa,bn,kn'
+  }, 'google_translate_element');
+}
+</script>
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
 </body>
 </html>

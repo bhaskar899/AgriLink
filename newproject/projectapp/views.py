@@ -30,19 +30,37 @@ def farmer_register(request):
         return redirect('farmer_login')
     return render(request, "farmer_register.html")
 
+
 def farmer_login(request):
-    error = None
-    if request.method == "POST":
+    if request.method == 'POST':
         name = request.POST.get('name')
         password = request.POST.get('password')
+
         try:
-            user = Farmer.objects.get(name=name, password=password)
-            request.session['name'] = user.name
-            request.session['user_type'] = 'farmer'
-            return redirect('farmer_dashboard')
+            user = Farmer.objects.get(name=name)
+
+            if user.password == password:
+
+                # STORE SESSION DATA
+                request.session['name'] = user.name
+                request.session['user_type'] = 'farmer'
+
+                # ⭐ ADD THIS - Store profile image in session
+                if user.profile_image:
+                    request.session['profile_image'] = user.profile_image.url
+                else:
+                    request.session['profile_image'] = "/media/profiles/default.jpg"
+
+                # REDIRECT BASED ON FIRST LOGIN
+                if user.first_login:
+                    return redirect("training")
+                else:
+                    return redirect("farmer_dashboard")
+
         except Farmer.DoesNotExist:
-            error = "Invalid credentials"
-    return render(request, "farmer_login.html", {'error': error})
+            messages.error(request, "Invalid username or password.")
+
+    return render(request, "farmer_login.html")
 
 def retailer_register(request):
     if request.method == "POST":
@@ -56,20 +74,40 @@ def retailer_register(request):
         return redirect('retailer_login')
     return render(request, "retailer_register.html")
 
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Retailer # Assuming you import your model
+
 def retailer_login(request):
     error = None
+
     if request.method == "POST":
         name = request.POST.get('name')
         password = request.POST.get('password')
+
         try:
             user = Retailer.objects.get(name=name, password=password)
+
+            # Session set
             request.session['name'] = user.name
             request.session['user_type'] = 'retailer'
-            return redirect('retailer_dashboard')
-        except Retailer.DoesNotExist:
-            error = "Invalid credentials"
-    return render(request, "retailer_login.html", {'error': error})
 
+            # ⭐ ADD THIS - Store profile image in session
+            if user.profile_image:
+                request.session['profile_image'] = user.profile_image.url
+            else:
+                request.session['profile_image'] = "/media/profiles/default.jpg"
+
+            # First login check
+            if user.first_login:
+                return redirect('training')
+
+            return redirect('retailer_dashboard')
+
+        except Retailer.DoesNotExist:
+            messages.error(request, "Invalid credentials")
+
+    return render(request, "retailer_login.html", {'error': error})
 def logout(request):
     request.session.flush()
     return redirect('home')
@@ -79,18 +117,40 @@ def farmer_dashboard(request):
     # simple dashboard - you can add stats later
     return render(request, "farmer_dashboard.html")
 
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Product, Farmer
+
 def add_product(request):
     if request.method == "POST":
         farmer_name = request.session.get('name')
+        if not farmer_name:
+            return redirect('farmer_login')
+
         farmer = get_object_or_404(Farmer, name=farmer_name)
-        product = request.POST.get('product')
-        description = request.POST.get('description')
+
+        product_name = request.POST.get('product', '').strip()
+        description = request.POST.get('description', '').strip()
         price = request.POST.get('price') or 0
         quantity = request.POST.get('quantity') or 0
-        location = request.POST.get('location')
+        location = request.POST.get('location', '').strip()
         image = request.FILES.get('image')
-        Product.objects.create(product=product, description=description, price=float(price), quantity=int(quantity), location=location, image=image, farmer=farmer)
+
+        # minimal validation
+        if not product_name:
+            return render(request, "add_product.html", {"error": "Product name is required."})
+
+        p = Product.objects.create(
+            product=product_name,
+            description=description,
+            price=float(price),
+            quantity=int(quantity),
+            location=location,
+            image=image,
+            farmer=farmer
+        )
+        # p.save() will call model save and do optimization
         return redirect('show_products')
+
     return render(request, "add_product.html")
 
 def show_products(request):
@@ -138,40 +198,49 @@ def update_status(request, order_id):
 def retailer_dashboard(request):
     return render(request, "retailer_dashboard.html")
 
+from django.http import JsonResponse
+from .models import Product
+from django.shortcuts import render
+
+
+# 🔥 Auto Suggest API
+def ajax_search(request):
+    query = request.GET.get("q", "")
+    products = Product.objects.filter(
+        product__istartswith=query
+    ).values_list("product", flat=True)[:10]
+
+    return JsonResponse(list(products), safe=False)
+
+
+# 🔥 Browse Page — search + filter + min/max price
 def browse_products(request):
     q = request.GET.get('q', '')
     loc = request.GET.get('location', '')
+    min_p = request.GET.get('min_price', '')
+    max_p = request.GET.get('max_price', '')
+
     products = Product.objects.all()
+
+    # 🔍 Search
     if q:
         products = products.filter(product__icontains=q)
+
+    # 📍 Location
     if loc:
         products = products.filter(location__icontains=loc)
-    return render(request, "browse_products.html", {"products": products})
 
+    # 💰 Min price
+    if min_p:
+        products = products.filter(price__gte=min_p)
 
-from django.shortcuts import render, redirect, get_object_or_404
+    # 💰 Max price
+    if max_p:
+        products = products.filter(price__lte=max_p)
 
-
-from .models import Product, Order # Assuming Product and Order are your models
-
-# =========================================================
-#  CORRECTED place_order FUNCTION in projectapp/views.py
-# =========================================================
-
-from django.shortcuts import render, redirect, get_object_or_404
-# You MUST import your models here:
-from .models import Product, Order
-
-
-# The CORRECT way (Using the new order's ID for the redirect)
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Product, Order, Retailer
-
-from django.shortcuts import get_object_or_404, redirect
-from .models import Product, Retailer, Order
-
-from django.shortcuts import get_object_or_404, redirect
-from .models import Product, Retailer
+    return render(request, "browse_products.html", {
+        "products": products
+    })
 
 def retailer_products(request):
     if request.session.get("user_type") != "retailer":
@@ -423,28 +492,280 @@ from django.shortcuts import render
 
 
 from django.core.mail import send_mail
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.conf import settings
 
-def contact_submit(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        message = request.POST.get('message')
 
+def contact_submit(request):
+    if request.method != "POST":
+        return redirect("home")
+
+    name = request.POST.get("name").strip()
+    email = request.POST.get("email").strip()
+    message_text = request.POST.get("message").strip()
+
+    if not name or not email or not message_text:
+        messages.error(request, "⚠ Please fill all fields.")
+        return redirect("home")
+
+    # Validate email
+    try:
+        validate_email(email)
+    except:
+        messages.error(request, "⚠ Invalid email address.")
+        return redirect("home")
+
+    subject = f"📩 New Contact Message from {name}"
+    body = f"""
+Name: {name}
+Email: {email}
+
+Message:
+{message_text}
+    """
+
+    # ⭐ Retry logic added Karega 2 attempts
+    for attempt in range(2):
         try:
             send_mail(
-                subject=f"📩 New Contact Message from {name}",
-                message=f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}",
-                from_email=settings.EMAIL_HOST_USER,
-                recipient_list=[settings.EMAIL_HOST_USER],
+                subject,
+                body,
+                settings.EMAIL_HOST_USER,
+                [settings.EMAIL_HOST_USER],
                 fail_silently=False,
             )
-            messages.success(request, "✅ Your message was sent successfully!")
-        except Exception as e:
-            print("EMAIL ERROR:", e)   # 👈 Add this line
-            messages.error(request, f"⚠ Error sending email: {e}")
-        return redirect('home')
 
-    return redirect('home')
+            messages.success(request, "✅ Your message has been sent successfully!")
+            return redirect("home")
+
+        except Exception as e:
+            last_error = str(e)
+
+    # If both retries fail → show error
+    messages.error(request, f"❌ Email failed even after retrying: {last_error}")
+    return redirect("home")# views.py
+# --- Training Views ---
+
+def training(request):
+    user_type = request.session.get('user_type')
+    name = request.session.get('name')
+
+    # Security Check: Must be logged in
+    if not user_type or not name:
+        messages.warning(request, "Please log in to continue.")
+        return redirect("home")
+
+    # Find the user object
+    if user_type == "farmer":
+        Model = Farmer
+        dashboard_url = "farmer_dashboard"
+    elif user_type == "retailer":
+        Model = Retailer
+        dashboard_url = "retailer_dashboard"
+    else:
+        return redirect("home")
+
+    try:
+        user = Model.objects.get(name=name)
+    except Model.DoesNotExist:
+        return redirect("home")
+
+    # ⭐ CHECK: If already completed training, redirect to dashboard. ⭐
+    # This prevents users who try to manually type the /training/ URL from seeing it again.
+    if not user.first_login:
+        return redirect(dashboard_url)
+
+    # Show Training Page
+    return render(request, "training.html")
+
+
+def training_complete(request):
+    name = request.session.get('name')
+    user_type = request.session.get('user_type')
+
+    if not name or not user_type:
+        return redirect("home")
+
+    try:
+        if user_type == "farmer":
+            user = Farmer.objects.get(name=name)
+            redirect_url = "farmer_dashboard"
+        elif user_type == "retailer":
+            user = Retailer.objects.get(name=name)
+            redirect_url = "retailer_dashboard"
+        else:
+            return redirect("home")
+
+        # 🔥 CRITICAL: Update the user object to prevent showing training again
+        user.first_login = False
+        user.save()
+
+        # Redirect to dashboard
+        return redirect(redirect_url)
+
+    except (Farmer.DoesNotExist, Retailer.DoesNotExist):
+        return redirect("home")
+
+
+def profile(request):
+    user_type = request.session.get("user_type")
+    name = request.session.get("name")
+
+    if user_type == "farmer":
+        user = Farmer.objects.get(name=name)
+    else:
+        user = Retailer.objects.get(name=name)
+
+    return render(request, "profile.html", {"user": user})
+
+
+def profile_update(request):
+    user_type = request.session.get("user_type")
+    name = request.session.get("name")
+
+    if user_type == "farmer":
+        user = Farmer.objects.get(name=name)
+    else:
+        user = Retailer.objects.get(name=name)
+
+    if request.method == "POST":
+        user.name = request.POST.get("name")
+        user.email = request.POST.get("email")
+        user.contact = request.POST.get("contact")
+        user.address = request.POST.get("address")
+
+        if request.FILES.get("profile_image"):
+            user.profile_image = request.FILES["profile_image"]
+
+        user.save()
+
+        # ⭐ SESSION UPDATE FIX
+        request.session['profile_image'] = user.profile_image.url
+
+        return redirect("profile")
+
+    return render(request, "profile_update.html", {"user": user})
+
+def profile_delete(request):
+    return render(request, "profile_delete.html")
+
+
+def profile_delete_confirm(request):
+    user_type = request.session.get("user_type")
+    name = request.session.get("name")
+
+    if user_type == "farmer":
+        user = Farmer.objects.get(name=name)
+    else:
+        user = Retailer.objects.get(name=name)
+
+    user.delete()
+    request.session.flush()
+    return redirect("home")
+
+
+import random
+from django.core.mail import send_mail
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
+from .models import Farmer, Retailer
+
+
+def forgot_password(request):
+    if request.method == "POST":
+        email = request.POST.get("email").strip()
+
+        # Validate email
+        try:
+            validate_email(email)
+        except ValidationError:
+            messages.error(request, "⚠ Invalid email address.")
+            return redirect("forgot_password")
+
+        # Check Farmer OR Retailer
+        user = None
+        user_type = None
+
+        if Farmer.objects.filter(email=email).exists():
+            user = Farmer.objects.get(email=email)
+            user_type = "farmer"
+
+        elif Retailer.objects.filter(email=email).exists():
+            user = Retailer.objects.get(email=email)
+            user_type = "retailer"
+
+        else:
+            messages.error(request, "❌ Email not found!")
+            return redirect("forgot_password")
+
+        # Generate OTP
+        otp = random.randint(100000, 999999)
+
+        # Save in session
+        request.session["reset_email"] = email
+        request.session["reset_otp"] = otp
+        request.session["reset_user_type"] = user_type
+
+        # Send OTP email
+        send_mail(
+            subject="🔐 AgriLink Password Reset OTP",
+            message=f"Your OTP for password reset is: {otp}",
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[email],
+            fail_silently=False,
+        )
+
+        messages.success(request, "📩 OTP sent to your email!")
+        return redirect("verify_otp")
+
+    return render(request, "forgot_password.html")
+
+
+def verify_otp(request):
+    if request.method == "POST":
+        entered_otp = request.POST.get("otp")
+        session_otp = str(request.session.get("reset_otp"))
+
+        if entered_otp == session_otp:
+            return redirect("reset_password")
+        else:
+            messages.error(request, "❌ Incorrect OTP!")
+            return redirect("verify_otp")
+
+    return render(request, "verify_otp.html")
+
+
+def reset_password(request):
+    if request.method == "POST":
+        new_pass = request.POST.get("password")
+        email = request.session.get("reset_email")
+        user_type = request.session.get("reset_user_type")
+
+        if user_type == "farmer":
+            user = Farmer.objects.get(email=email)
+        else:
+            user = Retailer.objects.get(email=email)
+
+        user.password = new_pass
+        user.save()
+
+        # Clear session
+        del request.session["reset_email"]
+        del request.session["reset_otp"]
+        del request.session["reset_user_type"]
+
+        messages.success(request, "✅ Password reset successful! Please login.")
+        return redirect("farmer_login" if user_type == "farmer" else "retailer_login")
+
+    return render(request, "reset_password.html")
+
+
+
+
+

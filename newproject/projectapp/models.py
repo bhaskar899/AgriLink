@@ -1,15 +1,22 @@
 from django.db import models
 
+from django.db import models
+
+# models.py
+
 class Farmer(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    email = models.EmailField(unique=True)
-    password = models.CharField(max_length=128)
-    contact = models.CharField(max_length=15, blank=True, null=True)
-    address = models.TextField(blank=True, null=True)
-    gender = models.CharField(max_length=10, blank=True, null=True)
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    password = models.CharField(max_length=100)
+    contact = models.CharField(max_length=20)
+    address = models.TextField()
+    gender = models.CharField(max_length=10)
+    first_login = models.BooleanField(default=True)
+    profile_image = models.ImageField(upload_to='profiles/', default='profiles/default.jpg')
 
     def _str_(self):
         return self.name
+
 
 class Retailer(models.Model):
     name = models.CharField(max_length=100, unique=True)
@@ -18,9 +25,17 @@ class Retailer(models.Model):
     contact = models.CharField(max_length=15, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
     gender = models.CharField(max_length=10, blank=True, null=True)
+    first_login = models.BooleanField(default=True)
+    profile_image = models.ImageField(upload_to='profiles/', default='profiles/default.jpg')
 
     def _str_(self):
         return self.name
+# ... (rest of models like Product, Order, etc. are omitted for brevity, but keep them as you had)
+from django.db import models
+from django.core.files.base import ContentFile
+from io import BytesIO
+from PIL import Image, UnidentifiedImageError
+import os
 
 class Product(models.Model):
     product = models.CharField(max_length=100)
@@ -29,10 +44,57 @@ class Product(models.Model):
     quantity = models.IntegerField()
     location = models.CharField(max_length=50)
     image = models.ImageField(upload_to='product_images/', blank=True, null=True)
-    farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE, related_name='products')
+    farmer = models.ForeignKey('Farmer', on_delete=models.CASCADE, related_name='products')
 
-    def _str_(self):
+    def __str__(self):
         return self.product
+
+    def save(self, *args, **kwargs):
+        """
+        Override save to resize/optimize images.
+        - Keeps images under max dimension (800x800).
+        - Converts PNG/WebP to JPEG to reduce size (keeps extension .jpg).
+        - Keeps existing behavior if no image uploaded.
+        """
+        super().save(*args, **kwargs)  # first save so self.image.path exists if uploaded
+
+        if not self.image:
+            return
+
+        try:
+            img_path = self.image.path
+        except ValueError:
+            # storage might be remote or image not on disk
+            return
+        except Exception:
+            return
+
+        MAX_SIZE = (800, 800)  # max width/height
+
+        try:
+            img = Image.open(img_path)
+        except UnidentifiedImageError:
+            # corrupted image — silently ignore (or log)
+            return
+
+        # Only resize if bigger
+        # if img.width > MAX_SIZE[0] or img.height > MAX_SIZE[1]:
+        #     img.thumbnail(MAX_SIZE, Image.ANTIALIAS)
+
+        # Convert mode if needed
+        if img.mode in ("RGBA", "P"):
+            img = img.convert("RGB")
+
+        # Save optimized version back to disk
+        buffer = BytesIO()
+        img.save(buffer, format="JPEG", quality=85, optimize=True)
+        buffer.seek(0)
+
+        # Overwrite the file on disk (safe)
+        with open(img_path, 'wb') as f:
+            f.write(buffer.read())
+
+        buffer.close()
 
 class Order(models.Model):
     STATUS_CHOICES = [

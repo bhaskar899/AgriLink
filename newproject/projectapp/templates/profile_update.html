@@ -1,0 +1,33 @@
+{% extends "master.html" %}
+{% block title %}Update Profile{% endblock %}
+
+{% block body %}<br>
+<div class="container mt-5"><br>
+  <div class="card p-4 shadow mx-auto" style="max-width:500px">
+<br><br><br>
+    <h3 class="text-center mb-3">Update Profile</h3>
+
+    <form method="POST" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <label>Name</label>
+      <input type="text" name="name" class="form-control mb-2" value="{{ user.name }}" required>
+
+      <label>Email</label>
+      <input type="email" name="email" class="form-control mb-2" value="{{ user.email }}" required>
+
+      <label>Contact</label>
+      <input type="text" name="contact" class="form-control mb-2" value="{{ user.contact }}">
+
+      <label>Address</label>
+      <textarea name="address" class="form-control mb-2">{{ user.address }}</textarea>
+
+      <label>Profile Image</label>
+      <input type="file" name="profile_image" class="form-control mb-3">
+
+      <button class="btn btn-success w-100">Save Changes</button>
+    </form>
+
+  </div>
+</div>
+{% endblock %}

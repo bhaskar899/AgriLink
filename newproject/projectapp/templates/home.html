@@ -105,24 +105,24 @@
       {% csrf_token %}
       <div class="mb-3">
         <label for="name" class="form-label">Full Name</label>
-        <input type="text" class="form-control" id="name" name="name" placeholder="Enter your name" required>
+        <input type="text" id="name" name="name" class="form-control" placeholder="Enter your name" required>
       </div>
 
       <div class="mb-3">
         <label for="email" class="form-label">Email Address</label>
-        <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+        <input type="email" id="email" name="email" class="form-control" placeholder="Enter your email" required>
       </div>
 
       <div class="mb-3">
         <label for="message" class="form-label">Your Message</label>
-        <textarea class="form-control" id="message" name="message" rows="4" placeholder="Write your message here..." required></textarea>
+        <textarea id="message" name="message" rows="4" class="form-control" placeholder="Write your message..." required></textarea>
       </div>
 
       <button type="submit" class="btn btn-success w-100">Send Message</button>
     </form>
 
     {% if messages %}
-      <div class="mt-4">
+      <div class="mt-3">
         {% for message in messages %}
           <div class="alert alert-info text-center">{{ message }}</div>
         {% endfor %}
@@ -130,5 +130,4 @@
     {% endif %}
   </div>
 </section>
-
 {% endblock %}
