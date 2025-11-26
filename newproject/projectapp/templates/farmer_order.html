@@ -3,67 +3,73 @@
 {% block title %}Farmer Orders{% endblock %}
 {% block body %}
 <br><br>
+
 <div class="container mt-5">
   <div class="card shadow p-4"><br>
 
     <h2 class="text-center mb-4">🚜 Orders from Retailers</h2>
 
-    <table class="table table-bordered table-striped text-center">
-      <thead class="table-success">
-        <tr>
-          <th>Order ID</th>
-          <th>Product</th>
-          <th>Retailer</th>
-          <th>Quantity</th>
-          <th>Total Price</th>
-          <th>Status</th>
-          <th>Update</th>
-          <th>Chat</th>
-        </tr>
-      </thead>
+    <!-- ✅ FULLY RESPONSIVE TABLE WRAPPER -->
+    <div class="table-responsive">
 
-      <tbody>
-        {% for order in orders %}
-        <tr>
-          <td>#{{ order.id }}</td>
-          <td>{{ order.product.product }}</td>
-          <td>{{ order.retailer.name }}</td>
-          <td>{{ order.quantity }} kg</td>
+      <table class="table table-bordered table-striped text-center">
+        <thead class="table-success">
+          <tr>
+            <th>Order ID</th>
+            <th>Product</th>
+            <th>Retailer</th>
+            <th>Quantity</th>
+            <th>Total Price</th>
+            <th>Status</th>
+            <th>Update</th>
+            <th>Chat</th>
+          </tr>
+        </thead>
 
-          <!-- ✅ Correct total price -->
-          <td>₹{{ order.quantity|mul:order.product.price }}</td>
+        <tbody>
+          {% for order in orders %}
+          <tr>
+            <td>#{{ order.id }}</td>
+            <td>{{ order.product.product }}</td>
+            <td>{{ order.retailer.name }}</td>
+            <td>{{ order.quantity }} kg</td>
 
-          <!-- ✅ Show all statuses including Paid -->
-          <td>
-            {% if order.status == "Pending" %}
-              <span class="badge bg-secondary">{{ order.status }}</span>
-            {% elif order.status == "Accepted" %}
-              <span class="badge bg-primary">{{ order.status }}</span>
-            {% elif order.status == "Packed" %}
-              <span class="badge bg-info">{{ order.status }}</span>
-            {% elif order.status == "Dispatched" %}
-              <span class="badge bg-warning text-dark">{{ order.status }}</span>
-            {% elif order.status == "Delivered" %}
-              <span class="badge bg-success">{{ order.status }}</span>
-            {% elif order.status == "Paid" %}
-              <span class="badge bg-success">Paid</span>
-            {% else %}
-              <span class="badge bg-dark">{{ order.status }}</span>
-            {% endif %}
-          </td>
+            <!-- Correct total price -->
+            <td>₹{{ order.quantity|mul:order.product.price }}</td>
 
-          <td>
-            <a href="{% url 'update_status' order.id %}" class="btn btn-outline-success btn-sm">Update</a>
-          </td>
+            <!-- All statuses including Paid -->
+            <td>
+              {% if order.status == "Pending" %}
+                <span class="badge bg-secondary">{{ order.status }}</span>
+              {% elif order.status == "Accepted" %}
+                <span class="badge bg-primary">{{ order.status }}</span>
+              {% elif order.status == "Packed" %}
+                <span class="badge bg-info">{{ order.status }}</span>
+              {% elif order.status == "Dispatched" %}
+                <span class="badge bg-warning text-dark">{{ order.status }}</span>
+              {% elif order.status == "Delivered" %}
+                <span class="badge bg-success">{{ order.status }}</span>
+              {% elif order.status == "Paid" %}
+                <span class="badge bg-success">Paid</span>
+              {% else %}
+                <span class="badge bg-dark">{{ order.status }}</span>
+              {% endif %}
+            </td>
 
-          <!-- ✅ Chat option restored -->
-          <td>
-            <a href="{% url 'chat' order.id %}" class="btn btn-outline-primary btn-sm">💬 Chat</a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+            <td>
+              <a href="{% url 'update_status' order.id %}" class="btn btn-outline-success btn-sm">Update</a>
+            </td>
+
+            <td>
+<a href="{% url 'chat' order.id %}" class="btn btn-outline-primary btn-sm">💬 Chat</a>            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+
+      </table>
+
+    </div> <!-- table-responsive end -->
+
   </div>
 </div>
 

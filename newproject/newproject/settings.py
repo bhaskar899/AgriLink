@@ -28,7 +28,27 @@ INSTALLED_APPS = [
     'projectapp',
     'cloudinary_storage',
     'cloudinary',
+    'channels'
 ]
+
+ASGI_APPLICATION = 'newproject.asgi.application'
+
+# settings.py
+
+# ... (other settings) ...
+
+CHANNEL_LAYERS = {
+    "default": {
+        # ⚠️ CRITICAL FIX: Use Redis for inter-process communication
+        "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
+        "CONFIG": {
+            # Change this to your actual Redis location/credentials if needed
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    }
+}
+
+# ... (rest of the settings) ...
 
 # ---------------------
 # MIDDLEWARE
@@ -64,11 +84,11 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'projectapp.context_processors.navbar_notifications',  # <- Add this
             ],
         },
     },
 ]
-
 # ---------------------
 # DATABASE
 # ---------------------
@@ -156,3 +176,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # SSL FIX (Local Only)
 # ---------------------
 ssl._create_default_https_context = lambda: ssl._create_unverified_context()
+
+PLATFORM_COMMISSION = 0.05   # 5% default
+
+# settings.py
+

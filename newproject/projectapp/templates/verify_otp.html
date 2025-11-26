@@ -2,17 +2,26 @@
 {% block title %}Verify OTP{% endblock %}
 
 {% block body %}
-<div class="container mt-5">
-  <div class="card p-4 shadow mx-auto" style="max-width:400px">
-    <h4 class="text-center mb-3">Verify OTP</h4>
+<br><br>
+
+<div class="container mt-5 d-flex justify-content-center">
+  <div class="card p-4 shadow-lg" style="max-width:650px; width:100%; border-radius:15px; transition:0.3s;">
+
+    <h2 class="text-center mb-4">Verify OTP</h2>
 
     <form method="POST">
       {% csrf_token %}
-      <label>Enter OTP</label>
-      <input type="number" name="otp" class="form-control mb-3" required>
 
-      <button class="btn btn-success w-100">Verify</button>
+      <label class="form-label">Enter OTP</label>
+      <input type="number" name="otp" class="form-control form-control-lg mb-3" required>
+
+      <button class="btn btn-success btn-lg w-100">Verify</button>
     </form>
+
   </div>
 </div>
+
+<style>
+  .card:hover { transform: scale(1.02); box-shadow:0 0 18px rgba(0,0,0,0.3); }
+</style>
 {% endblock %}

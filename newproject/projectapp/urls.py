@@ -15,7 +15,7 @@ urlpatterns = [
     path("home/", views.home, name="home"),
     path("about/", views.about, name="about"),
     path("contact/", views.contact, name="contact"),
-    path("contact_submit/",views.contact_submit,name="contact_submit"),
+    path("contact_submit/", views.contact_submit, name="contact_submit"),
 
     # Farmer
     path("farmer_register/", views.farmer_register, name="farmer_register"),
@@ -35,45 +35,56 @@ urlpatterns = [
     path("track_order/<int:order_id>/", views.track_order, name="track_order"),
     path("place_order/<int:product_id>/", views.place_order, name="place_order"),
 
-    # chat + notifications
-    path('chat/<int:order_id>/', views.chat_view, name='chat'),
+    # Payment
+    path('payment/<int:order_id>/', views.payment_page, name='payment_page'),
+    path('payment_success/<int:order_id>/', views.payment_success, name='payment_success'),
+    path("generate_receipt/<int:order_id>/", views.generate_receipt, name="generate_receipt"),
+
+    # Chat + notifications
+    path("chat/<int:order_id>/", views.chat_view, name="chat"),
+    path("chat/<int:order_id>/search_json/", views.chat_search_api, name="chat_search_api"),
     path('notifications/', views.notifications, name='notifications'),
     path('notifications/read/<int:nid>/', views.mark_notification_read, name='mark_notification_read'),
 
     # Logout
     path("logout/", views.logout, name="logout"),
 
-    # Real time Payments
-# urls.py (update)
-path('payment/<int:order_id>/', views.payment_page, name='payment_page'),
-path('payment_success/<int:order_id>/', views.payment_success, name='payment_success'),
-    path("place_order/<int:product_id>/",views.place_order,name="place_order"),
+    # Search & filter
+    path("ajax_search/", views.ajax_search, name="ajax_search"),
 
-    path("generate_receipt/<int:order_id>/",views.generate_receipt,name="generate_receipt"),
-
-    # search & fiter
-
-    path("ajax_search/",views.ajax_search,name="ajax_search"),
-
-    # training mode
-
+    # Training mode
     path('training/', views.training, name='training'),
-path("training_complete/", views.training_complete, name="training_complete"),
+    path("training_complete/", views.training_complete, name="training_complete"),
 
-path("profile/", views.profile, name="profile"),
-path("profile_update/", views.profile_update, name="profile_update"),
-path("profile_delete/", views.profile_delete, name="profile_delete"),
-path("profile_delete_confirm/", views.profile_delete_confirm, name="profile_delete_confirm"),
+    # Profile
+    path("profile/", views.profile, name="profile"),
+    path("profile_update/", views.profile_update, name="profile_update"),
+    path("profile_delete/", views.profile_delete, name="profile_delete"),
+    path("profile_delete_confirm/", views.profile_delete_confirm, name="profile_delete_confirm"),
 
-    #forget password
+    # Forget password
+    path("forgot_password/", views.forgot_password, name="forgot_password"),
+    path("verify_otp/", views.verify_otp, name="verify_otp"),
+    path("reset_password/", views.reset_password, name="reset_password"),
 
-path("forgot_password/", views.forgot_password, name="forgot_password"),
-path("verify_otp/", views.verify_otp, name="verify_otp"),
-path("reset_password/", views.reset_password, name="reset_password"),
+    # Driver module
+    path('driver/', views.driver_home, name='driver_home'),
+    path('driver/register/', views.driver_register, name='driver_register'),
+    path('driver/login/', views.driver_login, name='driver_login'),
+    path('driver/logout/', views.driver_logout, name='driver_logout'),
+    path('driver/dashboard/', views.driver_dashboard, name='driver_dashboard'),
+    path('driver/profile/', views.driver_profile, name='driver_profile'),
+    path('driver/profile_update/', views.driver_profile_update, name='driver_profile_update'),
+    path('driver/profile_delete/', views.driver_profile_delete, name='driver_profile_delete'),
+    path('driver/profile_delete_confirm/', views.driver_profile_delete_confirm, name='driver_profile_delete_confirm'),
 
+    # Driver AJAX / status updates
+    path('driver/toggle_availability/', views.driver_toggle_availability, name='driver_toggle_availability'),
+    path('driver/delivery/picked/<int:delivery_id>/', views.driver_mark_picked, name='driver_mark_picked'),
+    path('driver/delivery/delivered/<int:delivery_id>/', views.driver_mark_delivered, name='driver_mark_delivered'),
 ]
 
-# ✅ Serve media files in development only
+# MEDIA & STATIC
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

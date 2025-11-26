@@ -1,3 +1,4 @@
+from django.contrib.auth import authenticate
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
 from .models import Farmer, Retailer, Product, Order, ChatMessage, Notification
@@ -31,6 +32,15 @@ def farmer_register(request):
     return render(request, "farmer_register.html")
 
 
+from django.contrib.auth import authenticate, login
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Farmer
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Farmer
+
 def farmer_login(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -38,29 +48,23 @@ def farmer_login(request):
 
         try:
             user = Farmer.objects.get(name=name)
-
             if user.password == password:
-
-                # STORE SESSION DATA
                 request.session['name'] = user.name
                 request.session['user_type'] = 'farmer'
+                request.session['profile_image'] = user.profile_image.url if user.profile_image else "/media/profiles/default.jpg"
 
-                # ⭐ ADD THIS - Store profile image in session
-                if user.profile_image:
-                    request.session['profile_image'] = user.profile_image.url
-                else:
-                    request.session['profile_image'] = "/media/profiles/default.jpg"
-
-                # REDIRECT BASED ON FIRST LOGIN
                 if user.first_login:
                     return redirect("training")
-                else:
-                    return redirect("farmer_dashboard")
-
+                return redirect("farmer_dashboard")
+            else:
+                messages.error(request, "Invalid password.")
         except Farmer.DoesNotExist:
-            messages.error(request, "Invalid username or password.")
+            messages.error(request, "Invalid username.")
 
     return render(request, "farmer_login.html")
+
+
+
 
 def retailer_register(request):
     if request.method == "POST":
@@ -78,36 +82,32 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import Retailer # Assuming you import your model
 
-def retailer_login(request):
-    error = None
+from .models import Retailer
 
-    if request.method == "POST":
+from .models import Retailer
+
+def retailer_login(request):
+    if request.method == 'POST':
         name = request.POST.get('name')
         password = request.POST.get('password')
 
         try:
-            user = Retailer.objects.get(name=name, password=password)
+            user = Retailer.objects.get(name=name)
+            if user.password == password:
+                request.session['name'] = user.name
+                request.session['user_type'] = 'retailer'
+                request.session['profile_image'] = user.profile_image.url if user.profile_image else "/media/profiles/default.jpg"
 
-            # Session set
-            request.session['name'] = user.name
-            request.session['user_type'] = 'retailer'
-
-            # ⭐ ADD THIS - Store profile image in session
-            if user.profile_image:
-                request.session['profile_image'] = user.profile_image.url
+                if user.first_login:
+                    return redirect("training")
+                return redirect("retailer_dashboard")
             else:
-                request.session['profile_image'] = "/media/profiles/default.jpg"
-
-            # First login check
-            if user.first_login:
-                return redirect('training')
-
-            return redirect('retailer_dashboard')
-
+                messages.error(request, "Invalid password.")
         except Retailer.DoesNotExist:
-            messages.error(request, "Invalid credentials")
+            messages.error(request, "Invalid username.")
 
-    return render(request, "retailer_login.html", {'error': error})
+    return render(request, "retailer_login.html")
+
 def logout(request):
     request.session.flush()
     return redirect('home')
@@ -168,32 +168,32 @@ def farmer_order(request):
     orders = Order.objects.filter(farmer=farmer).order_by('-order_date')
     return render(request, "farmer_order.html", {"orders": orders})
 
-def update_status(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-    if request.method == "POST":
-        # example: form sends 'status', 'current_lat', 'current_lng'
-        order.status = request.POST.get('status', order.status)
-        lat = request.POST.get('current_lat')
-        lng = request.POST.get('current_lng')
-        if lat and lng:
-            try:
-                order.current_lat = float(lat)
-                order.current_lng = float(lng)
-            except ValueError:
-                pass
-        order.save()
-
-        # notify retailer
-        Notification.objects.create(
-            user_type='retailer',
-            user_name=order.retailer.name,
-            message=f"Your order #{order.id} for {order.product.product} is now {order.status}."
-        )
-        return redirect('farmer_order')
-
-    # For GET: show a simple update page (create template update_status.html)
-    return render(request, "update_status.html", {"order": order})
-
+# views.py
+# def update_status(request, order_id):
+#     order = get_object_or_404(Order, id=order_id)
+#     if request.method == "POST":
+#         order.status = request.POST.get('status', order.status)
+#         lat = request.POST.get('current_lat')
+#         lng = request.POST.get('current_lng')
+#         if lat and lng:
+#             try:
+#                 order.current_lat = float(lat)
+#                 order.current_lng = float(lng)
+#             except ValueError:
+#                 pass
+#         order.save()
+#
+#         # Notify all retailers (or specific retailer of the order)
+#         retailer = order.retailer
+#         Notification.objects.create(
+#             sender=request.user,
+#             receiver=retailer.user,  # assuming retailer.user points to User model
+#             message=f"Order #{order.id} for {order.product.product} is now {order.status}."
+#         )
+#
+#         return redirect('farmer_order')
+#
+#     return render(request, "update_status.html", {"order": order})
 # ---------- Retailer pages ----------
 def retailer_dashboard(request):
     return render(request, "retailer_dashboard.html")
@@ -242,65 +242,129 @@ def browse_products(request):
         "products": products
     })
 
-def retailer_products(request):
-    if request.session.get("user_type") != "retailer":
-        return redirect("retailer_login")
-
-    retailer_name = request.session.get('name')
-    retailer = get_object_or_404(Retailer, name=retailer_name)
-
-    # ✅ Load all orders of this retailer
-    orders = Order.objects.filter(retailer=retailer).order_by('-order_date')
-
-    # ✅ Dynamically calculate total price
-    for o in orders:
-        o.total_price = o.quantity * o.product.price
-
-    return render(request, "retailer_products.html", {"orders": orders})
 
 def track_order(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     return render(request, "track_order.html", {"order": order})
 
 # ---------- Notifications ----------
-def notifications(request):
-    name = request.session.get('name')
-    user_type = request.session.get('user_type')
-    if not name or not user_type:
-        return redirect('home')
-    notes = Notification.objects.filter(user_name=name, user_type=user_type).order_by('-timestamp')
-    return render(request, "notifications.html", {"notifications": notes})
-
-# mark notification read (optional)
-def mark_notification_read(request, nid):
-    n = get_object_or_404(Notification, id=nid)
-    n.is_read = True
-    n.save()
-    return redirect('notifications')
-
+# def notifications(request):
+#     user = request.user
+#     notes = Notification.objects.filter(receiver=user).order_by('-timestamp')
+#     return render(request, "notifications.html", {"notifications": notes})
+#
+# def mark_notification_read(request, nid):
+#     n = get_object_or_404(Notification, id=nid, receiver=request.user)
+#     n.is_read = True
+#     n.save()
+#     return redirect('notifications')
 # ---------- Chat ----------
+from django.shortcuts import get_object_or_404, render
+from django.http import JsonResponse
+from .models import ChatMessage
+from django.views.decorators.csrf import csrf_exempt
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+from django.db.models import Q
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.db.models import Q
+from .models import ChatMessage
+
+
+# projectapp/views.py (FIXED chat_view)
+
+from .models import ChatMessage, Farmer, Retailer, Order
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
+from django.utils import timezone
+from django.contrib import messages
+from .models import ChatMessage, Order, Farmer, Retailer
+
+# 🟢 Chat Page
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Order, Farmer, Retailer, ChatMessage, Notification
+
 def chat_view(request, order_id):
     order = get_object_or_404(Order, id=order_id)
-    farmer = order.farmer
-    retailer = order.retailer
 
+    user_type = request.session.get("user_type")
+    user_name = request.session.get("name")
+
+    if user_type == "farmer":
+        sender = get_object_or_404(Farmer, name=user_name)
+    elif user_type == "retailer":
+        sender = get_object_or_404(Retailer, name=user_name)
+    else:
+        return redirect("home")
+
+    # Handle message sending
     if request.method == "POST":
-        msg_text = request.POST.get('message')
-        if request.session.get('user_type') == 'farmer':
-            ChatMessage.objects.create(sender_farmer=farmer, receiver_retailer=retailer, message=msg_text)
-        else:
-            ChatMessage.objects.create(sender_retailer=retailer, receiver_farmer=farmer, message=msg_text)
-        return redirect('chat', order_id=order_id)
+        msg = request.POST.get("message", "").strip()
+        img = request.FILES.get("image")
 
-    # fetch all messages between these two
-    messages = ChatMessage.objects.filter(
-        (Q(sender_farmer=farmer, receiver_retailer=retailer) |
-         Q(sender_retailer=retailer, receiver_farmer=farmer))
-    ).order_by('timestamp')
+        if msg or img:
+            if user_type == "farmer":
+                ChatMessage.objects.create(order=order, sender_farmer=sender, message=msg, image=img)
+                # Create notification for retailer
+                if order.retailer:
+                    Notification.objects.create(
+                        sender_farmer=sender,
+                        receiver_retailer=order.retailer,
+                        message=f"New message from {sender.name} in Order #{order.id}"
+                    )
+            elif user_type == "retailer":
+                ChatMessage.objects.create(order=order, sender_retailer=sender, message=msg, image=img)
+                # Create notification for farmer
+                if order.farmer:
+                    Notification.objects.create(
+                        sender_retailer=sender,
+                        receiver_farmer=order.farmer,
+                        message=f"New message from {sender.name} in Order #{order.id}"
+                    )
 
-    return render(request, "chat.html", {"order": order, "messages": messages})
+        return redirect("chat", order_id=order_id)
+
+    # Get all messages
+    messages_list = ChatMessage.objects.filter(order=order).order_by("timestamp")
+
+    # Mark seen for messages from the other participant
+    for m in messages_list:
+        if user_type == "farmer" and m.sender_retailer:
+            m.seen = True
+            m.save()
+        elif user_type == "retailer" and m.sender_farmer:
+            m.seen = True
+            m.save()
+
+    return render(request, "chat.html", {
+        "order": order,
+        "messages_list": messages_list,
+        "user_type": user_type,
+        "user_name": user_name,
+        "sender": sender,  # pass sender to template for header
+    })
+# 🟡 Search API
+def chat_search_api(request, order_id):
+    q = request.GET.get("q", "").strip()
+    msgs = ChatMessage.objects.filter(order_id=order_id)
+
+    if q:
+        msgs = msgs.filter(message__icontains=q)
+
+    return JsonResponse({
+        "results": [
+            {
+                "sender": m.sender_farmer.name if m.sender_farmer else m.sender_retailer.name,
+                "message": m.message,
+                "time": m.timestamp.strftime("%I:%M %p")
+            } for m in msgs.order_by("timestamp")
+        ]
+    })
 
 
+from .models import Order, ChatMessage, Farmer, Retailer
 #Payment Method
 # =========================================================
 # Your EXISTING Payment Methods in views.py (No changes needed)
@@ -337,64 +401,7 @@ from .models import Product, Retailer, Order
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Product, Order, Retailer
 
-# 🟢 Step 1: Place Order (Retailer form submission)
-def place_order(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
-    retailer_name = request.session.get('name')
 
-    if not retailer_name:
-        return redirect('retailer_login')
-
-    retailer = get_object_or_404(Retailer, name=retailer_name)
-
-    if request.method == "POST":
-        quantity = int(request.POST.get('quantity'))
-        address = request.POST.get('address')
-        contact = request.POST.get('contact')
-
-        # 🧮 Calculate total price
-        total_amount = product.price * quantity
-
-        # ✅ Create a temporary order (Pending payment)
-        order = Order.objects.create(
-            product=product,
-            retailer=retailer,
-            farmer=product.farmer,
-            quantity=quantity,
-            status='Pending'
-        )
-
-        # 🧭 Redirect to payment page, including order ID
-        return redirect('payment_page', order_id=order.id)
-
-    return render(request, "place_order.html", {"product": product})
-
-
-# 🟢 Step 2: Payment Page (Razorpay checkout)
-def payment_page(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-    product = order.product
-
-    # 🧮 Calculate total price dynamically
-    amount = int(order.quantity * product.price)  # ₹ → convert to integer rupees
-    amount_paise = amount * 100  # Razorpay needs paise
-
-    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-    payment_order = client.order.create({
-        "amount": amount_paise,
-        "currency": "INR",
-        "payment_capture": "1"
-    })
-
-    context = {
-        "product": product,
-        "order": order,
-        "amount": amount,
-        "razorpay_order_id": payment_order["id"],
-        "razorpay_key": settings.RAZORPAY_KEY_ID,
-    }
-
-    return render(request, "payment_page.html", context)
 
 # ✅ Payment success view (final version)
 from django.shortcuts import render, redirect, get_object_or_404
@@ -413,28 +420,6 @@ from reportlab.pdfgen import canvas
 from io import BytesIO
 from .models import Order, Product, Notification
 
-def payment_success(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-
-    # ✅ Mark as paid if not already
-    if order.status != "Paid":
-        order.status = "Paid"
-        order.save()
-
-        # ✅ Reduce product quantity
-        product = order.product
-        if product.quantity >= order.quantity:
-            product.quantity -= order.quantity
-            product.save()
-
-        # ✅ Notify farmer
-        Notification.objects.create(
-            user_type="farmer",
-            user_name=product.farmer.name,
-            message=f"Your product '{product.product}' was purchased by {order.retailer.name}."
-        )
-
-    return render(request, "payment_success.html", {"order": order})
 
 def generate_receipt(request, order_id):
     order = get_object_or_404(Order, id=order_id)
@@ -610,26 +595,46 @@ def training_complete(request):
         return redirect("home")
 
 
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Farmer, Retailer, Driver
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Farmer, Retailer, Driver
+
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Farmer, Retailer, Driver
+from django.contrib import messages
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Farmer, Retailer, Driver
+
+# ===================== FARMER / RETAILER =====================
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Farmer, Retailer
+
+# ===================== FARMER / RETAILER =====================
 def profile(request):
     user_type = request.session.get("user_type")
     name = request.session.get("name")
 
     if user_type == "farmer":
-        user = Farmer.objects.get(name=name)
+        user = get_object_or_404(Farmer, name=name)
     else:
-        user = Retailer.objects.get(name=name)
+        user = get_object_or_404(Retailer, name=name)
 
     return render(request, "profile.html", {"user": user})
-
 
 def profile_update(request):
     user_type = request.session.get("user_type")
     name = request.session.get("name")
 
     if user_type == "farmer":
-        user = Farmer.objects.get(name=name)
+        user = get_object_or_404(Farmer, name=name)
     else:
-        user = Retailer.objects.get(name=name)
+        user = get_object_or_404(Retailer, name=name)
 
     if request.method == "POST":
         user.name = request.POST.get("name")
@@ -641,26 +646,92 @@ def profile_update(request):
             user.profile_image = request.FILES["profile_image"]
 
         user.save()
-
-        # ⭐ SESSION UPDATE FIX
-        request.session['profile_image'] = user.profile_image.url
-
+        request.session['profile_image'] = user.profile_image.url if user.profile_image else '/static/images/no-image.jpg'
+        messages.success(request, "Profile updated successfully")
         return redirect("profile")
 
     return render(request, "profile_update.html", {"user": user})
 
 def profile_delete(request):
-    return render(request, "profile_delete.html")
-
-
-def profile_delete_confirm(request):
     user_type = request.session.get("user_type")
     name = request.session.get("name")
 
     if user_type == "farmer":
-        user = Farmer.objects.get(name=name)
+        user = get_object_or_404(Farmer, name=name)
     else:
-        user = Retailer.objects.get(name=name)
+        user = get_object_or_404(Retailer, name=name)
+
+    if request.method == "POST":
+        user.delete()
+        request.session.flush()
+        messages.success(request, "Profile deleted successfully")
+        return redirect("home")
+
+    return render(request, "profile_delete.html", {"user": user})
+
+
+# ===================== DRIVER =====================
+def driver_profile(request):
+    driver_id = request.session.get('id')
+    if not driver_id:
+        return redirect('driver_login')
+    driver = get_object_or_404(Driver, id=driver_id)
+    return render(request, "driver_profile.html", {"driver": driver})
+
+def driver_profile_update(request):
+    driver_id = request.session.get('id')
+    if not driver_id:
+        return redirect('driver_login')
+    driver = get_object_or_404(Driver, id=driver_id)
+
+    if request.method == "POST":
+        driver.name = request.POST.get('name', driver.name)
+        driver.phone = request.POST.get('phone', driver.phone)
+        driver.location = request.POST.get('location', driver.location)
+        driver.vehicle_number = request.POST.get('vehicle_number', driver.vehicle_number)
+        driver.rate_per_km = float(request.POST.get('rate_per_km') or driver.rate_per_km)
+        driver.capacity_kg = int(request.POST.get('capacity') or driver.capacity_kg)
+
+        if request.FILES.get('driver_photo'):
+            driver.driver_photo = request.FILES['driver_photo']
+        if request.FILES.get('license_doc'):
+            driver.license_doc = request.FILES['license_doc']
+
+        driver.save()
+        request.session['profile_image'] = driver.driver_photo.url if driver.driver_photo else '/static/images/no-image.jpg'
+        messages.success(request, "Profile updated.")
+        return redirect('driver_profile')
+
+    return render(request, "driver_profile_update.html", {"driver": driver})
+
+def driver_profile_delete(request):
+    driver_id = request.session.get('id')
+    if not driver_id:
+        return redirect('driver_login')
+    return render(request, "driver_profile_delete.html")
+
+def driver_profile_delete_confirm(request):
+    driver_id = request.session.get('id')
+    if not driver_id:
+        return redirect('driver_login')
+    driver = get_object_or_404(Driver, id=driver_id)
+    driver.delete()
+    request.session.flush()
+    return redirect('home')
+
+def profile_delete_confirm(request):
+    user_type = request.session.get("user_type")
+    user_id = request.session.get("id")
+
+    if not user_type or not user_id:
+        return redirect('driver_login')
+
+    if user_type == "farmer":
+        user = get_object_or_404(Farmer, id=user_id)
+    elif user_type == "retailer":
+        user = get_object_or_404(Retailer, id=user_id)
+    elif user_type == "driver":
+        user = get_object_or_404(Driver, id=user_id)
 
     user.delete()
     request.session.flush()
@@ -767,5 +838,481 @@ def reset_password(request):
 
 
 
+def notifications_view(request):
+    user_type = request.session.get('user_type')
+    name = request.session.get('name')
+
+    if user_type == 'farmer':
+        user = Farmer.objects.get(name=name)
+        notifications = Notification.objects.filter(receiver_farmer=user).order_by('-timestamp')
+    elif user_type == 'retailer':
+        user = Retailer.objects.get(name=name)
+        notifications = Notification.objects.filter(receiver_retailer=user).order_by('-timestamp')
+
+    return render(request, "notifications.html", {"notifications": notifications})
+
+# projectapp/views.py (append these imports at the top)
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.conf import settings
+from django.urls import reverse
+from django.http import JsonResponse
+from .models import Driver, Delivery, DriverNotification, Order, Product, Retailer, Farmer
+from django.utils import timezone
+import math
+
+# Config: platform commission (5% default)
+PLATFORM_COMMISSION = getattr(settings, 'PLATFORM_COMMISSION', 0.05)
+####################################################33
+# projectapp/views.py
 
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.conf import settings
+from django.contrib import messages
+from django.http import JsonResponse, FileResponse, HttpResponseForbidden
+from django.views.decorators.http import require_POST
+from django.utils import timezone
+import math
+
+import razorpay
+
+from .models import Product, Order, Retailer, Farmer, Driver, Delivery, Notification, DriverNotification
+
+# ---------- PLACE ORDER ----------
+def place_order(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    # retailer must be logged in
+    retailer_name = request.session.get('name')
+    if not retailer_name or request.session.get('user_type') != 'retailer':
+        messages.error(request, "Please login as Retailer to place an order.")
+        return redirect('retailer_login')
+
+    retailer = get_object_or_404(Retailer, name=retailer_name)
+
+    if request.method == "POST":
+        try:
+            quantity = int(request.POST.get('quantity', '1'))
+        except ValueError:
+            messages.error(request, "Invalid quantity.")
+            return redirect('place_order', product_id=product.id)
+
+        contact = request.POST.get('contact', '').strip()
+        address = request.POST.get('address', '').strip()
+
+        if not contact or not address:
+            messages.error(request, "Please provide address and contact.")
+            return redirect('place_order', product_id=product.id)
+
+        # create order (pending / not paid yet)
+        order = Order.objects.create(
+            product=product,
+            quantity=quantity,
+            retailer=retailer,
+            contact=contact,
+            address=address,
+            farmer=product.farmer,
+            status='Pending'
+        )
+
+        return redirect('payment_page', order_id=order.id)
+
+    # GET -> show place_order form (template should include form with quantity/contact/address)
+    return render(request, "place_order.html", {"product": product})
+
+
+# ---------- PAYMENT PAGE ----------
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponseForbidden
+from django.contrib import messages
+from .models import Order, Notification, Driver
+from django.conf import settings
+import razorpay
+
+# ------------------------
+# Payment Page
+# ------------------------
+def payment_page(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+
+    # ensure the session user is the retailer who created the order
+    if request.session.get('user_type') != 'retailer' or request.session.get('name') != order.retailer.name:
+        return HttpResponseForbidden("Not authorized.")
+
+    amount_rupees = order.quantity * order.product.price   # total amount
+    try:
+        amount_paise = int(round(amount_rupees * 100))  # convert to paise
+    except Exception:
+        amount_paise = int(order.product.price * 100)
+
+    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+    razorpay_order = client.order.create({
+        "amount": amount_paise,
+        "currency": "INR",
+        "payment_capture": "1"
+    })
+
+    context = {
+        "product": order.product,
+        "order": order,
+        "amount": amount_rupees,
+        "razorpay_order_id": razorpay_order["id"],
+        "razorpay_key": settings.RAZORPAY_KEY_ID,
+    }
+    return render(request, "payment_page.html", context)
+
+
+# ------------------------
+# Payment Success
+# ------------------------
+def payment_success(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+
+    # authorize retailer
+    if request.session.get('user_type') != 'retailer' or request.session.get('name') != order.retailer.name:
+        return HttpResponseForbidden("Not authorized.")
+
+    if order.status != "Paid":
+        order.status = "Paid"
+        order.save()
+
+        # Update product stock
+        product = order.product
+        if product.quantity is not None and product.quantity >= order.quantity:
+            product.quantity -= order.quantity
+            product.save()
+
+        total_amount = order.quantity * product.price  # total paid by retailer
+
+        # ----------------- Distribute Payment -----------------
+        farmer_amount = total_amount * 0.95
+        driver_amount = total_amount * 0.05 if order.driver else 0
+
+        # Optional: Here you can integrate actual payment transfer logic to bank accounts
+
+        # ------------- Notification to Farmer -------------
+        Notification.objects.create(
+            sender_retailer=order.retailer,
+            receiver_farmer=order.farmer,
+            message=f"Payment received for {order.quantity} kg of '{product.product}' by {order.retailer.name}. Amount credited: ₹{farmer_amount:.2f}"
+        )
+
+        # ------------- Notification to Driver (if driver exists) -------------
+        if order.driver:
+            Notification.objects.create(
+                sender_retailer=order.retailer,
+                receiver_driver=order.driver,
+                message=f"You have received your delivery commission of ₹{driver_amount:.2f} for Order #{order.id}."
+            )
+
+        # Assign driver after payment (if your auto_assign_driver logic is needed)
+        auto_assign_driver(order)
+
+    return render(request, "payment_success.html", {"order": order})
+
+# ------------------------
+# Update Status (Farmer)
+# ------------------------
+def update_status(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+
+    if request.method == "POST":
+        status = request.POST.get("status")
+        order.status = status
+
+        driver_id = request.POST.get("driver")
+        assigned_driver = None
+        if driver_id:
+            driver = get_object_or_404(Driver, id=driver_id)
+            order.driver = driver
+            assigned_driver = driver  # store for notification/payment
+
+        order.save()  # Save the updated order
+
+        # ------------- Notification to retailer -------------
+        Notification.objects.create(
+            sender_farmer=order.farmer,
+            receiver_retailer=order.retailer,
+            message=f"Order #{order.id} status updated to '{order.status}' by {order.farmer.name}"
+        )
+
+        # ------------- Driver payment & notification -------------
+        if assigned_driver and order.status.lower() != "pending":
+            # Assuming total amount already paid by retailer
+            total_amount = order.quantity * order.product.price
+            driver_amount = total_amount * 0.05  # 5% commission
+
+            # Optional: Integrate bank transfer logic here
+
+            # Notification to driver
+            Notification.objects.create(
+                sender_farmer=order.farmer,
+                receiver_driver=assigned_driver,
+                message=f"You have received your delivery commission of ₹{driver_amount:.2f} for Order #{order.id}."
+            )
+
+        messages.success(request, "Order updated successfully!")
+        return redirect("farmer_order")
+
+    drivers = Driver.objects.all()
+    return render(request, "update_status.html", {"order": order, "drivers": drivers})
+
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from .models import Notification, Farmer, Retailer, Driver
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Notification, Farmer, Retailer, Driver
+
+def notifications(request):
+    user_type = request.session.get('user_type')
+    name = request.session.get('name')
+    notes = []
+
+    if user_type == "farmer" and name:
+        user = Farmer.objects.filter(name=name).first()
+        if user:
+            notes = Notification.objects.filter(receiver_farmer=user).order_by('-timestamp')
+
+    elif user_type == "retailer" and name:
+        user = Retailer.objects.filter(name=name).first()
+        if user:
+            notes = Notification.objects.filter(receiver_retailer=user).order_by('-timestamp')
+
+    elif user_type == "driver" and name:
+        user = Driver.objects.filter(name=name).first()
+        if user:
+            notes = Notification.objects.filter(receiver_driver=user).order_by('-timestamp')
+
+    return render(request, "notifications.html", {"notifications": notes})
+
+
+def mark_notification_read(request, nid):
+    user_type = request.session.get('user_type')
+    name = request.session.get('name')
+
+    if user_type == "farmer":
+        user = Farmer.objects.filter(name=name).first()
+        n = get_object_or_404(Notification, id=nid, receiver_farmer=user)
+    elif user_type == "retailer":
+        user = Retailer.objects.filter(name=name).first()
+        n = get_object_or_404(Notification, id=nid, receiver_retailer=user)
+    elif user_type == "driver":
+        user = Driver.objects.filter(name=name).first()
+        n = get_object_or_404(Notification, id=nid, receiver_driver=user)
+
+    # mark as read
+    n.is_read = True
+    n.save()
+
+    # Redirect to a relevant page depending on notification type
+    # Here, you can customize based on message content
+    # For example, if notification is about an order:
+    if "Order" in n.message:
+        order_id = n.message.split('#')[1].split()[0]  # Extract order id from message
+        return redirect("order_detail", order_id=order_id)
+
+    # default redirect back to notifications page
+    return redirect("notifications")
+
+def auto_assign_driver(order):
+    if not order or not hasattr(order, 'id'):
+        return None
+
+    driver = Driver.objects.filter(is_available=True).first()
+    if not driver:
+        Notification.objects.create(
+            receiver_farmer=order.farmer,
+            message=f"No drivers available yet for Order #{order.id}."
+        )
+        return None
+
+    estimated_distance_km = 10.0
+    delivery_charge = round(estimated_distance_km * driver.rate_per_km, 2)
+
+    platform_commission_pct = 0.20
+    driver_earning = round(delivery_charge * (1 - platform_commission_pct), 2)
+
+    delivery = Delivery.objects.create(
+        order=order,
+        driver=driver,
+        distance_km=estimated_distance_km,
+        delivery_charge=delivery_charge,
+        driver_earning=driver_earning,
+        status='assigned',
+        assigned_at=timezone.now()
+    )
+
+    # update order
+    order.driver = driver
+    order.status = "Assigned to Driver"
+    order.save()
+
+    # make driver unavailable
+    driver.is_available = False
+    driver.save()
+
+    # 🔔 NOTIFICATION -> DRIVER (for bell icon)
+    Notification.objects.create(
+        receiver_driver=driver,
+        message=f"You have been assigned Order #{order.id}. Please check your dashboard."
+    )
+
+    # 🔔 notify farmer + retailer
+    Notification.objects.create(
+        receiver_farmer=order.farmer,
+        message=f"Driver {driver.name} assigned for Order #{order.id}."
+    )
+    Notification.objects.create(
+        receiver_retailer=order.retailer,
+        message=f"Driver {driver.name} will deliver Order #{order.id}."
+    )
+
+    return delivery
+
+
+def retailer_products(request):
+    if request.session.get("user_type") != "retailer":
+        return redirect("retailer_login")
+
+    retailer_name = request.session.get('name')
+    retailer = get_object_or_404(Retailer, name=retailer_name)
+
+    orders = Order.objects.filter(retailer=retailer).order_by('-order_date')
+    for o in orders:
+        o.total_price = round(o.quantity * o.product.price, 2)
+
+    return render(request, "retailer_products.html", {"orders": orders})
+
+
+# ---------- DRIVER AUTH / DASHBOARD ----------
+from django.contrib.auth import login as auth_login, logout as auth_logout
+
+from django.contrib import messages
+from .models import Driver
+
+# views.py (driver_login)
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Driver
+
+# For Driver Login (same idea for Farmer/Retailer)
+def driver_login(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        try:
+            driver = Driver.objects.get(email=email)
+            if driver.password == password:
+                request.session['id'] = driver.id
+                request.session['user_type'] = 'driver'
+                request.session['name'] = driver.name
+                request.session['profile_image'] = driver.driver_photo.url if driver.driver_photo else '/static/images/no-image.jpg'
+                return redirect('driver_dashboard')
+            else:
+                messages.error(request, "Incorrect password")
+        except Driver.DoesNotExist:
+            messages.error(request, "Driver not found")
+    return render(request, "driver_login.html")
+
+
+
+def driver_logout(request):
+    request.session.flush()
+    return redirect('home')
+
+
+from django.shortcuts import redirect, get_object_or_404
+from django.contrib import messages
+
+
+def driver_register(request):
+    if request.method == "POST":
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+        password = request.POST.get('password')
+        vehicle_type = request.POST.get('vehicle_type', 'tempo')
+        Driver.objects.create(
+            name=name, email=email, phone=phone, password=password,
+            vehicle_type=vehicle_type, is_available=False
+        )
+        messages.success(request, "Driver registered. Please login.")
+        return redirect('driver_login')
+    return render(request, "driver_register.html")
+
+
+def driver_dashboard(request):
+    driver_id = request.session.get('id')
+    if not driver_id:
+        return redirect('driver_login')
+
+    driver = get_object_or_404(Driver, id=driver_id)
+
+    # Fetch orders assigned to this driver
+    deliveries = Order.objects.filter(driver=driver).order_by('-id')
+
+    # Count unread notifications if you want
+    unread_notifications = Notification.objects.filter(receiver_driver=driver, is_read=False).count()
+
+    return render(request, "driver_dashboard.html", {
+        "driver": driver,
+        "deliveries": deliveries,
+        "unread_notifications": unread_notifications
+    })
+
+
+@require_POST
+def driver_mark_picked(request, delivery_id): # <-- delivery_id का उपयोग करें
+    if request.method == "POST":
+        order = get_object_or_404(Order, id=delivery_id)
+        # यह सुनिश्चित करता है कि 'packed' या 'assigned' के बाद ही स्टेटस 'picked' हो
+        if order.status.lower() in ["assigned", "packed"]:
+            order.status = "picked" # <-- यह अगला स्टेटस है
+            order.save()
+            # ... (rest of the code)
+    return redirect('driver_dashboard')
+# You should also update the driver_mark_delivered view for consistency:
+def driver_mark_delivered(request, delivery_id): # <-- CHANGED TO delivery_id
+    if request.method == "POST":
+        order = get_object_or_404(Order, id=delivery_id)
+        if order.status == "picked":
+            order.status = "delivered"
+            order.save()
+            messages.success(request, f"Order #{order.id} marked as delivered.")
+    return redirect('driver_dashboard')
+# ---------- DRIVER: toggle availability (AJAX recommended) ----------
+@require_POST
+def driver_toggle_availability(request):
+    if request.session.get('user_type') != 'driver':
+        return JsonResponse({"error": "Not authorized"}, status=403)
+    name = request.session.get('name')
+    driver = get_object_or_404(Driver, name=name)
+    is_avail = request.POST.get('is_available', 'false').lower() == 'true'
+    driver.is_available = is_avail
+    driver.save()
+    return JsonResponse({"ok": True, "is_available": driver.is_available})
+
+
+def driver_home(request):
+    return render(request,"driver_home.html")
+
+
+from .models import Delivery, Driver
+
+def assign_driver(request, order_id):
+    order = Order.objects.get(id=order_id)
+    driver = Driver.objects.get(id=request.POST['driver_id'])
+
+    # prevent duplicate assignment
+    if Delivery.objects.filter(order=order).exists():
+        messages.warning(request, "Delivery already exists for this order.")
+        return redirect('order_detail', order_id=order_id)
+
+    auto_assign_driver(order)
+    messages.success(request, "Driver assigned and delivery created!")
+    return redirect('order_detail', order_id=order_id)

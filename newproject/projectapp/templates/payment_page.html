@@ -1,12 +1,9 @@
 {% extends 'master.html' %}
 {% block title %}Payment{% endblock %}
-{% block body %}<br>
-<br>
-<br>
+{% block body %}<br><br><br>
 
 <div class="container mt-5 text-center">
-  <div class="card shadow-lg p-5 border-0"><br>
-<br>
+  <div class="card shadow-lg p-5 border-0"><br><br>
 
     <h3 class="mb-3">💳 Pay for {{ product.product }}</h3>
     <p><strong>Farmer:</strong> {{ product.farmer.name }}</p>
@@ -18,31 +15,33 @@
   </div>
 
   <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-  <script>
-    var options = {
-        "key": "{{ razorpay_key }}",
-        "amount": "{{ amount|floatformat:0 }}00", // in paise
-        "currency": "INR",
-        "name": "AgriLink Payment",
-        "description": "Payment for {{ product.product }}",
-        "image": "https://cdn-icons-png.flaticon.com/512/1164/1164954.png",
-        "order_id": "{{ razorpay_order_id }}",
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+var options = {
+    "key": "{{ razorpay_key }}",
+    "amount": "{{ amount|floatformat:0 }}00", // in paise
+    "currency": "INR",
+    "name": "AgriLink Payment",
+    "description": "Payment for {{ product.product }}",
+    "image": "https://cdn-icons-png.flaticon.com/512/1164/1164954.png",
+    "order_id": "{{ razorpay_order_id }}",
+    "handler": function (response){
+        // Redirect to payment success AFTER payment is done
+        window.location.href = "/payment_success/{{ order.id }}/";
+    },
+    "prefill": {
+        "name": "{{ request.session.name }}",
+        "email": "test@example.com",
+        "contact": "9999999999"
+    },
+    "theme": {"color": "#198754"}
+};
 
-        "handler": function (response){
-            window.location.href = "/payment_success/{{ order.id }}/";
-        },
-        "prefill": {
-            "name": "{{ request.session.name }}",
-            "email": "test@example.com",
-            "contact": "9999999999"
-        },
-        "theme": {"color": "#198754"}
-    };
-    var rzp1 = new Razorpay(options);
-    document.getElementById('rzp-button1').onclick = function(e){
-        rzp1.open();
-        e.preventDefault();
-    }
-  </script>
+var rzp1 = new Razorpay(options);
+document.getElementById('rzp-button1').onclick = function(e){
+    e.preventDefault(); // Important! Prevent default page reload
+    rzp1.open();         // Open Razorpay payment popup
+};
+</script>
 </div>
 {% endblock %}

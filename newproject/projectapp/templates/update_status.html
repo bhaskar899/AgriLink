@@ -6,7 +6,7 @@
   <div class="card shadow p-4">
     <h3 class="text-center mb-4">🚚 Update Order Status</h3>
 
-    <form method="POST" action="">
+    <form method="POST" action="{% url 'update_status' order.id %}">
       {% csrf_token %}
 
       <!-- Order Info -->
@@ -31,15 +31,31 @@
         </select>
       </div>
 
+      <!-- Driver Selection -->
+      <div class="mb-3">
+        <label class="form-label"><strong>Assign Driver</strong></label>
+        <select class="form-select" name="driver">
+          <option value="">-- Select Driver --</option>
+          {% for d in drivers %}
+            <option value="{{ d.id }}"
+              {% if order.driver and order.driver.id == d.id %}selected{% endif %}>
+              {{ d.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
       <!-- Location -->
       <div class="row">
         <div class="col-md-6 mb-3">
           <label class="form-label"><strong>Current Latitude</strong></label>
-          <input type="text" class="form-control" id="lat" name="current_lat" readonly>
+          <input type="text" class="form-control" id="lat" name="current_lat"
+                 value="{{ order.current_lat }}" readonly>
         </div>
         <div class="col-md-6 mb-3">
           <label class="form-label"><strong>Current Longitude</strong></label>
-          <input type="text" class="form-control" id="lng" name="current_lng" readonly>
+          <input type="text" class="form-control" id="lng" name="current_lng"
+                 value="{{ order.current_lng }}" readonly>
         </div>
       </div>
 
@@ -64,9 +80,6 @@ function getLocation() {
       function(position) {
         document.getElementById("lat").value = position.coords.latitude.toFixed(6);
         document.getElementById("lng").value = position.coords.longitude.toFixed(6);
-      },
-      function(error) {
-        alert("Unable to retrieve location. Please allow GPS access and try again.");
       }
     );
   } else {

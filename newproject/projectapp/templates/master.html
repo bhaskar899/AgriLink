@@ -106,7 +106,7 @@
     footer a {color: #e0e0e0 !important;}
     footer a:hover {color: #fff000 !important; text-decoration: underline !important;}
 
-    .content-wrapper {padding-top: 80px;}
+    .content-wrapper {padding-top: 0px;} /* <-- Navbar gap removed */
   </style>
 </head>
 
@@ -122,7 +122,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-success fixed-top shadow-sm">
   <div class="container-fluid">
 
-    <a class="navbar-brand fw-bold" href="/home/" style="font-size:22px;">🌿 AgriLink</a>
+    <a class="navbar-brand fw-bold" href="{% url 'home' %}" style="font-size:22px;">🌿 AgriLink</a>
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
       <span class="navbar-toggler-icon"></span>
@@ -130,27 +130,26 @@
 
     <div class="collapse navbar-collapse" id="navMenu">
 
-      <!-- Navigation Right Side -->
       <ul class="navbar-nav ms-auto align-items-center" style="gap:14px;">
 
-        <li class="nav-item"><a class="nav-link" href="/home/">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="/home/#about">About</a></li>
-        <li class="nav-item"><a class="nav-link" href="/home/#contact">Contact</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#about">About</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#contact">Contact</a></li>
 
         {% if not request.session.name %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Farmer</a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="/farmer_register/">Register</a></li>
-            <li><a class="dropdown-item" href="/farmer_login/">Login</a></li>
+            <li><a class="dropdown-item" href="{% url 'farmer_register' %}">Register</a></li>
+            <li><a class="dropdown-item" href="{% url 'farmer_login' %}">Login</a></li>
           </ul>
         </li>
 
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Retailer</a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="/retailer_register/">Register</a></li>
-            <li><a class="dropdown-item" href="/retailer_login/">Login</a></li>
+            <li><a class="dropdown-item" href="{% url 'retailer_register' %}">Register</a></li>
+            <li><a class="dropdown-item" href="{% url 'retailer_login' %}">Login</a></li>
           </ul>
         </li>
         {% endif %}
@@ -159,10 +158,10 @@
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Farmer</a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="/farmer_dashboard/">Dashboard</a></li>
-            <li><a class="dropdown-item" href="/add_product/">Add Product</a></li>
-            <li><a class="dropdown-item" href="/show_products/">My Products</a></li>
-            <li><a class="dropdown-item" href="/farmer_order/">Orders</a></li>
+            <li><a class="dropdown-item" href="{% url 'farmer_dashboard' %}">Dashboard</a></li>
+            <li><a class="dropdown-item" href="{% url 'add_product' %}">Add Product</a></li>
+            <li><a class="dropdown-item" href="{% url 'show_products' %}">My Products</a></li>
+            <li><a class="dropdown-item" href="{% url 'farmer_order' %}">Orders</a></li>
           </ul>
         </li>
         {% endif %}
@@ -171,25 +170,92 @@
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Retailer</a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="/retailer_dashboard/">Dashboard</a></li>
-            <li><a class="dropdown-item" href="/browse_products/">Browse Products</a></li>
-            <li><a class="dropdown-item" href="/retailer_products/">My Orders</a></li>
+            <li><a class="dropdown-item" href="{% url 'retailer_dashboard' %}">Dashboard</a></li>
+            <li><a class="dropdown-item" href="{% url 'browse_products' %}">Browse Products</a></li>
+            <li><a class="dropdown-item" href="{% url 'retailer_products' %}">My Orders</a></li>
           </ul>
         </li>
         {% endif %}
 
-        {% if request.session.name %}
+        <!-- Navbar Bell Notification -->
+<!-- Navbar Bell Notification -->
+<!-- Notification Bell -->
+<li class="nav-item dropdown">
+    {% if user_type %}
+        <a class="nav-link dropdown-toggle position-relative" href="{% url 'notifications' %}" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            🔔
+            {% if navbar_notes and navbar_notes|length > 0 %}
+                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle" id="bellBadge">{{ navbar_notes|length }}</span>
+            {% endif %}
+        </a>
+
+        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown" style="width:300px; max-height:400px; overflow-y:auto;">
+            {% if navbar_notes %}
+                {% for n in navbar_notes %}
+                    <li class="dropdown-item">
+                        <a href="{% url 'mark_notification_read' n.id %}" data-nid="{{ n.id }}" style="text-decoration:none; color:inherit;">
+                            {{ n.message|truncatechars:50 }} <br>
+                            <small class="text-muted">{{ n.timestamp|date:"d M, h:i A" }}</small>
+                            {% if not n.is_read %}
+                                <span class="badge bg-primary ms-1">New</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                {% endfor %}
+            {% else %}
+                <li class="dropdown-item">No new notifications</li>
+            {% endif %}
+        </ul>
+    {% endif %}
+</li>
+
+<script>
+document.querySelectorAll('a[data-nid]').forEach(link => {
+    link.addEventListener('click', function(){
+        const badge = document.getElementById('bellBadge');
+        if(badge) badge.remove();  // removes badge instantly
+    });
+});
+</script>
+
+
+
+
+
+
+
+
+          <!-- Farmer / Retailer Navbar -->
+        {% if request.session.user_type in "farmer retailer" %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
-            <img src="{{ request.session.profile_image|default:'/media/profiles/default.jpg' }}"
+            <img src="{{ request.session.profile_image|default:'/static/images/no-image.jpg' }}"
+                 style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid white;">
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="{% url 'profile' %}">My Profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'profile_update' %}">Update Profile</a></li>
+            <li><a class="dropdown-item text-danger" href="{% url 'profile_delete' %}">Delete Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-warning" href="{% url 'logout' %}">Logout</a></li>
+          </ul>
+        </li>
+        {% endif %}
+
+        <!-- Driver Navbar -->
+        {% if request.session.user_type == "driver" %}
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
+            <img src="{{ request.session.profile_image|default:'/static/images/no-image.jpg' }}"
               style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid white;">
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="/profile/">My Profile</a></li>
-            <li><a class="dropdown-item" href="/profile_update/">Update Profile</a></li>
-            <li><a class="dropdown-item text-danger" href="/profile_delete/">Delete Profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'driver_dashboard' %}">Dashboard</a></li>
+            <li><a class="dropdown-item" href="{% url 'driver_profile' %}">Profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'driver_profile_update' %}">Update Profile</a></li>
+            <li><a class="dropdown-item text-danger" href="{% url 'driver_profile_delete' %}">Delete Profile</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-warning" href="/logout/">Logout</a></li>
+            <li><a class="dropdown-item text-warning" href="{% url 'logout' %}">Logout</a></li>
           </ul>
         </li>
         {% endif %}
@@ -198,6 +264,7 @@
     </div>
   </div>
 </nav>
+
 <div class="container-fluid p-0 content-wrapper">
   {% block body %}{% endblock %}
 </div>
@@ -213,11 +280,11 @@
 
       <div class="col-md-4">
         <h5>Quick Links</h5>
-        <a href="/home/">Home</a><br>
-        <a href="/home/#about">About</a><br>
-        <a href="/home/#contact">Contact</a><br>
-        <a href="/farmer_register/">Farmer Register</a><br>
-        <a href="/retailer_register/">Retailer Register</a><br><br>
+        <a href="{% url 'home' %}">Home</a><br>
+        <a href="{% url 'home' %}#about">About</a><br>
+        <a href="{% url 'home' %}#contact">Contact</a><br>
+        <a href="{% url 'farmer_register' %}">Farmer Register</a><br>
+        <a href="{% url 'retailer_register' %}">Retailer Register</a><br><br>
       </div>
 
       <div class="col-md-4">
@@ -225,7 +292,6 @@
         <p>📍 Pune, Maharashtra</p>
         <p>📞 +91 8928958677</p>
         <p>✉ support@agrilink.com</p>
-        <p>✉ bhaskaryhubale.899gmail.com</p>
       </div>
 
     </div>
@@ -236,17 +302,12 @@
 </footer>
 
 <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
-
-<!-- 🔊 FIX SOUND PLAY -->
 <script>
 document.querySelectorAll("a, button").forEach(el=>{
     el.addEventListener("click", ()=>{
         document.getElementById("clickSound").play();
     });
 });
-</script>
-
-<script>
 document.getElementById("translate-floating-btn").onclick = function() {
     let box = document.getElementById("translate-popup");
     box.style.display = box.style.display === "block" ? "none" : "block";
@@ -261,7 +322,6 @@ function googleTranslateElementInit() {
   }, 'google_translate_element');
 }
 </script>
-<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-
+<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
 </body>
 </html>

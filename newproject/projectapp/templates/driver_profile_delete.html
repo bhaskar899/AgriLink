@@ -1,0 +1,22 @@
+{% extends "master.html" %}
+{% block title %}Delete Driver Profile{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+  <div class="card shadow-lg p-4 mx-auto" style="max-width:500px; border-radius:20px; text-align:center;">
+
+    <h3 class="mb-4">Delete Profile</h3>
+    <p>Are you sure you want to delete your profile? This action cannot be undone.</p>
+
+    <div class="d-flex justify-content-around mt-4">
+      <a href="{% url 'driver_profile_delete_confirm' %}" class="btn btn-danger px-4 py-2 rounded-3">
+        Yes, Delete
+      </a>
+      <a href="{% url 'driver_profile' %}" class="btn btn-secondary px-4 py-2 rounded-3">
+        Cancel
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

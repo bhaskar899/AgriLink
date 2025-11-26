@@ -1,8 +1,20 @@
 from django.db import models
+from django.core.files.base import ContentFile
+from io import BytesIO
+from PIL import Image, UnidentifiedImageError
 
+# ------------------------
+# Original Farmer model
+# ------------------------
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+
+# ✅ Custom User
+from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 
-# models.py
+from django.db import models
+from PIL import Image
 
 class Farmer(models.Model):
     name = models.CharField(max_length=100)
@@ -17,10 +29,9 @@ class Farmer(models.Model):
     def _str_(self):
         return self.name
 
-
 class Retailer(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    email = models.EmailField(unique=True)
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
     password = models.CharField(max_length=128)
     contact = models.CharField(max_length=15, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
@@ -30,13 +41,8 @@ class Retailer(models.Model):
 
     def _str_(self):
         return self.name
-# ... (rest of models like Product, Order, etc. are omitted for brevity, but keep them as you had)
-from django.db import models
-from django.core.files.base import ContentFile
-from io import BytesIO
-from PIL import Image, UnidentifiedImageError
-import os
-
+# Product model (unchanged)
+# ------------------------
 class Product(models.Model):
     product = models.CharField(max_length=100)
     description = models.TextField()
@@ -46,55 +52,181 @@ class Product(models.Model):
     image = models.ImageField(upload_to='product_images/', blank=True, null=True)
     farmer = models.ForeignKey('Farmer', on_delete=models.CASCADE, related_name='products')
 
-    def __str__(self):
+    def _str_(self):
         return self.product
 
     def save(self, *args, **kwargs):
-        """
-        Override save to resize/optimize images.
-        - Keeps images under max dimension (800x800).
-        - Converts PNG/WebP to JPEG to reduce size (keeps extension .jpg).
-        - Keeps existing behavior if no image uploaded.
-        """
-        super().save(*args, **kwargs)  # first save so self.image.path exists if uploaded
-
+        super().save(*args, **kwargs)
         if not self.image:
             return
 
         try:
             img_path = self.image.path
-        except ValueError:
-            # storage might be remote or image not on disk
-            return
         except Exception:
             return
 
-        MAX_SIZE = (800, 800)  # max width/height
+        MAX_SIZE = (800, 800)
 
         try:
             img = Image.open(img_path)
         except UnidentifiedImageError:
-            # corrupted image — silently ignore (or log)
             return
 
-        # Only resize if bigger
-        # if img.width > MAX_SIZE[0] or img.height > MAX_SIZE[1]:
-        #     img.thumbnail(MAX_SIZE, Image.ANTIALIAS)
-
-        # Convert mode if needed
         if img.mode in ("RGBA", "P"):
             img = img.convert("RGB")
 
-        # Save optimized version back to disk
         buffer = BytesIO()
         img.save(buffer, format="JPEG", quality=85, optimize=True)
         buffer.seek(0)
 
-        # Overwrite the file on disk (safe)
         with open(img_path, 'wb') as f:
             f.write(buffer.read())
-
         buffer.close()
+
+# ------------------------
+# Notification model (added for Farmer/Retailer)
+# ------------------------
+from django.db import models
+from .models import Farmer, Retailer
+
+# models.py
+from django.db import models
+from django.utils import timezone
+
+
+class Notification(models.Model):
+    sender_farmer = models.ForeignKey('Farmer', on_delete=models.SET_NULL, null=True, blank=True)
+    sender_retailer = models.ForeignKey('Retailer', on_delete=models.SET_NULL, null=True, blank=True)
+    receiver_farmer = models.ForeignKey('Farmer', on_delete=models.CASCADE, null=True, blank=True,
+                                        related_name='notifications_received')
+    receiver_retailer = models.ForeignKey('Retailer', on_delete=models.CASCADE, null=True, blank=True,
+                                          related_name='notifications_received')
+    receiver_driver = models.ForeignKey('Driver', on_delete=models.CASCADE, null=True, blank=True,
+                                        related_name='notifications_received')
+
+    message = models.TextField()
+    link = models.CharField(max_length=500, null=True, blank=True)  # NEW: direct link
+    is_read = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(default=timezone.now)
+
+    def _str_(self):
+        return f"{self.message[:30]}..."
+
+# Order model (unchanged)
+# ------------------------
+
+# ------------------------
+# ChatMessage and ContactMessage models unchanged
+# ------------------------
+from django.db import models
+from django.conf import settings
+
+# import your Farmer/Retailer models as appropriate:
+# from users.models import Farmer, Retailer
+
+from django.db import models
+
+# Chat messages (linked to an Order)
+from django.db import models
+
+
+class ChatMessage(models.Model):
+    order = models.ForeignKey("Order", on_delete=models.CASCADE)
+
+    # Either sender is a farmer or a retailer
+    sender_farmer = models.ForeignKey("Farmer", null=True, blank=True, on_delete=models.CASCADE)
+    sender_retailer = models.ForeignKey("Retailer", null=True, blank=True, on_delete=models.CASCADE)
+
+    message = models.TextField(blank=True)
+    image = models.ImageField(upload_to="chat_images/", blank=True, null=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    seen = models.BooleanField(default=False)
+
+    def _str_(self):
+        if self.sender_farmer:
+            return f"{self.sender_farmer.name}: {self.message}"
+        if self.sender_retailer:
+            return f"{self.sender_retailer.name}: {self.message}"
+        return "Unknown sender"
+
+
+class ContactMessage(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def _str_(self):
+        return f"Message from {self.name} ({self.email})"
+
+
+# projectapp/models.py
+from django.db import models
+from django.utils import timezone
+
+# --- existing Farmer, Retailer, Product, Order, ... stay above ---
+
+class Driver(models.Model):
+    VEHICLE_CHOICES = [
+        ('bike', 'Bike'),
+        ('auto', 'Auto'),
+        ('tempo', 'Tempo'),
+        ('pickup', 'Pickup'),
+        ('truck', 'Truck'),
+    ]
+
+    name = models.CharField(max_length=120)
+    email = models.EmailField(unique=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    password = models.CharField(max_length=128)
+    vehicle_type = models.CharField(max_length=20, choices=VEHICLE_CHOICES, default='tempo')
+    vehicle_number = models.CharField(max_length=50, blank=True, null=True)
+    capacity_kg = models.IntegerField(default=1000)
+    rate_per_km = models.FloatField(default=12.0)
+    is_available = models.BooleanField(default=False)
+    location = models.CharField(max_length=150, blank=True, null=True)
+    driver_photo = models.ImageField(upload_to='drivers/', blank=True, null=True)
+    license_doc = models.FileField(upload_to='drivers/docs/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def _str_(self):
+        return f"{self.name} ({self.vehicle_type})"
+
+
+class Delivery(models.Model):
+    STATUS_CHOICES = [
+        ('assigned', 'Assigned'),
+        ('picked', 'Picked'),
+        ('in_transit', 'In Transit'),
+        ('delivered', 'Delivered'),
+        ('canceled', 'Canceled'),
+    ]
+
+    order = models.ForeignKey('Order', on_delete=models.CASCADE, related_name='deliveries')
+    driver = models.ForeignKey(Driver, on_delete=models.SET_NULL, null=True, blank=True, related_name='deliveries')
+
+    distance_km = models.FloatField(default=0.0)
+    delivery_charge = models.FloatField(default=0.0)  # retailer pays
+    driver_earning = models.FloatField(default=0.0)  # earning after commission
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='assigned')
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    picked_at = models.DateTimeField(null=True, blank=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Delivery #{self.id} - Order {self.order.id} - {self.status}"
+
+
+class DriverNotification(models.Model):
+    driver = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='notifications')
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def _str_(self):
+        return f"Notif to {self.driver.name} - {self.message[:30]}"
+
 
 class Order(models.Model):
     STATUS_CHOICES = [
@@ -106,54 +238,16 @@ class Order(models.Model):
     ]
 
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='orders')
-    farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE, related_name='orders')
+    farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE, related_name='orders',default=1)
     retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, related_name='orders')
     quantity = models.IntegerField(default=1)
     order_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='Pending')
-
-    # ✅ Add these new fields:
     address = models.TextField(blank=True, null=True)
     contact = models.CharField(max_length=20, blank=True, null=True)
-
-    # optional current location for tracking
     current_lat = models.FloatField(null=True, blank=True)
     current_lng = models.FloatField(null=True, blank=True)
+    driver= models.ForeignKey(Driver,on_delete=models.SET_NULL,null=True,blank=True)
 
     def _str_(self):
         return f"Order#{self.id} - {self.product.product} ({self.retailer.name})"
-
-class ChatMessage(models.Model):
-    # either sender_farmer OR sender_retailer will be set
-    sender_farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE, null=True, blank=True, related_name='sent_msgs')
-    receiver_farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE, null=True, blank=True, related_name='received_msgs_farmer')
-    sender_retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, null=True, blank=True, related_name='sent_msgs_retailer')
-    receiver_retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, null=True, blank=True, related_name='received_msgs_retailer')
-
-    message = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
-
-    def _str_(self):
-        sender = self.sender_farmer or self.sender_retailer
-        return f"Msg from {sender} at {self.timestamp}"
-
-class Notification(models.Model):
-    # user_type: 'farmer' or 'retailer'
-    user_type = models.CharField(max_length=10)
-    user_name = models.CharField(max_length=100)
-    message = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
-    is_read = models.BooleanField(default=False)
-
-    def _str_(self):
-        return f"{self.user_name} - {self.message[:30]}"
-
-
-class ContactMessage(models.Model):
-    name = models.CharField(max_length=100)
-    email = models.EmailField()
-    message = models.TextField()
-    timestamp = models.DateTimeField(auto_now_add=True)
-
-    def _str_(self):
-        return f"Message from {self.name} ({self.email})"

@@ -1,47 +1,57 @@
 {% extends 'master.html' %}
 {% block title %}Add Product{% endblock %}
 {% block body %}
+<br><br>
+<div class="container mt-5 d-flex justify-content-center">
+  <div class="card shadow-lg p-4" style="max-width:750px; width:100%; border-radius:15px; transition:0.3s;">
 
-<div class="container mt-5"><br>
-<br>
+    <h2 class="text-center mb-4">Add Product</h2>
 
-  <h2 class="text-center">Add Product</h2><br>
+    <form method="post" enctype="multipart/form-data" action="">
+      {% csrf_token %}
 
-  <form method="post" enctype="multipart/form-data" action="">
-                                {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">Product Name</label>
+        <input type="text" class="form-control form-control-lg" name="product" placeholder="Enter product name">
+      </div>
 
-    <div class="mb-3">
-      <label for="name" class="form-label">Product Name</label>
-      <input type="text" class="form-control" id="name" name="product" placeholder="Enter product name">
-    </div>
+      <div class="mb-3">
+        <label class="form-label">Product Description</label>
+        <textarea class="form-control form-control-lg" name="description" rows="3" placeholder="Write a short description"></textarea>
+      </div>
 
-    <div class="mb-3">
-      <label for="description" class="form-label">Product Description</label>
-      <textarea class="form-control" id="description" name="description" rows="3" placeholder="Write a short description"></textarea>
-    </div>
+      <div class="mb-3">
+        <label class="form-label">Price per unit (₹)</label>
+        <input type="number" class="form-control form-control-lg" name="price" placeholder="Enter price">
+      </div>
 
-    <div class="mb-3">
-      <label for="price" class="form-label">Price per unit (₹)</label>
-      <input type="number" class="form-control" id="price" name="price" placeholder="Enter price">
-    </div>
+      <div class="mb-3">
+        <label class="form-label">Available Quantity (kg)</label>
+        <input type="number" class="form-control form-control-lg" name="quantity" placeholder="Enter quantity">
+      </div>
 
-    <div class="mb-3">
-      <label for="quantity" class="form-label">Available Quantity (kg)</label>
-      <input type="number" class="form-control" id="quantity" name="quantity" placeholder="Enter quantity">
-    </div>
+      <div class="mb-3">
+        <label class="form-label">Location</label>
+        <input type="text" class="form-control form-control-lg" name="location" placeholder="Enter location">
+      </div>
 
-    <div class="mb-3">
-      <label for="location" class="form-label">Location</label>
-      <input type="text" class="form-control" id="location" name="location" placeholder="Enter location">
-    </div>
+      <div class="mb-3">
+        <label class="form-label">Product Image</label>
+        <input type="file" class="form-control form-control-lg" name="image">
+      </div>
 
-    <div class="mb-3">
-      <label for="image" class="form-label">Product Image</label>
-      <input type="file" class="form-control" id="image" name="image">
-    </div>
+      <button type="submit" class="btn btn-success btn-lg w-100">Add Product</button>
 
-    <button type="submit" class="btn btn-success w-100">Add Product</button>
-  </form>
+    </form>
+
+  </div>
 </div>
+
+<style>
+  .card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 18px rgba(0,0,0,0.3);
+  }
+</style>
 
 {% endblock %}

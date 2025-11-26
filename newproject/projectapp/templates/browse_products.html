@@ -7,9 +7,7 @@
 
 <div class="container mt-5"><br><br>
 
-
   <h2 class="text-center mb-4">🌾 Available Products</h2><br>
-
 
   <!-- 🔍 Search + Filter -->
   <form method="get" action="/browse_products/" class="row g-3 mb-4">
@@ -70,7 +68,8 @@
           <p>📦 Available: {{ p.quantity }} kg</p>
           <p>📍 {{ p.location }}</p>
 
-          <a href="{% url 'place_order' p.id %}" class="btn btn-primary btn-sm w-100">Buy Now</a>
+          <!-- ✅ Corrected Buy Now link -->
+          <a href="{% url 'place_order' product_id=p.id %}" class="btn btn-primary btn-sm w-100">Buy Now</a>
         </div>
       </div>
     </div>
@@ -94,7 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
           return;
       }
 
-      fetch(`/ajax/search/?q=${query}`)
+      fetch(/ajax/search/?q=${query})
           .then(response => response.json())
           .then(data => {
               suggestBox.innerHTML = "";
@@ -106,7 +105,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
               data.forEach(item => {
                   let option = document.createElement("a");
-                  option.href = `/browse_products/?q=${item}`;
+                  option.href = /browse_products/?q=${item};
                   option.className = "list-group-item list-group-item-action";
                   option.textContent = item;
                   suggestBox.appendChild(option);
