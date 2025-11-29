@@ -31,16 +31,31 @@ class Farmer(models.Model):
 
 class Retailer(models.Model):
     name = models.CharField(max_length=100)
-    email = models.EmailField()
+    email = models.EmailField(unique=True)
     password = models.CharField(max_length=128)
-    contact = models.CharField(max_length=15, blank=True, null=True)
-    address = models.TextField(blank=True, null=True)
-    gender = models.CharField(max_length=10, blank=True, null=True)
+
+    contact = models.CharField(max_length=15)
+    address = models.TextField()
+
+    city = models.CharField(max_length=50, blank=True, null=True)
+    pincode = models.CharField(max_length=6, blank=True, null=True)
+
+    gender = models.CharField(max_length=10)
+
+    shop_number = models.CharField(max_length=50)   # ✔ New field
+    gst_number = models.CharField(max_length=15)    # ✔ New field
+
     first_login = models.BooleanField(default=True)
     profile_image = models.ImageField(upload_to='profiles/', default='profiles/default.jpg')
 
-    def _str_(self):
+    email_verified = models.BooleanField(default=False)
+    email_otp = models.CharField(max_length=6, blank=True, null=True)
+
+
+def _str_(self):
         return self.name
+
+
 # Product model (unchanged)
 # ------------------------
 class Product(models.Model):
@@ -166,6 +181,8 @@ from django.utils import timezone
 
 # --- existing Farmer, Retailer, Product, Order, ... stay above ---
 
+# models.py में नया, मर्ज किया गया Driver मॉडल
+
 class Driver(models.Model):
     VEHICLE_CHOICES = [
         ('bike', 'Bike'),
@@ -175,6 +192,7 @@ class Driver(models.Model):
         ('truck', 'Truck'),
     ]
 
+    # --- Driver Model के Original Fields ---
     name = models.CharField(max_length=120)
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=20, blank=True, null=True)
@@ -189,9 +207,20 @@ class Driver(models.Model):
     license_doc = models.FileField(upload_to='drivers/docs/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def _str_(self):
+    # --- DriverProfile Model से मर्ज किए गए Fields ---
+    phone_verified = models.BooleanField(default=False)
+    license_issue_date = models.DateField(blank=True, null=True)
+    license_expiry_date = models.DateField(blank=True, null=True)
+    vehicle_photo = models.ImageField(upload_to='drivers/vehicle_photos/', blank=True, null=True)
+
+    def __str__(self):
         return f"{self.name} ({self.vehicle_type})"
 
+
+# पुराने DriverProfile मॉडल को हटा दें
+# class DriverProfile(models.Model): ... को हटा दें
+
+# projectapp/models.py
 
 class Delivery(models.Model):
     STATUS_CHOICES = [
@@ -209,6 +238,9 @@ class Delivery(models.Model):
     delivery_charge = models.FloatField(default=0.0)  # retailer pays
     driver_earning = models.FloatField(default=0.0)  # earning after commission
 
+    # 💡 आवश्यक परिवर्तन: is_paid_out फ़ील्ड जोड़ें
+    is_paid_out = models.BooleanField(default=False)
+
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='assigned')
     assigned_at = models.DateTimeField(auto_now_add=True)
     picked_at = models.DateTimeField(null=True, blank=True)
@@ -216,6 +248,8 @@ class Delivery(models.Model):
 
     def __str__(self):
         return f"Delivery #{self.id} - Order {self.order.id} - {self.status}"
+# models.py
+from django.db import models
 
 
 class DriverNotification(models.Model):

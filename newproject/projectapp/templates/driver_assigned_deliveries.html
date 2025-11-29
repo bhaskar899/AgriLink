@@ -1,0 +1,96 @@
+{% extends "master.html" %}
+{% block title %}Assigned Deliveries{% endblock %}
+
+{% block body %}
+<div class="container mt-5 pt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-success">🚚 Assigned Deliveries</h2>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="table-responsive">
+        <table class="table table-hover table-striped align-middle">
+            <thead class="bg-light">
+                <tr>
+                    <th>Order ID</th>
+                    <th>Product</th>
+                    <th>Retailer Details</th>
+                    <th>Pickup (Farmer)</th>
+                    <th>Status</th>
+                    <th style="width: 20%;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for delivery in deliveries %}
+                <tr>
+
+                    <!-- Order ID -->
+                    <td>#{{ delivery.order.id }}</td>
+
+                    <!-- Product Details -->
+                    <td>
+                        <b>{{ delivery.order.product.product }}</b><br>
+                        Qty: {{ delivery.order.quantity }} kg<br>
+                        Price: ₹{{ delivery.order.product.price }}
+                    </td>
+
+                    <!-- Retailer Full Details -->
+                    <td>
+                        <b>{{ delivery.order.retailer.name }}</b><br>
+                        📍 {{ delivery.order.retailer.address }}<br>
+                        📞 {{ delivery.order.retailer.contact }}<br>
+                        ✉ {{ delivery.order.retailer.email }}
+                    </td>
+
+                    <!-- Farmer Pickup Details -->
+                    <td>
+                        <b>{{ delivery.order.farmer.name }}</b><br>
+                        📍 {{ delivery.order.farmer.address }}<br>
+                        📞 {{ delivery.order.farmer.contact }}
+                    </td>
+
+                    <!-- Delivery Status -->
+                    <td>
+                        <span class="badge bg-info">{{ delivery.status|capfirst }}</span>
+                    </td>
+
+                    <!-- Action Buttons -->
+                    <td>
+                        {% if delivery.status == 'assigned' %}
+                            <form method="POST" action="{% url 'driver_mark_picked' delivery_id=delivery.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary btn-sm">Mark Picked</button>
+                            </form>
+
+                        {% elif delivery.status == 'picked' %}
+                            <form method="POST" action="{% url 'driver_mark_delivered' delivery_id=delivery.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success btn-sm">Mark Delivered</button>
+                            </form>
+
+                        {% else %}
+                            <span class="text-muted">{{ delivery.status|capfirst }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted p-4">
+                        <i class="fas fa-box-open me-2"></i> No deliveries assigned yet.
+                    </td>
+                </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

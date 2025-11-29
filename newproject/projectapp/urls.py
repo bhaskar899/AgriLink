@@ -26,6 +26,7 @@ urlpatterns = [
     path("farmer_order/", views.farmer_order, name="farmer_order"),
     path("update_status/<int:order_id>/", views.update_status, name="update_status"),
 
+
     # Retailer
     path("browse_products/", views.browse_products, name="browse_products"),
     path("retailer_dashboard/", views.retailer_dashboard, name="retailer_dashboard"),
@@ -34,6 +35,8 @@ urlpatterns = [
     path("retailer_products/", views.retailer_products, name="retailer_products"),
     path("track_order/<int:order_id>/", views.track_order, name="track_order"),
     path("place_order/<int:product_id>/", views.place_order, name="place_order"),
+
+    # 🛑 REMOVED DUPLICATE OTP PATHS (retailer/send_email_otp/ & retailer/verify_email_otp/)
 
     # Payment
     path('payment/<int:order_id>/', views.payment_page, name='payment_page'),
@@ -78,10 +81,16 @@ urlpatterns = [
     path('driver/profile_delete/', views.driver_profile_delete, name='driver_profile_delete'),
     path('driver/profile_delete_confirm/', views.driver_profile_delete_confirm, name='driver_profile_delete_confirm'),
 
-    # Driver AJAX / status updates
+    # Driver AJAX / status updates & GLOBAL OTP
+    path("send-email-otp/", views.send_email_otp, name="send_email_otp"), # ✅ Global Email OTP Send
+    path("verify-email-otp/", views.verify_email_otp, name="verify_email_otp"), # ✅ Global Email OTP Verify (Added based on template usage)
+
     path('driver/toggle_availability/', views.driver_toggle_availability, name='driver_toggle_availability'),
     path('driver/delivery/picked/<int:delivery_id>/', views.driver_mark_picked, name='driver_mark_picked'),
-    path('driver/delivery/delivered/<int:delivery_id>/', views.driver_mark_delivered, name='driver_mark_delivered'),
+    path('driver/send-otp/', views.send_mobile_otp, name='send_mobile_otp'),
+    path('driver/verify-otp/', views.verify_driver_otp, name='verify_driver_otp'),
+    path('driver/mark_delivered/<int:delivery_id>/', views.driver_mark_delivered, name='driver_mark_delivered'),
+    path('driver/deliveries/', views.driver_assigned_deliveries, name='driver_deliveries'),
 ]
 
 # MEDIA & STATIC

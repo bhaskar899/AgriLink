@@ -1,0 +1,26 @@
+{% extends "master.html" %}
+{% block title %}Verify OTP{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+  <div class="card mx-auto shadow-lg rounded-4" style="max-width:500px;">
+    <div class="card-body">
+      <h4 class="card-title text-center mb-4">Verify OTP</h4>
+
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="post" action="{% url 'verify_driver_otp' %}">
+        {% csrf_token %}
+        <div class="mb-3">
+          <input class="form-control rounded-3" type="text" name="otp" placeholder="Enter OTP" required>
+        </div>
+        <button type="submit" class="btn btn-success w-100 py-2 rounded-3">Verify OTP</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

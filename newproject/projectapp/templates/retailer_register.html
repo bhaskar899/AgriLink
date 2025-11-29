@@ -1,77 +1,438 @@
 {% extends 'master.html' %}
 {% block title %}Retailer Register{% endblock %}
 {% block body %}
+
 <br><br>
+
 <div class="container mt-5 d-flex justify-content-center">
   <div class="card shadow-lg p-4" style="max-width:750px; width:100%; border-radius:15px; transition:0.3s;">
-
     <h2 class="text-center mb-4">Retailer Registration</h2>
 
-    <form method="post" action="">
+    <form method="post" id="retailerForm">
       {% csrf_token %}
 
       <div class="mb-3">
-        <label class="form-label">Username</label>
-        <input type="text" class="form-control form-control-lg" name="name" placeholder="Enter username">
+        <label class="form-label">Full Name</label>
+        <input type="text" class="form-control form-control-lg" name="name" placeholder="Enter full name" required>
+        <div class="invalid-feedback"></div>
       </div>
 
       <div class="mb-3">
-        <label class="form-label">Email address</label>
-        <input type="email" class="form-control form-control-lg" name="email" placeholder="Enter email">
+        <label class="form-label">Email Address</label>
+        <div class="input-group">
+          <input type="email" class="form-control form-control-lg" name="email" id="emailInput" placeholder="Enter email" required>
+          <button type="button" class="btn btn-primary" id="sendEmailOtpBtn">Send OTP</button>
+        </div>
+        <small id="emailOtpSent" class="text-success d-none">OTP sent to email!</small>
+        <div class="mt-2 d-none" id="emailOtpBox">
+          <input type="text" class="form-control" id="emailOtpInput" placeholder="Enter Email OTP" maxlength="6">
+          <button type="button" class="btn btn-success mt-2" id="verifyEmailOtpBtn">Verify Email OTP</button>
+          <small id="emailOtpStatus"></small>
+        </div>
+        <div class="invalid-feedback"></div>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Shop Number</label>
+        <input type="text" class="form-control form-control-lg" name="shop_number" placeholder="Enter Shop Number" required>
+        <div class="invalid-feedback"></div>
       </div>
 
       <div class="mb-3">
-        <label class="form-label">Address</label>
-        <input type="text" class="form-control form-control-lg" name="address" placeholder="Enter Address">
+        <label class="form-label">GST Number</label>
+        <input type="text" class="form-control form-control-lg" name="gst_number" placeholder="Enter 15-digit GST Number" required>
+        <div class="invalid-feedback"></div>
       </div>
 
-      <label class="form-label">Select Gender:</label><br>
-
+      <label class="form-label">Address</label>
+      <div class="mb-3">
+          <input type="text" class="form-control form-control-lg" name="address" placeholder="Street / Area" required>
+          <div class="invalid-feedback"></div>
+      </div>
+      <div class="mb-3">
+          <input type="text" class="form-control form-control-lg" name="city" placeholder="City" required>
+          <div class="invalid-feedback"></div>
+      </div>
+      <div class="mb-3">
+          <input type="text" class="form-control form-control-lg" name="pincode" placeholder="Pincode (6 digits)" required>
+          <div class="invalid-feedback"></div>
+      </div>
+      <label class="form-label">Gender</label><br>
       <div class="form-check form-check-inline">
-        <input type="radio" class="form-check-input" value="Male" name="gender" required>
+        <input type="radio" class="form-check-input" name="gender" value="Male" required>
         <label class="form-check-label">Male</label>
       </div>
-
       <div class="form-check form-check-inline">
-        <input type="radio" class="form-check-input" value="Female" name="gender" required>
+        <input type="radio" class="form-check-input" name="gender" value="Female" required>
         <label class="form-check-label">Female</label>
       </div>
-
       <div class="form-check form-check-inline mb-3">
-        <input type="radio" class="form-check-input" value="Other" name="gender" required>
+        <input type="radio" class="form-check-input" name="gender" value="Other" required>
         <label class="form-check-label">Other</label>
       </div>
-
       <div class="mb-3">
         <label class="form-label">Contact Number</label>
-        <input type="text" class="form-control form-control-lg" name="contact" placeholder="Enter contact number">
+        <input type="text" class="form-control form-control-lg" name="contact" placeholder="10-digit mobile number" required>
+        <div class="invalid-feedback"></div>
       </div>
 
       <div class="mb-3">
         <label class="form-label">Password</label>
-        <input type="password" class="form-control form-control-lg" name="password" placeholder="Enter password">
+        <div class="input-group">
+          <input type="password" class="form-control form-control-lg" id="passwordField" name="password" required>
+          <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+            <i class="fa fa-eye-slash" id="passwordIcon"></i>
+          </button>
+        </div>
+        <ul id="passwordRules" style="font-size:14px; margin-top:8px;">
+          <li id="ruleLength">At least 8 characters</li>
+          <li id="ruleUpper">One uppercase (A–Z)</li>
+          <li id="ruleLower">One lowercase (a–z)</li>
+          <li id="ruleNumber">One number (0–9)</li>
+          <li id="ruleSpecial">One special character (!@#$%^&*)</li>
+        </ul>
+        <div class="invalid-feedback"></div>
       </div>
 
       <div class="mb-3">
         <label class="form-label">Confirm Password</label>
-        <input type="password" class="form-control form-control-lg" name="confirm_password" placeholder="Confirm password">
+        <div class="input-group">
+          <input type="password" class="form-control form-control-lg" id="confirmPassInput" name="confirm_password" required>
+          <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
+            <i class="fa fa-eye-slash" id="confirmPasswordIcon"></i>
+          </button>
+        </div>
+        <div class="invalid-feedback"></div>
       </div>
 
-      <button type="submit" class="btn btn-success btn-lg w-100">Register</button>
-
-      <!-- 🔥 LOGIN REDIRECT ADDED BELOW -->
+      <button type="submit" class="btn btn-success btn-lg w-100" id="registerSubmitBtn" disabled>Register</button>
       <p class="text-center mt-3">
-        Already have an account?
-        <a href="{% url 'retailer_login' %}" class="text-primary"><strong>Login Here</strong></a>
+        Already registered? <a href="{% url 'retailer_login' %}" class="text-primary"><b>Login here</b></a>
       </p>
-
     </form>
-
   </div>
 </div>
 
 <style>
-  .card:hover { transform: scale(1.02); box-shadow:0 0 18px rgba(0,0,0,0.3); }
+.card:hover { transform: scale(1.02); box-shadow: 0 0 18px rgba(0,0,0,0.3); }
+#passwordRules li.valid { color: green; }
+#passwordRules li.invalid { color: red; }
 </style>
+
+<script>
+// Global status variable to track email verification state
+let isEmailVerified = false;
+
+// --- Password Toggle Function ---
+function setupPasswordToggle(toggleBtnId, passwordFieldId, iconId) {
+    const toggleButton = document.getElementById(toggleBtnId);
+    const passwordInput = document.getElementById(passwordFieldId);
+    const icon = document.getElementById(iconId);
+
+    if (toggleButton) {
+        toggleButton.addEventListener('click', function () {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+        });
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById('retailerForm');
+    const registerButton = document.getElementById('registerSubmitBtn');
+
+    // Setup Password Toggles
+    setupPasswordToggle('togglePassword', 'passwordField', 'passwordIcon');
+    setupPasswordToggle('toggleConfirmPassword', 'confirmPassInput', 'confirmPasswordIcon');
+
+    // Form fields
+    const nameInput = form.querySelector('input[name="name"]');
+    const emailInput = document.getElementById("emailInput");
+    const shopInput = form.querySelector('input[name="shop_number"]');
+    const gstInput = form.querySelector('input[name="gst_number"]');
+    const addrInput = form.querySelector('input[name="address"]');
+    const cityInput = form.querySelector('input[name="city"]');
+    const pinInput = form.querySelector('input[name="pincode"]');
+    const contactInput = form.querySelector('input[name="contact"]');
+    const passwordField = document.getElementById("passwordField");
+    const confirmPassInput = document.getElementById('confirmPassInput');
+    const genderInputs = form.querySelectorAll('input[name="gender"]');
+
+    // OTP Elements
+    const sendEmailOtpBtn = document.getElementById("sendEmailOtpBtn");
+    const emailOtpBox = document.getElementById("emailOtpBox");
+    const emailOtpInput = document.getElementById("emailOtpInput");
+    const verifyEmailOtpBtn = document.getElementById("verifyEmailOtpBtn");
+    const emailOtpStatus = document.getElementById("emailOtpStatus");
+    const emailOtpSent = document.getElementById("emailOtpSent");
+
+    const passwordRules = {
+        length: document.getElementById("ruleLength"),
+        upper: document.getElementById("ruleUpper"),
+        lower: document.getElementById("ruleLower"),
+        number: document.getElementById("ruleNumber"),
+        special: document.getElementById("ruleSpecial")
+    };
+
+    const inputsToValidate = [nameInput, emailInput, shopInput, gstInput, addrInput, cityInput, pinInput, contactInput];
+
+    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
+    const isValidEmail = email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const isValidContact = c => /^\d{10}$/.test(c);
+    const isValidPincode = p => /^\d{6}$/.test(p);
+    const isValidGST = g => /^[0-9A-Z]{15}$/.test(g);
+    const isValidShopNumber = s => s.length >= 2;
+
+    // Validation state tracker
+    let validationStates = {};
+
+    // Helper for validation states (Adjusted to correctly find feedback for input-group fields)
+    const setValidationState = (input, isValid, message = '') => {
+        input.classList.remove('is-invalid', 'is-valid');
+
+        const isGrouped = input.closest('.input-group');
+        const parentDiv = isGrouped ? input.closest('.input-group').parentNode : input.parentNode;
+        const feedback = parentDiv.querySelector('.invalid-feedback');
+
+        validationStates[input.name] = isValid;
+
+        if (!feedback) return;
+
+        if (!isValid) {
+            input.classList.add('is-invalid');
+            feedback.textContent = message;
+        } else {
+            if (input.value.trim() !== '') {
+                 input.classList.add('is-valid');
+            }
+            feedback.textContent = '';
+        }
+    };
+
+    // Individual Validation Functions
+    const validateField = (input) => {
+        let isValid = true;
+        let message = '';
+        const value = input.value.trim();
+
+        if(value === "") {
+            isValid = false;
+            message = "This field is required.";
+        } else {
+            switch (input) {
+                case nameInput:
+                    isValid = value.length >= 3;
+                    message = "Full Name must be at least 3 characters.";
+                    break;
+                case emailInput:
+                    isValid = isValidEmail(value);
+                    message = "Enter a valid email address.";
+                    break;
+                case shopInput:
+                    isValid = isValidShopNumber(value);
+                    message = "Shop Number is required (min 2 chars).";
+                    break;
+                case gstInput:
+                    isValid = isValidGST(value);
+                    message = "GST must be 15 alphanumeric characters.";
+                    break;
+                case addrInput:
+                    isValid = value.length >= 5;
+                    message = "Address Line is required (min 5 chars).";
+                    break;
+                case cityInput:
+                    isValid = value.length >= 3;
+                    message = "City is required.";
+                    break;
+                case pinInput:
+                    isValid = isValidPincode(value);
+                    message = "Pincode must be 6 digits.";
+                    break;
+                case contactInput:
+                    isValid = isValidContact(value);
+                    message = "Contact must be a 10-digit number.";
+                    break;
+            }
+        }
+
+        setValidationState(input, isValid, message);
+        return isValid;
+    };
+
+    const validatePassword = () => {
+        const pass = passwordField.value;
+        const valid = passwordPattern.test(pass);
+
+        passwordRules.length.className = pass.length >= 8 ? 'valid' : 'invalid';
+        passwordRules.upper.className = /[A-Z]/.test(pass) ? 'valid' : 'invalid';
+        passwordRules.lower.className = /[a-z]/.test(pass) ? 'valid' : 'invalid';
+        passwordRules.number.className = /\d/.test(pass) ? 'valid' : 'invalid';
+        passwordRules.special.className = /[!@#$%^&*]/.test(pass) ? 'valid' : 'invalid';
+
+        setValidationState(passwordField, valid, "Password does not meet requirements.");
+        return valid;
+    };
+
+    const validateConfirmPassword = () => {
+        const pass = passwordField.value;
+        const confirm = confirmPassInput.value;
+        const valid = pass === confirm && confirm.length > 0;
+
+        setValidationState(confirmPassInput, valid, "Passwords do not match.");
+        return valid;
+    };
+
+
+    // Main Form Check Function
+    const checkForm = (forceValidateAll = false) => {
+        let allValid = true;
+
+        inputsToValidate.forEach(input => {
+             // Validate if input has content OR if we are forcing a full check
+            if (forceValidateAll || input.value.trim() !== '') {
+                validateField(input);
+            }
+            // Check if validation state is TRUE for all inputs
+            allValid = allValid && (validationStates[input.name] === true);
+        });
+
+        // Specific checks for Passwords
+        allValid = validatePassword() && allValid;
+        allValid = validateConfirmPassword() && allValid;
+
+        // Check Gender
+        const isGenderChecked = [...genderInputs].some(g => g.checked);
+        allValid = allValid && isGenderChecked;
+
+        // Final check requires all fields to be valid AND email to be verified
+        registerButton.disabled = !(allValid && isEmailVerified);
+        return allValid;
+    };
+
+    // --- OTP Logic FIX ---
+
+    // Reset verification status if email changes
+    emailInput.addEventListener('input', () => {
+        isEmailVerified = false;
+        emailOtpBox.classList.add("d-none");
+        emailOtpSent.classList.add("d-none");
+        sendEmailOtpBtn.disabled = false;
+        emailInput.readOnly = false;
+        validateField(emailInput);
+        checkForm();
+    });
+
+
+    // SEND EMAIL OTP
+    sendEmailOtpBtn.onclick = function () {
+        let email = emailInput.value.trim();
+
+        if (!validateField(emailInput) || email === "") {
+             alert("Enter a valid email address first.");
+             return;
+        }
+
+        emailOtpSent.innerHTML = "Sending OTP...";
+        emailOtpSent.classList.remove("d-none");
+        sendEmailOtpBtn.disabled = true;
+        emailInput.readOnly = true;
+
+        fetch("{% url 'send_email_otp' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            body: new URLSearchParams({ email: email })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === "success") {
+                emailOtpSent.innerHTML = "OTP sent to email!";
+                emailOtpBox.classList.remove("d-none");
+                verifyEmailOtpBtn.disabled = false;
+                emailOtpStatus.textContent = '';
+            } else {
+                emailOtpSent.innerHTML = `<span class="text-danger">${data.message || 'Failed to send OTP'}</span>`;
+                sendEmailOtpBtn.disabled = false;
+                emailInput.readOnly = false;
+            }
+        })
+        .catch(() => {
+            emailOtpSent.innerHTML = '<span class="text-danger">Failed to connect to server.</span>';
+            sendEmailOtpBtn.disabled = false;
+            emailInput.readOnly = false;
+        });
+    };
+
+    // VERIFY EMAIL OTP
+    verifyEmailOtpBtn.onclick = function () {
+        let otp = emailOtpInput.value.trim();
+        let email = emailInput.value.trim();
+
+        if (otp === "" || otp.length !== 6) {
+            emailOtpStatus.innerHTML = "<span class='text-danger'>Enter a 6-digit OTP</span>";
+            return;
+        }
+
+        emailOtpStatus.innerHTML = "<span class='text-primary'>Verifying...</span>";
+        verifyEmailOtpBtn.disabled = true;
+
+        fetch("{% url 'verify_email_otp' %}", {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ otp: otp, email: email })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === "success") {
+                emailOtpStatus.innerHTML = "<span class='text-success'>OTP Verified!</span>";
+                isEmailVerified = true;
+                emailOtpInput.disabled = true;
+                verifyEmailOtpBtn.disabled = true;
+                checkForm(); // Re-check to enable Register button
+            } else {
+                emailOtpStatus.innerHTML = `<span class='text-danger'>${data.message || 'Invalid OTP'}</span>`;
+                verifyEmailOtpBtn.disabled = false;
+                isEmailVerified = false;
+            }
+        })
+        .catch(() => {
+            emailOtpStatus.innerHTML = "<span class='text-danger'>Verification Failed due to server error.</span>";
+            verifyEmailOtpBtn.disabled = false;
+            isEmailVerified = false;
+        });
+    };
+
+    // --- Event Listeners for Real-time Validation and CheckForm ---
+
+    // Listeners for input and change events to keep the Register button status updated
+    inputsToValidate.forEach(i => i.addEventListener("input", checkForm));
+    passwordField.addEventListener("input", checkForm);
+    confirmPassInput.addEventListener("input", checkForm);
+    genderInputs.forEach(g => g.addEventListener("change", checkForm));
+
+    // Listeners for blur events to show validation messages
+    inputsToValidate.forEach(i => i.addEventListener("blur", () => { validateField(i); checkForm(); }));
+    passwordField.addEventListener("blur", () => { validatePassword(); checkForm(); });
+    confirmPassInput.addEventListener("blur", () => { validateConfirmPassword(); checkForm(); });
+
+    // Handle form submission (if required fields are invalid)
+    form.addEventListener('submit', function(event) {
+        if (!checkForm(true)) {
+            event.preventDefault();
+            const firstInvalid = form.querySelector('.is-invalid, .rule-invalid');
+            if(firstInvalid) firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+
+    // Initial check (Important)
+    checkForm();
+});
+</script>
 
 {% endblock %}

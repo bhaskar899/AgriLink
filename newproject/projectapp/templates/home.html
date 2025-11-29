@@ -65,72 +65,176 @@
 </section>
 
 <!-- ABOUT -->
+
+<style>
+  /* ABOUT SECTION IMAGE HOVER EFFECT */
+  .about-img {
+    transition: 0.4s ease;
+    border-radius: 12px;
+  }
+
+  .about-img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(25,135,84,0.3);
+    border-radius: 20px;
+  }
+</style>
+
 <section id="about" class="py-5">
   <div class="container">
+
     <h2 class="text-center fw-bold mb-4">About AgriLink</h2>
 
-    <div class="row align-items-center">
-      <div class="col-md-6">
-        <img src="{% static 'images/about.jpeg' %}" class="img-fluid rounded shadow" alt="About Image">
+    <!-- STEP 1: Farmer -->
+    <div class="row align-items-center mb-5">
+      <div class="col-md-6 text-center">
+<img src="{% static 'images/farmer.jpg' %}" class="img-fluid rounded shadow w-75 about-img" alt="Farmer">
       </div>
+      <div class="col-md-6"><br>
 
-      <div class="col-md-6">
+        <h3 class="fw-bold">👨‍🌾 How AgriLink Empowers Farmers</h3>
         <p class="lead">
-          AgriLink connects farmers directly to retailers to enable fair pricing, order transparency, and real-time tracking.
+          AgriLink helps farmers sell directly to retailers without middlemen, ensuring fair prices
+          and transparent business.
         </p>
-        <ul>
-          <li>🚜 Direct farmer-to-retailer marketplace</li>
-          <li>📦 End-to-end order tracking</li>
-          <li>💰 Fair price without middlemen</li>
+
+        <ul class="list-unstyled">
+          <li>🌾 Upload fresh products easily</li>
+          <li>💰 Set your own fair price</li>
+          <li>📦 Accept & manage retailer orders</li>
+          <li>📍 Track delivery progress live</li>
+          <li>🔔 Get instant notifications</li>
         </ul>
       </div>
     </div>
 
     <hr class="my-4">
 
-    <!-- DRIVER PROGRAM -->
-    <h3 class="fw-bold">Driver Partner Program 🚛</h3>
-    <p class="lead">
-      AgriLink includes verified drivers to deliver products safely and on time.
-    </p>
+    <!-- STEP 2: Driver Pickup -->
+    <div class="row align-items-center mb-5">
+      <div class="col-md-6">
 
-    <ul>
-      <li>📍 Live GPS tracking</li>
-      <li>📦 Pickup → Delivered workflow</li>
-      <li>🔔 Delivery notifications</li>
-      <li>💼 Dedicated driver dashboard</li>
-    </ul>
+        <h3 class="fw-bold">🚛 Driver Picks Up Orders</h3>
+        <p class="lead">
+          After a retailer places an order, a verified AgriLink driver collects products from the
+          farmer with complete tracking and status updates.
+        </p>
 
-    <a href="/driver/register/" class="btn btn-success mt-2">Become a Driver</a>
-    <a href="/driver/login/" class="btn btn-outline-success mt-2 ms-2">Driver Login</a>
+        <ul class="list-unstyled">
+          <li>📍 Gets pickup location instantly</li>
+          <li>🧾 Driver receives order details automatically</li>
+          <li>👨‍🔧 Verified & trained delivery partner</li>
+          <li>🔄 Status updates: Picked → On the Way</li>
+          <li>📸 Can upload delivery proof images</li>
+
+        </ul>
+      </div>
+      <div class="col-md-6 text-center">
+<img src="{% static 'images/driver_delivery.jpg' %}" class="img-fluid rounded shadow w-75 about-img" alt="Pickup">      </div>
+    </div>
+
+    <hr class="my-4">
+
+    <!-- STEP 3: Driver Delivers to Retailer -->
+    <div class="row align-items-center">
+      <div class="col-md-6 text-center">
+<img src="{% static 'images/driver_pickup.jpg' %}" class="img-fluid rounded shadow w-75 about-img" alt="Delivery">      </div>
+
+      <div class="col-md-6"><br>
+
+        <h3 class="fw-bold">🏪 Driver Delivers to Retailer</h3>
+        <p class="lead">
+          The driver safely delivers the product to the retailer with full monitoring, ensuring timely
+          and secure handover.
+        </p>
+
+        <ul class="list-unstyled">
+          <li>🛣 Real-time route tracking</li>
+          <li>✔ Retailer receives live updates</li>
+          <li>📦 Smooth & secure handover</li>
+          <li>📲 Retailer can track driver location</li>
+          <li>🎯 Fast, safe, and reliable delivery</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <a href="/driver/register/" class="btn btn-success px-4">Become a Driver</a>
+      <a href="/driver/login/" class="btn btn-outline-success px-4 ms-2">Driver Login</a>
+    </div>
 
   </div>
 </section>
 
+
+
 <!-- CONTACT -->
+<style>
+  /* Form hover effect */
+  .contact-card {
+    transition: 0.3s ease;
+  }
+  .contact-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 25px rgba(25, 135, 84, 0.3);
+  }
+
+  /* Input hover glow */
+  .contact-input:hover {
+    border-color: #198754;
+    box-shadow: 0 0 8px rgba(25, 135, 84, 0.4);
+    transition: 0.3s;
+  }
+
+  /* Button hover */
+  .contact-btn {
+    transition: 0.3s ease;
+  }
+  .contact-btn:hover {
+    background-color: #0f6c3e !important;
+    transform: scale(1.03);
+  }
+</style>
+
+<!-- FLASH MESSAGES -->
+{% if messages %}
+  <div class="container mt-4">
+    {% for message in messages %}
+      <div class="alert alert-success text-center fw-bold">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<!-- CONTACT SECTION -->
 <section id="contact" class="py-5 bg-light">
   <div class="container">
     <h2 class="text-center mb-4">📩 Contact Us</h2>
 
-    <form method="post" action="{% url 'contact_submit' %}" class="shadow p-4 bg-white rounded">
+    <form method="post" action="{% url 'contact_submit' %}"
+          class="shadow-lg p-4 bg-white rounded-4 contact-card"
+          style="max-width: 700px; margin:auto;">
       {% csrf_token %}
 
       <div class="mb-3">
-        <label class="form-label">Full Name</label>
-        <input type="text" name="name" class="form-control" required>
+        <label class="form-label fw-semibold">Full Name</label>
+        <input type="text" name="name" class="form-control rounded-3 contact-input" required>
       </div>
 
       <div class="mb-3">
-        <label class="form-label">Email</label>
-        <input type="email" name="email" class="form-control" required>
+        <label class="form-label fw-semibold">Email</label>
+        <input type="email" name="email" class="form-control rounded-3 contact-input" required>
       </div>
 
       <div class="mb-3">
-        <label class="form-label">Message</label>
-        <textarea name="message" class="form-control" rows="4" required></textarea>
+        <label class="form-label fw-semibold">Message</label>
+        <textarea name="message" class="form-control rounded-3 contact-input" rows="4" required></textarea>
       </div>
 
-      <button type="submit" class="btn btn-success w-100">Send Message</button>
+      <button type="submit" class="btn btn-success w-100 rounded-3 fw-bold py-2 contact-btn">
+        Send Message
+      </button>
     </form>
   </div>
 </section>

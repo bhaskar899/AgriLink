@@ -3,31 +3,28 @@
 {% block title %}My Products{% endblock %}
 {% block body %}
 <br><br>
-<div class="container mt-5"><br>
-<br>
+<div class="container mt-5">
+  <h2 class="text-center mb-4">📦 My Products</h2>
 
-  <h2 class="text-center mb-4">📦 My Products</h2><br>
-
-  <div class="row">
+  <div class="row g-4">
     {% for p in products %}
-    <div class="col-md-4 mb-4">
-      <div class="card shadow-sm">
+    <div class="col-md-4">
+      <div class="card h-100 shadow-sm">
         {% if p.image %}
           <img src="{{ p.image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
         {% else %}
           <img src="{% static 'images/no-image.jpg' %}" class="card-img-top" style="height: 200px; object-fit: cover;">
         {% endif %}
-        <div class="card-body">
+        <div class="card-body d-flex flex-column">
           <h5 class="card-title">{{ p.product }}</h5>
           <p class="card-text">{{ p.description|truncatewords:20 }}</p>
-          <p>💰 Price: ₹{{ p.price }}</p>
-          <p>📦 Quantity: {{ p.quantity }}</p>
-          <p>📍 Location: {{ p.location }}</p>
+          <p class="mb-1">💰 Price: ₹{{ p.price }}</p>
+          <p class="mb-1">📦 Quantity: {{ p.quantity }}</p>
+          <p class="mb-1">📍 Location: {{ p.location }}</p>
         </div>
       </div>
     </div>
     {% endfor %}
   </div>
 </div>
-
 {% endblock %}

@@ -1,11 +1,11 @@
 {% extends 'master.html' %}
 {% block title %}Farmer Login{% endblock %}
 {% block body %}
+
 <br><br>
 
 <style>
-
-  .btn-primary-custom {
+.btn-primary-custom {
   background-color: #0056D6 !important;
   border: none !important;
   color: white !important;
@@ -14,48 +14,95 @@
   font-weight: 500;
   transition: 0.3s ease;
 }
-
 .btn-primary-custom:hover {
   background-color: #003C99 !important;
   transform: scale(1.03);
 }
-
+.card:hover {
+  transform: scale(1.02);
+  box-shadow:0 0 18px rgba(0,0,0,0.3);
+}
+.is-invalid { border-color: red !important; }
+.invalid-feedback { display: block; color: red; font-size: 0.9rem; }
+.input-group button { border-radius: 0 8px 8px 0; }
 </style>
 
 <div class="container mt-5 d-flex justify-content-center">
   <div class="card shadow-lg p-4" style="max-width:650px; width:100%; border-radius:15px; transition:0.3s;">
-
     <h2 class="text-center mb-4">Farmer Login</h2>
 
     {% if error %}
       <div class="alert alert-danger">{{ error }}</div>
     {% endif %}
 
-    <form method="post" action="{% url 'farmer_login' %}">
+    <form method="post" action="{% url 'farmer_login' %}" id="farmerLoginForm">
       {% csrf_token %}
 
       <div class="mb-3">
         <label class="form-label">Username</label>
-        <input type="text" class="form-control form-control-lg" name="name" placeholder="Enter username">
+        <input type="text" class="form-control form-control-lg" name="name" placeholder="Enter username" required>
+        <div class="invalid-feedback">Please enter your username.</div>
       </div>
 
       <div class="mb-3">
         <label class="form-label">Password</label>
-        <input type="password" class="form-control form-control-lg" name="password" placeholder="Enter password">
+        <div class="input-group">
+          <input type="password" class="form-control form-control-lg" name="password" placeholder="Enter password" id="passwordField" required>
+          <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+            <i class="fa fa-eye-slash" id="passwordIcon"></i>
+          </button>
+        </div>
+        <div class="invalid-feedback">Please enter your password.</div>
       </div>
 
       <button type="submit" class="btn btn-primary-custom w-100">Login</button>
+
+      <div class="text-center mt-3">
+        <a href="{% url 'forgot_password' %}">Forgot Password?</a>
+      </div>
     </form>
-
-    <div class="text-center mt-3">
-      <a href="{% url 'forgot_password' %}">Forgot Password?</a>
-    </div>
-
   </div>
 </div>
 
-<style>
-  .card:hover { transform: scale(1.02); box-shadow:0 0 18px rgba(0,0,0,0.3); }
-</style>
+<script>
+// Password show/hide toggle
+document.getElementById('togglePassword').addEventListener('click', function() {
+    const passwordInput = document.getElementById('passwordField');
+    const icon = document.getElementById('passwordIcon');
+    if(passwordInput.type === "password") {
+        passwordInput.type = "text";
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    } else {
+        passwordInput.type = "password";
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    }
+});
+
+// Simple front-end validation
+const form = document.getElementById('farmerLoginForm');
+form.addEventListener('submit', function(e) {
+    let valid = true;
+    const username = form.querySelector('input[name="name"]');
+    const password = form.querySelector('input[name="password"]');
+
+    if(username.value.trim() === "") {
+        username.classList.add('is-invalid');
+        valid = false;
+    } else {
+        username.classList.remove('is-invalid');
+    }
+
+    if(password.value.trim() === "") {
+        password.classList.add('is-invalid');
+        valid = false;
+    } else {
+        password.classList.remove('is-invalid');
+    }
+
+    if(!valid) e.preventDefault();
+});
+</script>
 
 {% endblock %}

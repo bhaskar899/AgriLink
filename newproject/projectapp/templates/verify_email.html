@@ -1,0 +1,20 @@
+{% extends 'master.html' %}
+{% block title %}Verify Email{% endblock %}
+
+{% block body %}
+<br><br>
+<div class="container d-flex justify-content-center">
+  <div class="card p-4 shadow" style="width: 400px;">
+    <h4 class="text-center">Verify Email</h4>
+    <p class="text-center text-muted">Enter the OTP sent to your email</p>
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <input type="text" name="otp" maxlength="6" class="form-control mb-3" required>
+
+      <button type="submit" class="btn btn-success w-100">Verify</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

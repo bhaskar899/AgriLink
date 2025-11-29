@@ -2,62 +2,88 @@
 {% block title %}Driver Dashboard{% endblock %}
 
 {% block body %}
-<div class="container mt-4">
 
-    <div class="d-flex justify-content-between align-items-center">
-        <h3>Assigned Deliveries</h3>
+<div class="container mt-5 pt-4">
 
-        <div>
-            <a href="{% url 'notifications' %}" class="btn btn-outline-secondary position-relative">
-                <i class="fa fa-bell"></i>
-                {% if unread_notifications > 0 %}
-                <span class="position-absolute top-0 start-100 translate-middle badge bg-danger">
-                    {{ unread_notifications }}
-                </span>
-                {% endif %}
-            </a>
+    <h2 class="text-success mb-1">🚚 Driver Dashboard</h2>
+    <p class="text-muted">Welcome, <b>{{ driver.name }}</b></p>
+
+    <hr>
+
+    <!-- STATS -->
+    <div class="row text-center mb-4">
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-lg border-success">
+                <div class="card-body">
+                    <h6 class="text-success">Total Earnings</h6>
+                    <h2>₹ {{ total_earnings }}</h2>
+                </div>
+            </div>
         </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-lg border-primary">
+                <div class="card-body">
+                    <h6 class="text-primary">This Week</h6>
+                    <h2>{{ weekly_deliveries }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <div class="card shadow-lg border-warning">
+                <div class="card-body">
+                    <h6 class="text-warning">Pending Payout</h6>
+                    <h2>₹ {{ pending_payout }}</h2>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <table class="table table-bordered mt-3">
-        <tr>
-            <th>Order ID</th>
-            <th>Product</th>
-            <th>Retailer</th>
-            <th>Status</th>
-            <th style="width: 200px;">Action</th>
-        </tr>
+    <hr>
 
-       {% for order in deliveries %}
-<tr>
-    <td>#{{ order.id }}</td>
-    <td>{{ order.product.product }}</td>
-    <td>{{ order.retailer.name }}</td>
-    <td>{{ order.status }}</td>
-    <td>
-        {% comment %}
-            CONDITION CHECK: Mark Picked button should show if status is 'assigned' OR 'packed'
-        {% endcomment %}
-        {% if order.status|lower == "assigned" or order.status|lower == "packed" %}
-        <form method="post" action="{% url 'driver_mark_picked' order.id %}">
-            {% csrf_token %}
-            <button class="btn btn-primary w-100 mb-1">Mark Picked</button>
-        </form>
-        {% elif order.status|lower == "picked" %}
-        <form method="post" action="{% url 'driver_mark_delivered' order.id %}">
-            {% csrf_token %}
-            <button class="btn btn-success w-100">Mark Delivered</button>
-        </form>
-        {% elif order.status|lower == "delivered" %}
-        <span class="badge bg-success">Completed</span>
-        {% endif %}
-    </td>
-</tr>
-{% empty %}
-<tr><td colspan="5" class="text-center">No deliveries assigned.</td></tr>
-{% endfor %}
+    <!-- LAST 5 DELIVERIES -->
+    <h4 class="mb-3">📦 Recent Deliveries</h4>
 
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="bg-light">
+                <tr>
+                    <th>#Order</th>
+                    <th>Date</th>
+                    <th>Retailer</th>
+                    <th>Charge (₹)</th>
+                    <th>Your Earning (₹)</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for d in delivery_history %}
+                <tr>
+                    <td>#{{ d.order.id }}</td>
+                    <td>{{ d.delivered_at|date:"d M Y" }}</td>
+                    <td>{{ d.order.retailer.name }}</td>
+                    <td>₹ {{ d.delivery_charge }}</td>
+                    <td class="text-success fw-bold">₹ {{ d.driver_earning }}</td>
+                    <td>
+                        {% if d.is_paid_out %}
+                        <span class="badge bg-success">Paid</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark">Pending</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted">No deliveries yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-    </table>
 </div>
+
 {% endblock %}

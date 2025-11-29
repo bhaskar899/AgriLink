@@ -4,22 +4,296 @@
 
 <br><br>
 <div class="container mt-5">
-  <div class="card mx-auto" style="max-width:600px">
-    <div class="card-body">
-      <h4 class="card-title text-center">Driver Registration</h4>
-      <form method="post" enctype="multipart/form-data">
+  <div class="card mx-auto shadow-lg rounded-4 driver-card" style="max-width:600px; border-radius:20px;">
+    <div class="card-body p-4">
+      <h4 class="card-title text-center mb-4">Driver Registration</h4>
+      <form id="driverForm" method="post" enctype="multipart/form-data" novalidate>
         {% csrf_token %}
-        <div class="mb-2"><input class="form-control" name="name" placeholder="Full name" required></div>
-        <div class="mb-2"><input class="form-control" name="email" type="email" placeholder="Email" required></div>
-        <div class="mb-2"><input class="form-control" name="phone" placeholder="Phone"></div>
-        <div class="mb-2"><input class="form-control" name="password" type="password" placeholder="Password" required></div>
-        <div class="mb-2"><input class="form-control" name="vehicle_number" placeholder="Vehicle number"></div>
-        <div class="mb-2"><input class="form-control" name="capacity" placeholder="Capacity (kg)" value="1000"></div>
-        <div class="mb-2"><input class="form-control" name="rate_per_km" placeholder="Rate per km" value="12.0"></div>
-        <div class="mb-2"><input class="form-control" name="location" placeholder="City / Pin"></div>
-        <button class="btn btn-success w-100">Register</button>
+
+        <div class="mb-3">
+          <input class="form-control" id="name" name="name" placeholder="Full Name (Min 20 chars)" required>
+          <div class="invalid-feedback" id="nameFeedback"></div>
+        </div>
+        <div class="mb-3">
+          <input class="form-control" id="email" name="email" type="email" placeholder="Email" required>
+          <div class="invalid-feedback" id="emailFeedback"></div>
+        </div>
+
+        <div class="mb-3">
+          <div class="input-group">
+            <input class="form-control" id="phone" name="phone" placeholder="Phone (10 Digits)" required maxlength="10">
+            <button type="button" class="btn btn-outline-success" id="sendOTP">Send OTP</button>
+            <div class="invalid-feedback" id="phoneFeedback"></div>
+          </div>
+          <input type="text" id="otp" class="form-control mt-2" placeholder="Enter OTP" style="display:none;" maxlength="6">
+          <div class="invalid-feedback" id="otpFeedback"></div>
+        </div>
+
+        <div class="mb-3">
+          <input class="form-control" id="password" name="password" type="password" placeholder="Password (Min 8 chars, strong)" required>
+          <div class="invalid-feedback" id="passwordFeedback"></div>
+        </div>
+
+        <div class="mb-3">
+          <input class="form-control" id="vehicle_number" name="vehicle_number" placeholder="Vehicle Number (e.g., MH12AB1234)" required>
+          <div class="invalid-feedback" id="vehicleFeedback"></div>
+        </div>
+        <div class="mb-3">
+          <input class="form-control" id="capacity" name="capacity" placeholder="Capacity (kg) 100-10000" value="1000" required>
+          <div class="invalid-feedback" id="capacityFeedback"></div>
+        </div>
+        <div class="mb-3">
+          <input class="form-control" id="rate_per_km" name="rate_per_km" placeholder="Rate per km (5.0 - 50.0)" value="12.0" required>
+          <div class="invalid-feedback" id="rateFeedback"></div>
+        </div>
+        <div class="mb-3">
+          <input class="form-control" name="location" placeholder="City / Pin" required>
+        </div>
+
+        <h5 class="mb-3 mt-4">Driver Verification</h5>
+        <div class="mb-3">
+          <label class="form-label">Driver License Image</label>
+          <input class="form-control" type="file" name="license_image" id="license_image" accept="image/*" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Vehicle Photo</label>
+          <input class="form-control" type="file" name="vehicle_image" id="vehicle_image" accept="image/*" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">License Issue Date</label>
+          <input class="form-control" type="date" name="license_issue_date" id="issue_date" required>
+          <div class="invalid-feedback" id="issueDateFeedback"></div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">License Expiry Date</label>
+          <input class="form-control" type="date" name="license_expiry_date" id="expiry_date" required>
+          <div class="invalid-feedback" id="expiryDateFeedback"></div>
+        </div>
+
+        <button class="btn btn-success w-100 mt-3" id="registerBtn" disabled>Register</button>
       </form>
     </div>
   </div>
 </div>
+
+<style>
+    .form-control:focus {
+        box-shadow: 0 0 8px rgba(25, 135, 84, 0.5); /* Success color focus */
+        border-color: #198754;
+    }
+    .driver-card:hover {
+        transform: translateY(-5px);
+        transition: 0.3s;
+    }
+    /* Note: If you want standard Bootstrap rounding, you might want to add 'rounded' class back
+       to form-control, but for now, they are fully rectangular. */
+</style>
+
+<script>
+  // --- REAL WORLD VALIDATION AND OTP LOGIC ---
+  const form = document.getElementById('driverForm');
+  const sendOTPBtn = document.getElementById('sendOTP');
+  const otpInput = document.getElementById('otp');
+  const registerBtn = document.getElementById('registerBtn');
+
+  // Input fields
+  const nameInput = document.getElementById('name');
+  const emailInput = document.getElementById('email');
+  const phoneInput = document.getElementById('phone');
+  const passwordInput = document.getElementById('password');
+  const vehicleInput = document.getElementById('vehicle_number');
+  const capacityInput = document.getElementById('capacity');
+  const rateInput = document.getElementById('rate_per_km');
+  const issueDateInput = document.getElementById('issue_date');
+  const expiryDateInput = document.getElementById('expiry_date');
+
+  let generatedOTP;
+  let isPhoneVerified = false;
+
+  // --- REGEX PATTERNS ---
+  const nameRegex = /^[a-zA-Z\s]{20,50}$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const phoneRegex = /^\d{10}$/;
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+  const vehicleRegex = /^[A-Z]{2}\d{1,2}[A-Z]{1,2}\d{4}$/i;
+
+
+  // --- VALIDATION FUNCTIONS ---
+
+  function applyValidationClass(input, isValid, errorMessage, feedbackId) {
+    const feedback = document.getElementById(feedbackId);
+    if (!isValid) {
+      input.classList.remove('is-valid');
+      input.classList.add('is-invalid');
+      feedback.textContent = errorMessage;
+    } else {
+      input.classList.remove('is-invalid');
+      input.classList.add('is-valid');
+    }
+  }
+
+  function validateInput(input, regex, errorMessage, feedbackId) {
+    const isValid = input.value && regex.test(input.value);
+    applyValidationClass(input, isValid, errorMessage, feedbackId);
+    return isValid;
+  }
+
+  function validateCapacity(input) {
+    const value = parseFloat(input.value);
+    const isValid = input.value && value >= 100 && value <= 10000;
+    const errorMessage = 'Capacity must be between 100 kg and 10000 kg.';
+    applyValidationClass(input, isValid, errorMessage, 'capacityFeedback');
+    return isValid;
+  }
+
+  function validateRate(input) {
+    const value = parseFloat(input.value);
+    const isValid = input.value && value >= 5.0 && value <= 50.0;
+    const errorMessage = 'Rate must be between 5.0 and 50.0 per km.';
+    applyValidationClass(input, isValid, errorMessage, 'rateFeedback');
+    return isValid;
+  }
+
+  function validateDates() {
+    let isValid = true;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Issue Date Validation
+    const issueDate = new Date(issueDateInput.value);
+    if (!issueDateInput.value || issueDate >= today) {
+        applyValidationClass(issueDateInput, false, 'Issue date must be a past date.', 'issueDateFeedback');
+        isValid = false;
+    } else {
+        issueDateInput.classList.remove('is-invalid');
+    }
+
+    // Expiry Date Validation
+    const expiryDate = new Date(expiryDateInput.value);
+    if (!expiryDateInput.value || expiryDate <= today || (issueDateInput.value && expiryDate <= issueDate)) {
+        let errorMessage = 'Expiry date must be a future date.';
+        if (issueDateInput.value && expiryDate <= issueDate) {
+            errorMessage = 'Expiry date must be after Issue date.';
+        }
+        applyValidationClass(expiryDateInput, false, errorMessage, 'expiryDateFeedback');
+        isValid = false;
+    } else {
+        expiryDateInput.classList.remove('is-invalid');
+    }
+
+    // Apply success state if both are valid
+    if (isValid) {
+        issueDateInput.classList.add('is-valid');
+        expiryDateInput.classList.add('is-valid');
+    }
+    return isValid;
+  }
+
+  function validateAll() {
+      // Note: We use the & operator to ensure all validation functions run, not just stop on the first false
+      const isPersonalValid = validateInput(nameInput, nameRegex, 'Name must be 20-50 characters, letters and spaces only.', 'nameFeedback') &
+                            validateInput(emailInput, emailRegex, 'Enter a valid email address.', 'emailFeedback') &
+                            validateInput(passwordInput, passwordRegex, 'Min 8 chars: 1 Upper, 1 Lower, 1 Number, 1 Special Char.', 'passwordFeedback');
+
+      const isVehicleValid = validateInput(vehicleInput, vehicleRegex, 'Enter a valid vehicle number (e.g., MH12AB1234).', 'vehicleFeedback') &
+                            validateCapacity(capacityInput) &
+                            validateRate(rateInput);
+
+      const isLicenseValid = validateDates();
+
+      return isPersonalValid && isVehicleValid && isLicenseValid;
+  }
+
+
+  // --- EVENT LISTENERS ---
+
+  function handleBlurValidation(event, validator, regex, errorMessage, feedbackId) {
+      const input = event.target;
+      if (input.value.trim() !== '') {
+          // अगर वैल्यू है, तो पूरी तरह वैलिडेट करें
+          if (validator === validateInput) {
+              validateInput(input, regex, errorMessage, feedbackId);
+          } else if (validator) {
+              validator(input);
+          }
+      } else {
+          // अगर खाली है, तो सिर्फ 'is-invalid' और 'is-valid' क्लास हटा दें
+          input.classList.remove('is-invalid');
+          input.classList.remove('is-valid');
+      }
+  }
+
+  // Bind Blur Listeners (Pass null for regex/message if using dedicated validator)
+  nameInput.addEventListener('blur', (e) => handleBlurValidation(e, validateInput, nameRegex, 'Name must be 20-50 characters, letters and spaces only.', 'nameFeedback'));
+  emailInput.addEventListener('blur', (e) => handleBlurValidation(e, validateInput, emailRegex, 'Enter a valid email address.', 'emailFeedback'));
+  phoneInput.addEventListener('blur', (e) => handleBlurValidation(e, validateInput, phoneRegex, 'Phone must be exactly 10 digits.', 'phoneFeedback'));
+  passwordInput.addEventListener('blur', (e) => handleBlurValidation(e, validateInput, passwordRegex, 'Min 8 chars: 1 Upper, 1 Lower, 1 Number, 1 Special Char.', 'passwordFeedback'));
+  vehicleInput.addEventListener('blur', (e) => handleBlurValidation(e, validateInput, vehicleRegex, 'Enter a valid vehicle number (e.g., MH12AB1234).', 'vehicleFeedback'));
+  capacityInput.addEventListener('blur', (e) => handleBlurValidation(e, validateCapacity, null, null, 'capacityFeedback'));
+  rateInput.addEventListener('blur', (e) => handleBlurValidation(e, validateRate, null, null, 'rateFeedback'));
+  issueDateInput.addEventListener('change', validateDates);
+  expiryDateInput.addEventListener('change', validateDates);
+
+
+  // --- OTP Logic ---
+  sendOTPBtn.addEventListener('click', () => {
+    if (!validateInput(phoneInput, phoneRegex, 'Phone must be exactly 10 digits before sending OTP.', 'phoneFeedback')) {
+        return;
+    }
+    // Simulate OTP generation and sending
+    generatedOTP = Math.floor(100000 + Math.random() * 900000);
+    alert('OTP sent to ' + phoneInput.value + ': ' + generatedOTP);
+
+    otpInput.value = '';
+    otpInput.style.display = 'block';
+    otpInput.focus();
+    sendOTPBtn.disabled = true;
+    phoneInput.disabled = true;
+  });
+
+  otpInput.addEventListener('input', () => {
+    // Input validation for OTP
+    if(otpInput.value.length === 6){
+        if(otpInput.value == generatedOTP){
+            alert('Phone verified!');
+            otpInput.classList.remove('is-invalid');
+            otpInput.classList.add('is-valid');
+            isPhoneVerified = true;
+            otpInput.disabled = true;
+        } else {
+            otpInput.classList.remove('is-valid');
+            otpInput.classList.add('is-invalid');
+            document.getElementById('otpFeedback').textContent = 'Invalid OTP.';
+            isPhoneVerified = false;
+        }
+        // Update button state immediately after OTP check
+        registerBtn.disabled = !validateAll() || !isPhoneVerified;
+    } else {
+        otpInput.classList.remove('is-valid');
+        otpInput.classList.remove('is-invalid');
+        isPhoneVerified = false;
+        registerBtn.disabled = true;
+    }
+  });
+
+  // --- Form Submission ---
+  form.addEventListener('submit', (event) => {
+    // सबमिशन पर सभी फ़ील्ड्स को वैलिडेट करें
+    const isValid = validateAll();
+
+    if (!isValid || !isPhoneVerified) {
+      event.preventDefault(); // Prevent form submission
+      alert('Please fix all errors and verify your phone number before registering.');
+    }
+    // If validation passes and phone is verified, form submits normally
+  });
+
+  // Continuous check to enable/disable Register button based on validation and phone verification
+  form.addEventListener('input', () => {
+      registerBtn.disabled = !validateAll() || !isPhoneVerified;
+  });
+
+  // Initial check on load
+  registerBtn.disabled = true;
+</script>
 {% endblock %}

@@ -1,21 +1,25 @@
 {% extends "master.html" %}
 {% block title %}Update Driver Profile{% endblock %}
 
-{% block body %}
+{% block body %}<br><br>
 <div class="container mt-5">
-  <div class="card p-4 mx-auto" style="max-width:550px; border-radius:20px;">
+  <div class="card p-4 mx-auto shadow-lg rounded-4" style="max-width:650px;">
     <h3 class="text-center mb-4">Update Profile</h3>
     <form method="POST" enctype="multipart/form-data">
       {% csrf_token %}
 
+      <!-- Driver fields -->
       <label class="fw-bold">Name</label>
       <input type="text" name="name" class="form-control mb-3 rounded-3" value="{{ driver.name }}" required>
 
       <label class="fw-bold">Email</label>
-      <input type="email" name="email" class="form-control mb-3 rounded-3" value="{{ driver.email }}" required>
+      <input type="email" name="email" class="form-control mb-3 rounded-3" value="{{ driver.email }}" disabled>
 
       <label class="fw-bold">Phone</label>
       <input type="text" name="phone" class="form-control mb-3 rounded-3" value="{{ driver.phone }}">
+      {% if profile.phone_verified %}
+        <span class="badge bg-success">Verified</span>
+      {% endif %}
 
       <label class="fw-bold">Location</label>
       <input type="text" name="location" class="form-control mb-3 rounded-3" value="{{ driver.location }}">
@@ -36,11 +40,21 @@
       <label class="fw-bold">Rate per km</label>
       <input type="number" step="0.01" name="rate_per_km" class="form-control mb-3 rounded-3" value="{{ driver.rate_per_km }}">
 
+      <!-- Profile fields -->
+      <label class="fw-bold">License Issue Date</label>
+      <input type="date" name="license_issue_date" class="form-control mb-3 rounded-3" value="{{ profile.license_issue_date }}">
+
+      <label class="fw-bold">License Expiry Date</label>
+      <input type="date" name="license_expiry_date" class="form-control mb-3 rounded-3" value="{{ profile.license_expiry_date }}">
+
       <label class="fw-bold">Driver Photo</label>
       <input type="file" name="driver_photo" class="form-control mb-3 rounded-3">
 
       <label class="fw-bold">License Document</label>
-      <input type="file" name="license_doc" class="form-control mb-4 rounded-3">
+      <input type="file" name="license_doc" class="form-control mb-3 rounded-3">
+
+      <label class="fw-bold">Vehicle Photo</label>
+      <input type="file" name="vehicle_photo" class="form-control mb-4 rounded-3">
 
       <button class="btn btn-success w-100 py-2 rounded-3">Save Changes</button>
     </form>

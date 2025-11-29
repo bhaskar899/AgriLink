@@ -95,7 +95,7 @@
         border-color: #fff000 !important;
     }
 
-    /* FIX Footer background issue */
+    /* Footer Styling (Cleaned Up) */
     footer {
       background: #198754 !important;
       color: white !important;
@@ -103,11 +103,43 @@
       margin-top: 50px;
     }
 
-    footer a {color: #e0e0e0 !important;}
-    footer a:hover {color: #fff000 !important; text-decoration: underline !important;}
+    footer a {
+        text-decoration: none !important;
+        color: #e0e0e0 !important; /* हल्का सफ़ेद रंग */
+        transition: 0.2s;
+    }
+    footer a:hover {
+        text-decoration: underline !important;
+        color: #fff000 !important; /* पीला hover रंग */
+    }
 
-    .content-wrapper {padding-top: 0px;} /* <-- Navbar gap removed */
+    .content-wrapper {padding-top: 0px;} /* Navbar gap removed */
+
+    /* 💡 FIX: Bell Notification Hover Expansion (पूरे item पर hover effect के लिए) */
+    .dropdown-menu .dropdown-item {
+        white-space: normal; /* ताकि टेक्स्ट Wrap हो सके */
+        transition: background-color 0.25s ease;
+
+        /* Bell Dropdown के अंदर के Link को पूरे Item पर फैलाता है */
+        display: block;
+    }
+
+    /* Bell Dropdown: Text Color Change on Hover */
+    .dropdown-menu a {
+        color: #165f3f !important; /* Default green text */
+    }
+    .dropdown-menu .dropdown-item:hover {
+        background: #198754 !important; /* Green Hover Background */
+    }
+    /* Hover पर, dropdown-item के अंदर के टेक्स्ट (a और small) का रंग सफ़ेद हो जाए */
+    .dropdown-menu .dropdown-item:hover,
+    .dropdown-menu .dropdown-item:hover small {
+        color: white !important;
+    }
+
   </style>
+
+
 </head>
 
 <body>
@@ -177,55 +209,51 @@
         </li>
         {% endif %}
 
-        <!-- Navbar Bell Notification -->
-<!-- Navbar Bell Notification -->
-<!-- Notification Bell -->
-<li class="nav-item dropdown">
-    {% if user_type %}
-        <a class="nav-link dropdown-toggle position-relative" href="{% url 'notifications' %}" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            🔔
-            {% if navbar_notes and navbar_notes|length > 0 %}
-                <span class="badge bg-danger position-absolute top-0 start-100 translate-middle" id="bellBadge">{{ navbar_notes|length }}</span>
+        <li class="nav-item dropdown">
+            {% if user_type %}
+                <a class="nav-link dropdown-toggle position-relative" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    🔔
+                    {% if navbar_notes and navbar_notes|length > 0 %}
+                        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle" id="bellBadge">{{ navbar_notes|length }}</span>
+                    {% endif %}
+                </a>
+
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown" style="width:300px; max-height:400px; overflow-y:auto;">
+                    {% if navbar_notes %}
+                        {% for n in navbar_notes %}
+                            <a class="dropdown-item" href="{% url 'mark_notification_read' n.id %}" data-nid="{{ n.id }}">
+                                {{ n.message|truncatechars:50 }} <br>
+                                <small class="text-muted">{{ n.timestamp|date:"d M, h:i A" }}</small>
+                                {% if not n.is_read %}
+                                    <span class="badge bg-primary ms-1">New</span>
+                                {% endif %}
+                            </a>
+                        {% endfor %}
+                    {% else %}
+                        <li class="dropdown-item">No new notifications</li>
+                    {% endif %}
+                </ul>
             {% endif %}
-        </a>
+        </li>
 
-        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown" style="width:300px; max-height:400px; overflow-y:auto;">
-            {% if navbar_notes %}
-                {% for n in navbar_notes %}
-                    <li class="dropdown-item">
-                        <a href="{% url 'mark_notification_read' n.id %}" data-nid="{{ n.id }}" style="text-decoration:none; color:inherit;">
-                            {{ n.message|truncatechars:50 }} <br>
-                            <small class="text-muted">{{ n.timestamp|date:"d M, h:i A" }}</small>
-                            {% if not n.is_read %}
-                                <span class="badge bg-primary ms-1">New</span>
-                            {% endif %}
-                        </a>
-                    </li>
-                {% endfor %}
-            {% else %}
-                <li class="dropdown-item">No new notifications</li>
-            {% endif %}
-        </ul>
-    {% endif %}
-</li>
-
-<script>
-document.querySelectorAll('a[data-nid]').forEach(link => {
-    link.addEventListener('click', function(){
-        const badge = document.getElementById('bellBadge');
-        if(badge) badge.remove();  // removes badge instantly
-    });
-});
-</script>
+        <script>
+        document.querySelectorAll('.dropdown-menu a[data-nid]').forEach(link => {
+            link.addEventListener('click', function(){
+                const badge = document.getElementById('bellBadge');
+                // Decrement badge count
+                if(badge) {
+                    let count = parseInt(badge.textContent);
+                    if (count > 1) {
+                        badge.textContent = count - 1;
+                    } else {
+                        badge.remove();
+                    }
+                }
+            });
+        });
+        </script>
 
 
-
-
-
-
-
-
-          <!-- Farmer / Retailer Navbar -->
         {% if request.session.user_type in "farmer retailer" %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
@@ -242,7 +270,6 @@ document.querySelectorAll('a[data-nid]').forEach(link => {
         </li>
         {% endif %}
 
-        <!-- Driver Navbar -->
         {% if request.session.user_type == "driver" %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
@@ -251,6 +278,7 @@ document.querySelectorAll('a[data-nid]').forEach(link => {
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="{% url 'driver_dashboard' %}">Dashboard</a></li>
+            <li><a class="dropdown-item" href="{% url 'driver_deliveries' %}">Assigned Deliveries</a></li>
             <li><a class="dropdown-item" href="{% url 'driver_profile' %}">Profile</a></li>
             <li><a class="dropdown-item" href="{% url 'driver_profile_update' %}">Update Profile</a></li>
             <li><a class="dropdown-item text-danger" href="{% url 'driver_profile_delete' %}">Delete Profile</a></li>
@@ -269,7 +297,7 @@ document.querySelectorAll('a[data-nid]').forEach(link => {
   {% block body %}{% endblock %}
 </div>
 
-<footer>
+<footer class="site-footer">
   <div class="container">
     <div class="row">
 
@@ -278,14 +306,14 @@ document.querySelectorAll('a[data-nid]').forEach(link => {
         <p>Agrilink connects farmers and retailers directly, removing middlemen and enabling fair pricing.</p>
       </div>
 
-      <div class="col-md-4">
+     <div class="col-md-4">
         <h5>Quick Links</h5>
-        <a href="{% url 'home' %}">Home</a><br>
-        <a href="{% url 'home' %}#about">About</a><br>
-        <a href="{% url 'home' %}#contact">Contact</a><br>
-        <a href="{% url 'farmer_register' %}">Farmer Register</a><br>
-        <a href="{% url 'retailer_register' %}">Retailer Register</a><br><br>
-      </div>
+        <a href="{% url 'home' %}" class="footer-link">🏠 Home</a><br>
+        <a href="{% url 'home' %}#about" class="footer-link">ℹ About</a><br>
+        <a href="{% url 'home' %}#contact" class="footer-link">📩 Contact</a><br>
+        <a href="{% url 'farmer_register' %}" class="footer-link">👨‍🌾 Farmer Register</a><br>
+        <a href="{% url 'retailer_register' %}" class="footer-link">🏪 Retailer Register</a><br><br>
+    </div>
 
       <div class="col-md-4">
         <h5>Contact Info</h5>
