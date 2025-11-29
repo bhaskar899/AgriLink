@@ -12,8 +12,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 # ---------------------
 SECRET_KEY = 'django-insecure-your-secret-key'
-DEBUG = True  # change to False when done testing
-ALLOWED_HOSTS = ['*']
+DEBUG = False  # Deploy ke liye False
+ALLOWED_HOSTS = ['*']  # Change to your domain for production
 
 # ---------------------
 # APPLICATIONS
@@ -28,27 +28,22 @@ INSTALLED_APPS = [
     'projectapp',
     'cloudinary_storage',
     'cloudinary',
-    'channels'
+    'channels',
 ]
 
 ASGI_APPLICATION = 'newproject.asgi.application'
 
-# settings.py
-
-# ... (other settings) ...
-
+# ---------------------
+# CHANNELS
+# ---------------------
 CHANNEL_LAYERS = {
     "default": {
-        # ⚠️ CRITICAL FIX: Use Redis for inter-process communication
         "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
         "CONFIG": {
-            # Change this to your actual Redis location/credentials if needed
-            "hosts": [("127.0.0.1", 6379)],
+            "hosts": [("127.0.0.1", 6379)],  # Replace with Render Redis host in prod
         },
     }
 }
-
-# ... (rest of the settings) ...
 
 # ---------------------
 # MIDDLEWARE
@@ -84,11 +79,12 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'projectapp.context_processors.navbar_notifications',  # <- Add this
+                'projectapp.context_processors.navbar_notifications',
             ],
         },
     },
 ]
+
 # ---------------------
 # DATABASE
 # ---------------------
@@ -126,19 +122,19 @@ USE_I18N = True
 USE_TZ = True
 
 # ---------------------
-# STATIC & MEDIA FILES
+# STATIC & MEDIA
 # ---------------------
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / "media"
-
 # ---------------------
-# CLOUDINARY SETTINGS
+# MEDIA (CLOUDINARY)
 # ---------------------
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = None  # Cloudinary handles uploads
 
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': 'dhjactcwx',
@@ -155,18 +151,14 @@ RAZORPAY_KEY_SECRET = "s7EwhvUXxwl9ieMzM69r7d4W"
 # ---------------------
 # EMAIL CONFIGURATION
 # ---------------------
-# 📧 EMAIL SETTINGS
-# IMPORTANT — Use custom backend
-EMAIL_BACKEND = 'newproject.email_backend.CustomEmailBackend'
-# ↑ project folder name EXACT same jisme settings.py hai
-
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-
 EMAIL_HOST_USER = 'bhaskaryhubale.899@gmail.com'
-EMAIL_HOST_PASSWORD = 'liox giwz dlvz mpov'
+EMAIL_HOST_PASSWORD = 'app-password-from-gmail'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
 # ---------------------
 # DEFAULT FIELD TYPE
 # ---------------------
@@ -177,7 +169,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ---------------------
 ssl._create_default_https_context = lambda: ssl._create_unverified_context()
 
-PLATFORM_COMMISSION = 0.05   # 5% default
-
-# settings.py
-
+PLATFORM_COMMISSION = 0.05
