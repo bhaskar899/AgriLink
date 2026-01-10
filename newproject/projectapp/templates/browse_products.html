@@ -4,117 +4,173 @@
 {% block title %}Browse Products{% endblock %}
 
 {% block body %}
-<br><br>
 
-<div class="container mt-5"><br><br>
-
-  <h2 class="text-center mb-4">🌾 Available Products</h2><br>
-
-  <!-- 🔍 Search + Filter -->
-  <form method="get" action="/browse_products/" class="row g-3 mb-4">
-
-    <!-- 🔎 Auto-search -->
-    <div class="col-md-4 position-relative">
-      <label class="form-label">Search Product</label>
-      <input type="text" id="searchBox" name="q" value="{{ request.GET.q }}" class="form-control"
-             placeholder="Enter product name">
-
-      <div id="suggestBox"
-           class="list-group position-absolute w-100"
-           style="z-index: 999; display:none;"></div>
-    </div>
-
-    <!-- 📍 Location -->
-    <div class="col-md-4">
-      <label class="form-label">Filter by Location</label>
-      <input type="text" name="location" value="{{ request.GET.location }}" class="form-control"
-             placeholder="Enter location">
-    </div>
-
-    <!-- 💰 Min Price -->
-    <div class="col-md-2">
-      <label class="form-label">Min Price</label>
-      <input type="number" name="min_price" value="{{ request.GET.min_price }}" class="form-control" placeholder="0">
-    </div>
-
-    <!-- 💰 Max Price -->
-    <div class="col-md-2">
-      <label class="form-label">Max Price</label>
-      <input type="number" name="max_price" value="{{ request.GET.max_price }}" class="form-control" placeholder="10000">
-    </div>
-
-    <div class="col-md-12 d-flex align-items-end">
-      <button type="submit" class="btn btn-success w-100">Apply Filters</button>
-    </div>
-  </form>
-
-  <!-- 🟩 Products -->
-  <div class="row">
-    {% for p in products %}
-    <div class="col-md-4 mb-4">
-      <div class="card shadow-sm">
-
-        {% if p.image %}
-          <img src="{{ p.image.url }}" class="card-img-top" style="height:200px; object-fit:cover;">
-        {% else %}
-          <img src="{% static 'images/no-image.jpg' %}" class="card-img-top" style="height:200px; object-fit:cover;">
-        {% endif %}
-
-        <div class="card-body">
-          <h5 class="card-title">{{ p.product }}</h5>
-          <p class="card-text">{{ p.description|truncatewords:20 }}</p>
-
-          <p>👨‍🌾 Farmer: {{ p.farmer.name }}</p>
-          <p>💰 Price: ₹{{ p.price }}/kg</p>
-          <p>📦 Available: {{ p.quantity }} kg</p>
-          <p>📍 {{ p.location }}</p>
-
-          <!-- ✅ Corrected Buy Now link -->
-          <a href="{% url 'place_order' product_id=p.id %}" class="btn btn-primary btn-sm w-100">Buy Now</a>
-        </div>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
+<!-- BACK BUTTON -->
+<div class="back-btn-wrapper">
+    <button class="back-btn" onclick="goBack()">⬅ Back</button>
 </div>
 
-<!-- 🌟 Auto Suggest Script -->
+<style>
+.back-btn-wrapper{
+    margin-top: 89px; /* adjust this according to your navbar height */
+    margin-bottom: 15px;
+    margin-left:20px;
+}
+.back-btn{
+    border: none;
+    padding: 12px 26px;
+    border-radius: 35px;
+    background: linear-gradient(135deg,#198754,#2ecc71);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    transition: .3s;
+}
+.back-btn:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(0,0,0,.35);
+}
+.back-btn:active{
+    transform: scale(.95);
+}
+</style>
+
 <script>
-document.addEventListener("DOMContentLoaded", function () {
+function goBack(){
+    window.history.back();
+}
+</script>
+<style>
+/* 🔥 All cards equal height */
+.product-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    overflow: hidden;
+}
 
-  const searchBox = document.getElementById("searchBox");
-  const suggestBox = document.getElementById("suggestBox");
+/* Image height fix (same for all) */
+.product-img {
+    height: 200px;
+    object-fit: cover;
+    width: 100%;
+    border-bottom: 1px solid #ddd;
+}
 
-  searchBox.addEventListener("keyup", function () {
-      let query = this.value;
+/* Description box fixed height */
+.product-desc {
+    height: 75px;
+    overflow: hidden;
+}
 
-      if (query.length === 0) {
-          suggestBox.style.display = "none";
-          suggestBox.innerHTML = "";
-          return;
-      }
+/* Button at bottom align fix */
+.card-footer-stick {
+    margin-top: auto;
+    width: 100%;
+}
+</style>
 
-      fetch(/ajax/search/?q=${query})
-          .then(response => response.json())
-          .then(data => {
-              suggestBox.innerHTML = "";
 
-              if (data.length === 0) {
-                  suggestBox.style.display = "none";
-                  return;
-              }
 
-              data.forEach(item => {
-                  let option = document.createElement("a");
-                  option.href = /browse_products/?q=${item};
-                  option.className = "list-group-item list-group-item-action";
-                  option.textContent = item;
-                  suggestBox.appendChild(option);
-              });
+<div class="container mt-5"><br>
 
-              suggestBox.style.display = "block";
-          });
-  });
+    <h2 class="text-center mb-4">🌾 Available Products</h2><br>
+
+    <!-- 🔍 Search + Filters -->
+    <form method="get" action="/browse_products/" class="row g-3 mb-4">
+
+        <div class="col-md-4 position-relative">
+            <label class="form-label">Search Product</label>
+            <input type="text" id="searchBox" name="q" value="{{ request.GET.q }}" class="form-control"
+                   placeholder="Enter product name">
+            <div id="suggestBox" class="list-group position-absolute w-100" style="display:none;z-index:999;"></div>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">Location</label>
+            <input type="text" name="location" value="{{ request.GET.location }}" class="form-control"
+                   placeholder="Enter location">
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label">Min Price</label>
+            <input type="number" name="min_price" value="{{ request.GET.min_price }}" class="form-control" placeholder="0">
+        </div>
+
+        <div class="col-md-2">
+            <label class="form-label">Max Price</label>
+            <input type="number" name="max_price" value="{{ request.GET.max_price }}" class="form-control" placeholder="10000">
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-success w-100">Apply Filters</button>
+        </div>
+    </form>
+
+
+    <!-- 🌟 SAME SIZE RESPONSIVE GRID -->
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+
+        {% for p in products %}
+        <div class="col">
+            <div class="card shadow product-card">
+
+                <img src="{{ p.image.url }}" class="product-img">
+
+                <div class="card-body">
+                    <h5 class="card-title">{{ p.product }}</h5>
+
+                    <p class="product-desc">
+                        {{ p.description|truncatewords:20 }}
+                    </p>
+
+                    <p>👨‍🌾 <b>{{ p.farmer.name }}</b></p>
+                    <p>💰 Price: <b>₹{{ p.price }}/kg</b></p>
+                    <p>📦 Stock: {{ p.quantity }} kg</p>
+                    <p>📍 {{ p.location }}</p>
+                </div>
+
+                <div class="card-footer bg-white card-footer-stick">
+                    <a href="{% url 'place_order' product_id=p.id %}" class="btn btn-primary w-100">Buy Now</a>
+                </div>
+                <div class="card-footer bg-white card-footer-stick">
+<a href="{% url 'request_sample' p.id %}" class="btn btn-outline-warning btn-sm w-100">Request Sample</a>
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
+
+
+<!-- 🔥 Auto Search Script -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const searchBox = document.getElementById("searchBox");
+    const suggestBox = document.getElementById("suggestBox");
+
+    searchBox.addEventListener("keyup", () => {
+        const q = searchBox.value;
+
+        if (!q) { suggestBox.style.display="none"; return }
+
+        fetch(/ajax_search/?q=${q})
+            .then(res => res.json())
+            .then(data => {
+                suggestBox.innerHTML = "";
+                if (!data.length){ suggestBox.style.display="none"; return }
+
+                data.forEach(item => {
+                    suggestBox.innerHTML +=
+                        <a class='list-group-item list-group-item-action' href='/browse_products/?q=${item}'>${item}</a>;
+                });
+                suggestBox.style.display="block";
+            });
+    });
 });
 </script>
 

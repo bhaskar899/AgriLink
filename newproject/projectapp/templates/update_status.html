@@ -1,8 +1,42 @@
 {% extends 'master.html' %}
 {% block title %}Update Order Status{% endblock %}
 {% block body %}
-<br><br>
+<!-- BACK BUTTON -->
+<div class="back-btn-wrapper">
+    <button class="back-btn" onclick="goBack()">⬅ Back</button>
+</div>
 
+<style>
+.back-btn-wrapper{
+    margin-top: 89px; /* adjust this according to your navbar height */
+    margin-bottom: 15px;
+    margin-left:20px;
+}
+.back-btn{
+    border: none;
+    padding: 12px 26px;
+    border-radius: 35px;
+    background: linear-gradient(135deg,#198754,#2ecc71);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    transition: .3s;
+}
+.back-btn:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(0,0,0,.35);
+}
+.back-btn:active{
+    transform: scale(.95);
+}
+</style>
+
+<script>
+function goBack(){
+    window.history.back();
+}
+</script>
 <div class="container mt-5">
   <div class="card shadow p-4">
     <h3 class="text-center mb-4">🚚 Update Order Status</h3>
@@ -26,7 +60,7 @@
         <label class="form-label"><strong>Status</strong></label>
         <select class="form-select" name="status" required>
           <option value="">-- Select Status --</option>
-          {% for s, label in order.STATUS_CHOICES %}
+          {% for s,label in order.STATUS_CHOICES %}
             <option value="{{ s }}" {% if order.status == s %}selected{% endif %}>{{ label }}</option>
           {% endfor %}
         </select>
@@ -38,9 +72,8 @@
         <select class="form-select" name="driver">
           <option value="">-- Select Driver --</option>
           {% for d in drivers %}
-            <option value="{{ d.id }}"
-              {% if order.driver and order.driver.id == d.id %}selected{% endif %}>
-              {{ d.name }}
+            <option value="{{ d.id }}" {% if order.driver and order.driver.id == d.id %}selected{% endif %}>
+              {{ d.name }} — {{ d.vehicle_type }} — {{ d.location }}
             </option>
           {% endfor %}
         </select>
@@ -60,7 +93,6 @@
         </div>
       </div>
 
-      <!-- Get location button -->
       <div class="mb-3 text-center">
         <button type="button" class="btn btn-outline-primary" onclick="getLocation()">📍 Get My Location</button>
       </div>
@@ -75,18 +107,14 @@
 </div>
 
 <script>
-function getLocation() {
-  if (navigator.geolocation) {
+function getLocation(){
+  if(navigator.geolocation){
     navigator.geolocation.getCurrentPosition(
-      function(position) {
-        document.getElementById("lat").value = position.coords.latitude.toFixed(6);
-        document.getElementById("lng").value = position.coords.longitude.toFixed(6);
-      }
-    );
-  } else {
-    alert("Geolocation is not supported by this browser.");
+      pos=>{
+        document.getElementById("lat").value = pos.coords.latitude.toFixed(6);
+        document.getElementById("lng").value = pos.coords.longitude.toFixed(6);
+      });
   }
 }
 </script>
-
 {% endblock %}

@@ -144,7 +144,7 @@
 
 <body>
 
-<audio id="clickSound" src="{% static 'audio/air-whoosh-380651.mp3' %}" preload="auto"></audio>
+<audio id="clickSound" src="{% static 'audio/button-21.mp3' %}" preload="auto"></audio>
 
 <div id="translate-floating-btn">🌐</div>
 <div id="translate-popup">
@@ -194,6 +194,8 @@
             <li><a class="dropdown-item" href="{% url 'add_product' %}">Add Product</a></li>
             <li><a class="dropdown-item" href="{% url 'show_products' %}">My Products</a></li>
             <li><a class="dropdown-item" href="{% url 'farmer_order' %}">Orders</a></li>
+              <li><a class="dropdown-item" href="{% url 'farmer_sample_requests' %}">🧪 Sample Requests</a></li>
+
           </ul>
         </li>
         {% endif %}
@@ -205,6 +207,8 @@
             <li><a class="dropdown-item" href="{% url 'retailer_dashboard' %}">Dashboard</a></li>
             <li><a class="dropdown-item" href="{% url 'browse_products' %}">Browse Products</a></li>
             <li><a class="dropdown-item" href="{% url 'retailer_products' %}">My Orders</a></li>
+              <li><a class="dropdown-item" href="{% url 'retailer_dashboard' %}#samples">⭐ My Sample Ratings</a></li>
+
           </ul>
         </li>
         {% endif %}
@@ -279,6 +283,8 @@
           <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="{% url 'driver_dashboard' %}">Dashboard</a></li>
             <li><a class="dropdown-item" href="{% url 'driver_deliveries' %}">Assigned Deliveries</a></li>
+              <li><a class="dropdown-item" href="{% url 'driver_sample_deliveries' %}">🚚 Sample Deliveries</a></li>
+
             <li><a class="dropdown-item" href="{% url 'driver_profile' %}">Profile</a></li>
             <li><a class="dropdown-item" href="{% url 'driver_profile_update' %}">Update Profile</a></li>
             <li><a class="dropdown-item text-danger" href="{% url 'driver_profile_delete' %}">Delete Profile</a></li>
@@ -297,7 +303,7 @@
   {% block body %}{% endblock %}
 </div>
 
-<footer class="site-footer">
+<footer class="site-footer" >
   <div class="container">
     <div class="row">
 

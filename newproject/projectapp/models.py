@@ -26,7 +26,7 @@ class Farmer(models.Model):
     first_login = models.BooleanField(default=True)
     profile_image = models.ImageField(upload_to='profiles/', default='profiles/default.jpg')
 
-    def _str_(self):
+    def str(self):
         return self.name
 
 class Retailer(models.Model):
@@ -52,7 +52,7 @@ class Retailer(models.Model):
     email_otp = models.CharField(max_length=6, blank=True, null=True)
 
 
-def _str_(self):
+def str(self):
         return self.name
 
 
@@ -67,7 +67,7 @@ class Product(models.Model):
     image = models.ImageField(upload_to='product_images/', blank=True, null=True)
     farmer = models.ForeignKey('Farmer', on_delete=models.CASCADE, related_name='products')
 
-    def _str_(self):
+    def str(self):
         return self.product
 
     def save(self, *args, **kwargs):
@@ -124,7 +124,7 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False)
     timestamp = models.DateTimeField(default=timezone.now)
 
-    def _str_(self):
+    def str(self):
         return f"{self.message[:30]}..."
 
 # Order model (unchanged)
@@ -157,7 +157,7 @@ class ChatMessage(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     seen = models.BooleanField(default=False)
 
-    def _str_(self):
+    def str(self):
         if self.sender_farmer:
             return f"{self.sender_farmer.name}: {self.message}"
         if self.sender_retailer:
@@ -171,7 +171,7 @@ class ContactMessage(models.Model):
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
-    def _str_(self):
+    def str(self):
         return f"Message from {self.name} ({self.email})"
 
 
@@ -213,7 +213,7 @@ class Driver(models.Model):
     license_expiry_date = models.DateField(blank=True, null=True)
     vehicle_photo = models.ImageField(upload_to='drivers/vehicle_photos/', blank=True, null=True)
 
-    def __str__(self):
+    def _str_(self):
         return f"{self.name} ({self.vehicle_type})"
 
 
@@ -221,6 +221,9 @@ class Driver(models.Model):
 # class DriverProfile(models.Model): ... को हटा दें
 
 # projectapp/models.py
+
+from django.db import models
+from django.utils import timezone
 
 class Delivery(models.Model):
     STATUS_CHOICES = [
@@ -232,13 +235,11 @@ class Delivery(models.Model):
     ]
 
     order = models.ForeignKey('Order', on_delete=models.CASCADE, related_name='deliveries')
-    driver = models.ForeignKey(Driver, on_delete=models.SET_NULL, null=True, blank=True, related_name='deliveries')
+    driver = models.ForeignKey('Driver', on_delete=models.SET_NULL, null=True, blank=True, related_name='deliveries')
 
     distance_km = models.FloatField(default=0.0)
     delivery_charge = models.FloatField(default=0.0)  # retailer pays
     driver_earning = models.FloatField(default=0.0)  # earning after commission
-
-    # 💡 आवश्यक परिवर्तन: is_paid_out फ़ील्ड जोड़ें
     is_paid_out = models.BooleanField(default=False)
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='assigned')
@@ -248,6 +249,36 @@ class Delivery(models.Model):
 
     def __str__(self):
         return f"Delivery #{self.id} - Order {self.order.id} - {self.status}"
+
+from django.db import models
+
+class SampleRequest(models.Model):
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('picked', 'Picked'),
+        ('delivered', 'Delivered'),
+    ]
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE)
+    retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE)
+    driver = models.ForeignKey(Driver, on_delete=models.SET_NULL, null=True, blank=True)
+
+    quantity = models.FloatField(help_text="Sample quantity in kg")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+
+    rating = models.IntegerField(null=True, blank=True)
+    review = models.TextField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Sample #{self.id} - {self.product.product}"
+
 # models.py
 from django.db import models
 
@@ -258,9 +289,11 @@ class DriverNotification(models.Model):
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def _str_(self):
+    def __str__(self):
         return f"Notif to {self.driver.name} - {self.message[:30]}"
 
+
+from django.db import models
 
 class Order(models.Model):
     STATUS_CHOICES = [
@@ -269,11 +302,12 @@ class Order(models.Model):
         ('Packed', 'Packed'),
         ('Dispatched', 'Dispatched'),
         ('Delivered', 'Delivered'),
+        ('Paid', 'Paid'),  # Added Paid for payment success
     ]
 
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='orders')
-    farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE, related_name='orders',default=1)
-    retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE, related_name='orders')
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='orders')
+    farmer = models.ForeignKey('Farmer', on_delete=models.CASCADE, related_name='orders', default=1)
+    retailer = models.ForeignKey('Retailer', on_delete=models.CASCADE, related_name='orders')
     quantity = models.IntegerField(default=1)
     order_date = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=30, choices=STATUS_CHOICES, default='Pending')
@@ -281,7 +315,25 @@ class Order(models.Model):
     contact = models.CharField(max_length=20, blank=True, null=True)
     current_lat = models.FloatField(null=True, blank=True)
     current_lng = models.FloatField(null=True, blank=True)
-    driver= models.ForeignKey(Driver,on_delete=models.SET_NULL,null=True,blank=True)
+    driver = models.ForeignKey('Driver', on_delete=models.SET_NULL, null=True, blank=True)
 
-    def _str_(self):
+    total_amount = models.FloatField(default=0.0)  # exact amount paid by retailer
+
+    def __str__(self):
         return f"Order#{self.id} - {self.product.product} ({self.retailer.name})"
+
+# models.py (only the Sale model part shown)
+from django.db import models
+
+class Sale(models.Model):
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)   # FK to Product
+    amount = models.FloatField()      # total money received for this sale
+    profit = models.FloatField()      # profit amount for farmer (or net profit)
+    date = models.DateTimeField(auto_now_add=True)
+    quantity = models.FloatField(default=1)
+    status = models.CharField(max_length=50, default='Pending')
+
+    def str(self):
+        # note: Product model field that stores title is called product (string)
+        product_title = getattr(self.product, "product", "Unknown product")
+        return f"{product_title} - {self.amount}"

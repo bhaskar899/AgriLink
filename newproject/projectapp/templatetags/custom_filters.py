@@ -1,22 +1,21 @@
-# projectapp/templatetags/custom_filters.py
 from django import template
 
 register = template.Library()
 
-@register.filter(name='mul')
+@register.filter
 def mul(value, arg):
-    """
-    Multiply value by arg and return formatted number (no extra decimals if integer).
-    Usage: {{ order.quantity|mul:order.product.price }}
-    """
+    """Multiply (x * y)"""
     try:
-        v = float(value)
-        a = float(arg)
-        res = v * a
-        # if integer-like, show without .0
-        if abs(res - int(res)) < 0.000001:
-            return str(int(res))
-        # else show 2 decimals
-        return f"{res:.2f}"
-    except Exception:
-        return ""
+        return float(value) * float(arg)
+    except:
+        return 0
+
+@register.filter
+def div(value, arg):
+    """Divide (x / y)"""
+    try:
+        if float(arg) != 0:
+            return float(value) / float(arg)
+        return 0
+    except:
+        return 0

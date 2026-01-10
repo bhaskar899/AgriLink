@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Q
-from .models import Farmer, Retailer, Product, Order, ChatMessage, Notification
+from .models import Farmer, Retailer, Product, Order, ChatMessage, Notification, Sale, SampleRequest
 from django.core.mail import send_mail
 from django.conf import settings
 
@@ -31,16 +31,6 @@ def farmer_register(request):
         return redirect('farmer_login')
     return render(request, "farmer_register.html")
 
-
-from django.contrib.auth import authenticate, login
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from .models import Farmer
-
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from .models import Farmer
-
 def farmer_login(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -62,13 +52,6 @@ def farmer_login(request):
             messages.error(request, "Invalid username.")
 
     return render(request, "farmer_login.html")
-
-
-
-
-from django.core.mail import send_mail
-import random
-
 
 def retailer_register(request):
     if request.method == "POST":
@@ -108,16 +91,7 @@ def retailer_register(request):
 
     return render(request, "retailer_register.html")
 
-# views.py
-
-from django.http import JsonResponse
-import json
-
-# tasks.py
 from celery import shared_task
-from django.core.mail import send_mail
-from django.conf import settings
-
 @shared_task
 def send_email_otp_async(subject, message, recipient_list):
     """Celery task to send email asynchronously."""
@@ -130,18 +104,9 @@ def send_email_otp_async(subject, message, recipient_list):
     )
     # आप यहाँ logging भी जोड़ सकते हैं
 
-
 # views.py (Required imports)
 import random
 import json
-from django.core.mail import send_mail
-from django.conf import settings
-from django.http import JsonResponse
-from django.shortcuts import render, redirect
-
-
-# from .models import Retailer, ... (आपके अन्य मॉडल)
-
 
 def send_email_otp(request):
     """OTP generate karta hai aur session mein store karke email bhejta hai."""
@@ -174,7 +139,6 @@ def send_email_otp(request):
             # Handle mail sending errors
             print(f"Error sending email: {e}")
             return JsonResponse({"status": "error", "message": "Failed to send OTP email"})
-
 
 def verify_email_otp(request):
     """User dwara entered OTP aur email ko session se check karta hai."""
@@ -209,9 +173,7 @@ def verify_email_otp(request):
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import Retailer # Assuming you import your model
-
 from .models import Retailer
-
 from .models import Retailer
 
 
@@ -246,9 +208,6 @@ def logout(request):
     return redirect('home')
 
 # ---------- Farmer pages ----------
-def farmer_dashboard(request):
-    # simple dashboard - you can add stats later
-    return render(request, "farmer_dashboard.html")
 
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Product, Farmer
@@ -313,48 +272,23 @@ def show_products(request):
     return render(request, "show_products.html", {"products": products})
 
 def farmer_order(request):
-    # list orders for this logged-in farmer
+    # Check login session
     if request.session.get("user_type") != "farmer":
         return redirect("farmer_login")
+
     farmer_name = request.session.get("name")
     farmer = get_object_or_404(Farmer, name=farmer_name)
-    orders = Order.objects.filter(farmer=farmer).order_by('-order_date')
+
+    # 🔥 1) हटाए delivered orders automatically
+    delivered_orders = Order.objects.filter(farmer=farmer, status="Delivered")
+
+    if delivered_orders.exists():
+        delivered_orders.delete()  # 👈 Automatic delete
+
+    # 🔥 2) बाकी orders render करो
+    orders = Order.objects.filter(farmer=farmer).exclude(status="Delivered").order_by('-order_date')
+
     return render(request, "farmer_order.html", {"orders": orders})
-
-# views.py
-# def update_status(request, order_id):
-#     order = get_object_or_404(Order, id=order_id)
-#     if request.method == "POST":
-#         order.status = request.POST.get('status', order.status)
-#         lat = request.POST.get('current_lat')
-#         lng = request.POST.get('current_lng')
-#         if lat and lng:
-#             try:
-#                 order.current_lat = float(lat)
-#                 order.current_lng = float(lng)
-#             except ValueError:
-#                 pass
-#         order.save()
-#
-#         # Notify all retailers (or specific retailer of the order)
-#         retailer = order.retailer
-#         Notification.objects.create(
-#             sender=request.user,
-#             receiver=retailer.user,  # assuming retailer.user points to User model
-#             message=f"Order #{order.id} for {order.product.product} is now {order.status}."
-#         )
-#
-#         return redirect('farmer_order')
-#
-#     return render(request, "update_status.html", {"order": order})
-# ---------- Retailer pages ----------
-def retailer_dashboard(request):
-    return render(request, "retailer_dashboard.html")
-
-from django.http import JsonResponse
-from .models import Product
-from django.shortcuts import render
-
 
 # 🔥 Auto Suggest API
 def ajax_search(request):
@@ -373,7 +307,8 @@ def browse_products(request):
     min_p = request.GET.get('min_price', '')
     max_p = request.GET.get('max_price', '')
 
-    products = Product.objects.all()
+    # ✅ Only products with stock > 0
+    products = Product.objects.filter(quantity__gt=0)
 
     # 🔍 Search
     if q:
@@ -395,49 +330,11 @@ def browse_products(request):
         "products": products
     })
 
-
 def track_order(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     return render(request, "track_order.html", {"order": order})
 
 # ---------- Notifications ----------
-# def notifications(request):
-#     user = request.user
-#     notes = Notification.objects.filter(receiver=user).order_by('-timestamp')
-#     return render(request, "notifications.html", {"notifications": notes})
-#
-# def mark_notification_read(request, nid):
-#     n = get_object_or_404(Notification, id=nid, receiver=request.user)
-#     n.is_read = True
-#     n.save()
-#     return redirect('notifications')
-# ---------- Chat ----------
-from django.shortcuts import get_object_or_404, render
-from django.http import JsonResponse
-from .models import ChatMessage
-from django.views.decorators.csrf import csrf_exempt
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
-from django.db.models import Q
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q
-from .models import ChatMessage
-
-
-# projectapp/views.py (FIXED chat_view)
-
-from .models import ChatMessage, Farmer, Retailer, Order
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
-from django.utils import timezone
-from django.contrib import messages
-from .models import ChatMessage, Order, Farmer, Retailer
-
-# 🟢 Chat Page
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Order, Farmer, Retailer, ChatMessage, Notification
 
 def chat_view(request, order_id):
     order = get_object_or_404(Order, id=order_id)
@@ -516,56 +413,7 @@ def chat_search_api(request, order_id):
         ]
     })
 
-
 from .models import Order, ChatMessage, Farmer, Retailer
-#Payment Method
-# =========================================================
-# Your EXISTING Payment Methods in views.py (No changes needed)
-# =========================================================
-#Payment Method
-import razorpay
-from django.conf import settings
-from django.shortcuts import render, get_object_or_404
-from .models import Order # Ensure 'Order' is imported
-
-import razorpay
-from django.conf import settings
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Product, Order, Retailer
-
-import razorpay
-from django.conf import settings
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Product, Retailer, Order
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.conf import settings
-import razorpay
-from .models import Product, Order, Retailer
-
-
-# 🟢 Step 1: When retailer clicks "Buy Now"
-# =========================
-# UPDATED place_order view
-# =========================
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Product, Retailer, Order
-
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Product, Order, Retailer
-
-
-
-# ✅ Payment success view (final version)
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Order, Product
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import FileResponse
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
-from io import BytesIO
-from .models import Order, Product, Notification
 
 from django.http import FileResponse
 from reportlab.lib.pagesizes import A4
@@ -607,27 +455,7 @@ def generate_receipt(request, order_id):
 
     return FileResponse(buffer, as_attachment=True, filename=f"AgriLink_Receipt_Order_{order.id}.pdf")
 
-
-
-
 from django.shortcuts import render
-
-# def contact(request):
-#     if request.method == "POST":
-#         name = request.POST.get("name")
-#         email = request.POST.get("email")
-#         message = request.POST.get("message")
-#
-#         send_mail(
-#             subject=f"📩 New Contact from {name}",
-#             message=f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}",
-#             from_email=settings.EMAIL_HOST_USER,
-#             recipient_list=[settings.EMAIL_HOST_USER],
-#             fail_silently=False,
-#         )
-#         return render(request, "master.html", {"success": True})
-#     return render(request, "master.html")
-
 
 from django.core.mail import send_mail
 from django.core.validators import validate_email
@@ -686,7 +514,6 @@ Message:
     messages.error(request, f"❌ Email failed even after retrying: {last_error}")
     return redirect("home")# views.py
 # --- Training Views ---
-
 def training(request):
     user_type = request.session.get('user_type')
     name = request.session.get('name')
@@ -719,7 +546,6 @@ def training(request):
     # Show Training Page
     return render(request, "training.html")
 
-
 def training_complete(request):
     name = request.session.get('name')
     user_type = request.session.get('user_type')
@@ -746,22 +572,6 @@ def training_complete(request):
 
     except (Farmer.DoesNotExist, Retailer.DoesNotExist):
         return redirect("home")
-
-
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Farmer, Retailer, Driver
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from .models import Farmer, Retailer, Driver
-
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Farmer, Retailer, Driver
-from django.contrib import messages
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from .models import Farmer, Retailer, Driver
 
 # ===================== FARMER / RETAILER =====================
 from django.shortcuts import render, redirect, get_object_or_404
@@ -822,17 +632,6 @@ def profile_delete(request):
 
     return render(request, "profile_delete.html", {"user": user})
 
-
-# ===================== DRIVER =====================
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-
-
-
-# .models import Driver
 def driver_profile(request):
     driver_id = request.session.get('id')
     if not driver_id:
@@ -912,6 +711,34 @@ def profile_delete_confirm(request):
     request.session.flush()
     return redirect("home")
 
+# Delete Single Notification
+def delete_notification(request, id):
+    n = get_object_or_404(Notification, id=id)
+    n.delete()
+    return redirect('notifications')
+
+
+# Delete All Notifications
+def delete_all_notification(request):
+    Notification.objects.all().delete()  # REMOVE <id> from URL else error
+    return redirect('notifications')
+
+# 🔥 Retailer Orders Auto Delete Delivered
+def retailer_products(request):
+    if request.session.get("user_type") != "retailer":
+        return redirect("retailer_login")
+
+    retailer_name = request.session.get("name")
+    retailer = get_object_or_404(Retailer, name=retailer_name)
+
+    # Delete delivered orders automatically
+    Order.objects.filter(retailer=retailer, status="Delivered").delete()
+
+    # Show all except Delivered
+    orders = Order.objects.filter(retailer=retailer).exclude(status="Delivered").order_by('-order_date')
+
+    return render(request, "retailer_products.html", {"orders": orders})
+
 
 import random
 from django.core.mail import send_mail
@@ -921,7 +748,6 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from .models import Farmer, Retailer
-
 
 def forgot_password(request):
     if request.method == "POST":
@@ -972,7 +798,6 @@ def forgot_password(request):
 
     return render(request, "forgot_password.html")
 
-
 def verify_otp(request):
     if request.method == "POST":
         entered_otp = request.POST.get("otp")
@@ -985,7 +810,6 @@ def verify_otp(request):
             return redirect("verify_otp")
 
     return render(request, "verify_otp.html")
-
 
 def reset_password(request):
     if request.method == "POST":
@@ -1010,8 +834,6 @@ def reset_password(request):
         return redirect("farmer_login" if user_type == "farmer" else "retailer_login")
 
     return render(request, "reset_password.html")
-
-
 
 def notifications_view(request):
     user_type = request.session.get('user_type')
@@ -1052,53 +874,38 @@ import math
 
 import razorpay
 
-from .models import Product, Order, Retailer, Farmer, Driver, Delivery, Notification, DriverNotification
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Product, Order, Retailer, Farmer, Driver, Delivery, Notification, DriverNotification, \
+    Sale  # Ensure Sale is imported!
+
+
+# Assuming 'Sale' model has fields: product, amount, profit, quantity, status (as per your earlier code)
 
 # ---------- PLACE ORDER ----------
-def place_order(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
-
-    # retailer must be logged in
-    retailer_name = request.session.get('name')
-    if not retailer_name or request.session.get('user_type') != 'retailer':
-        messages.error(request, "Please login as Retailer to place an order.")
-        return redirect('retailer_login')
-
-    retailer = get_object_or_404(Retailer, name=retailer_name)
-
-    if request.method == "POST":
-        try:
-            quantity = int(request.POST.get('quantity', '1'))
-        except ValueError:
-            messages.error(request, "Invalid quantity.")
-            return redirect('place_order', product_id=product.id)
-
-        contact = request.POST.get('contact', '').strip()
-        address = request.POST.get('address', '').strip()
-
-        if not contact or not address:
-            messages.error(request, "Please provide address and contact.")
-            return redirect('place_order', product_id=product.id)
-
-        # create order (pending / not paid yet)
-        order = Order.objects.create(
-            product=product,
-            quantity=quantity,
-            retailer=retailer,
-            contact=contact,
-            address=address,
-            farmer=product.farmer,
-            status='Pending'
-        )
-
-        return redirect('payment_page', order_id=order.id)
-
-    # GET -> show place_order form (template should include form with quantity/contact/address)
-    return render(request, "place_order.html", {"product": product})
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+# Ensure Sale model is imported!
+from .models import Product, Order, Retailer, Farmer, Driver, Delivery, Notification, DriverNotification, Sale
 
 
-# ---------- PAYMENT PAGE ----------
+# ---------- PLACE ORDER ----------
+# views.py
+
+# Ensure you have all necessary imports
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.db.models import Sum  # Required for sales_api
+from django.http import JsonResponse  # Required for sales_api
+from .models import Product, Order, Retailer, Farmer, Driver, Delivery, Notification, DriverNotification, Sale
+
+
+# ---------- PLACE ORzzzzzzzzDER (Updated for 95% Profit) ----------
+
+
+
 from django.shortcuts import render, get_object_or_404, redirect
+
 from django.http import HttpResponseForbidden
 from django.contrib import messages
 from .models import Order, Notification, Driver
@@ -1137,52 +944,43 @@ def payment_page(request, order_id):
     }
     return render(request, "payment_page.html", context)
 
-
 # ------------------------
 # Payment Success
 # ------------------------
+from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponseForbidden
+from .models import Order, Delivery, Product, Notification
+
+from django.shortcuts import get_object_or_404, render
+from django.http import HttpResponseForbidden
+from .models import Order, Notification
+
 def payment_success(request, order_id):
     order = get_object_or_404(Order, id=order_id)
 
-    # authorize retailer
     if request.session.get('user_type') != 'retailer' or request.session.get('name') != order.retailer.name:
-        return HttpResponseForbidden("Not authorized.")
+        return HttpResponseForbidden("Not authorized")
 
     if order.status != "Paid":
         order.status = "Paid"
         order.save()
 
-        # Update product stock
         product = order.product
-        if product.quantity is not None and product.quantity >= order.quantity:
+        if product.quantity >= order.quantity:
             product.quantity -= order.quantity
             product.save()
 
-        total_amount = order.quantity * product.price  # total paid by retailer
+        total_amount = order.quantity * product.price
+        order.total_amount = total_amount
+        order.save()
 
-        # ----------------- Distribute Payment -----------------
-        farmer_amount = total_amount * 0.95
-        driver_amount = total_amount * 0.05 if order.driver else 0
+        farmer_amount = round(total_amount * 0.95, 2)
 
-        # Optional: Here you can integrate actual payment transfer logic to bank accounts
-
-        # ------------- Notification to Farmer -------------
         Notification.objects.create(
             sender_retailer=order.retailer,
             receiver_farmer=order.farmer,
-            message=f"Payment received for {order.quantity} kg of '{product.product}' by {order.retailer.name}. Amount credited: ₹{farmer_amount:.2f}"
+            message=f"Payment received for Order #{order.id}. Farmer amount ₹{farmer_amount}"
         )
-
-        # ------------- Notification to Driver (if driver exists) -------------
-        if order.driver:
-            Notification.objects.create(
-                sender_retailer=order.retailer,
-                receiver_driver=order.driver,
-                message=f"You have received your delivery commission of ₹{driver_amount:.2f} for Order #{order.id}."
-            )
-
-        # Assign driver after payment (if your auto_assign_driver logic is needed)
-        auto_assign_driver(order)
 
     return render(request, "payment_success.html", {"order": order})
 
@@ -1190,48 +988,18 @@ def payment_success(request, order_id):
 # Update Status (Farmer)
 # ------------------------
 from .models import Delivery
+from django.shortcuts import get_object_or_404, redirect
+from django.utils import timezone
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from .models import Order, Driver, Delivery, Notification
 
-def update_status(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-
-    if request.method == "POST":
-        status = request.POST.get("status")
-        order.status = status
-
-        driver_id = request.POST.get("driver")
-
-        # ✔ Driver Assign Logic + Delivery Create
-        if driver_id and driver_id != "":
-            driver = Driver.objects.get(id=driver_id)
-            order.driver = driver
-            order.save()
-
-            delivery, created = Delivery.objects.get_or_create(order=order)
-            delivery.driver = driver
-            delivery.status = "assigned"
-            delivery.save()
-
-        order.save()
-
-        Notification.objects.create(
-            sender_farmer=order.farmer,
-            receiver_retailer=order.retailer,
-            message=f"Order #{order.id} status updated to {order.status}"
-        )
-
-        messages.success(request, "Order updated successfully!")
-        return redirect("farmer_order")
-
-    drivers = Driver.objects.all()
-    return render(request, "update_status.html", {"order": order, "drivers": drivers})
 
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
-
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from .models import Notification, Farmer, Retailer, Driver
-
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Notification, Farmer, Retailer, Driver
 
@@ -1257,215 +1025,7 @@ def notifications(request):
 
     return render(request, "notifications.html", {"notifications": notes})
 
-
-def mark_notification_read(request, nid):
-    user_type = request.session.get('user_type')
-    name = request.session.get('name')
-    n = None
-
-    # 1. नोटिफ़िकेशन ऑब्जेक्ट को ढूंढें
-    if user_type == "farmer":
-        user = Farmer.objects.filter(name=name).first()
-        n = get_object_or_404(Notification, id=nid, receiver_farmer=user)
-    elif user_type == "retailer":
-        user = Retailer.objects.filter(name=name).first()
-        n = get_object_or_404(Notification, id=nid, receiver_retailer=user)
-    elif user_type == "driver":
-        user = Driver.objects.filter(name=name).first()
-        n = get_object_or_404(Notification, id=nid, receiver_driver=user)
-
-    if not n:
-        return redirect("notifications")
-
-    # 2. 'पढ़ा गया' (Read) मार्क करें
-    n.is_read = True
-    n.save()
-
-    # 3. 🎯 अब नोटिफ़िकेशन गायब हो जाएगा!
-
-    # 4. रीडायरेक्ट लॉजिक (सरलतम तरीका)
-
-    # यदि आप चाहते हैं कि नोटिफ़िकेशन क्लिक होने पर ड्राइवर को सीधे 'ऑर्डर डिटेल्स' पर ले जाया जाए,
-    # तो आप यहाँ ऑर्डर ID निकाल सकते हैं।
-
-    # उदाहरण: यदि मैसेज में "Order #<ID>" है
-    if user_type == "driver" and ("Order #" in n.message):
-        try:
-            order_id = n.message.split('#')[1].split()[0]
-            return redirect("order_detail", order_id=order_id)
-        except:
-            pass  # अगर ID निकालने में कोई त्रुटि हो, तो default redirect पर जाएँ
-
-    # 5. डिफ़ॉल्ट रूप से, नोटिफ़िकेशन पेज पर वापस रीडायरेक्ट करें
-    return redirect("notifications")
-
-from django.utils import timezone
-from django.shortcuts import get_object_or_404, redirect
-from django.core.mail import send_mail
-from .models import Driver, Notification, Delivery, Farmer, Retailer  # सुनिश्चित करें कि ये सभी import हों
-
-from django.utils import timezone
-from .models import Driver, Notification, Delivery  # सुनिश्चित करें कि सभी आवश्यक मॉडल import हैं
-
-
-def auto_assign_driver(order):
-    if not order or not hasattr(order, 'id'):
-        return None
-
-    # 1. ड्राइवर की उपलब्धता की जाँच करें
-    driver = Driver.objects.filter(is_available=True).first()
-
-    if not driver:
-        # अगर कोई ड्राइवर उपलब्ध नहीं है, तो तुरंत Farmer को नोटिफ़ाई करके रुक जाएं
-        Notification.objects.create(
-            receiver_farmer=order.farmer,
-            message=f"No drivers available yet for Order #{order.id}."
-        )
-        return None  # फ़ंक्शन यहीं रुक जाता है, असाइनमेंट नहीं होता
-
-    # --- असाइनमेंट और गणना लॉजिक (केवल ड्राइवर उपलब्ध होने पर चलता है) ---
-
-    # 2. गणना
-    estimated_distance_km = 10.0
-    delivery_charge = round(estimated_distance_km * driver.rate_per_km, 2)
-    platform_commission_pct = 0.20
-    driver_earning = round(delivery_charge * (1 - platform_commission_pct), 2)
-
-    # 3. डिलीवरी रिकॉर्ड बनाएं
-    delivery = Delivery.objects.create(
-        order=order,
-        driver=driver,
-        distance_km=estimated_distance_km,
-        delivery_charge=delivery_charge,
-        driver_earning=driver_earning,
-        status='assigned',
-        assigned_at=timezone.now()
-    )
-
-    # 4. ऑर्डर और ड्राइवर की स्थिति अपडेट करें
-    # auto_assign_driver फ़ंक्शन के अंदर
-
-    # 4. ऑर्डर और ड्राइवर की स्थिति अपडेट करें
-    order.driver = driver  # <--- यह लाइन सही है (Order में driver फ़ील्ड होना चाहिए)
-    order.status = "Assigned to Driver"
-    order.save()
-    # ...
-    # 💡 ड्राइवर को unavailable करें (यह बहुत महत्वपूर्ण है)
-    driver.is_available = False
-    driver.save()
-
-    # 5. नोटिफ़िकेशन भेजें (केवल सफल असाइनमेंट के बाद)
-
-    # 🔔 NOTIFICATION -> DRIVER (असाइनमेंट नोटिफ़िकेशन)
-    Notification.objects.create(
-        receiver_driver=driver,
-        message=f"You have been assigned Order #{order.id}. Please check your dashboard."
-    )
-
-    # 🔔 NOTIFICATION -> FARMER
-    Notification.objects.create(
-        receiver_farmer=order.farmer,
-        message=f"Driver {driver.name} assigned for Order #{order.id}."
-    )
-
-    # 🔔 NOTIFICATION -> RETAILER
-    Notification.objects.create(
-        receiver_retailer=order.retailer,
-        message=f"Driver {driver.name} will deliver Order #{order.id}."
-    )
-
-    return delivery
-
-# Payment (5% commission) Logic
-
-# views.py या utils.py में होना चाहिए
-# views.py या utils.py में होना चाहिए
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from .models import Order, Delivery  # सुनिश्चित करें कि Delivery मॉडल import हो रहा है
-
-
-# 🌟 1. FIX: send_driver_payment_notification को import/define करें 🌟
-# अगर आपने इसे utils.py में रखा है:
-# from .utils import send_driver_payment_notification
-#
-# या अगर आप इसे इसी views.py फाइल में define कर रहे हैं:
-def send_driver_payment_notification(order):
-    from .models import Notification, Delivery
-
-    # ✔ 1. Delivery record confirm karo
-    delivery = Delivery.objects.filter(order=order).first()
-    if not delivery:
-        print("⚠ No Delivery record found!")
-        return
-
-    # ✔ 2. Driver confirm karo
-    driver = delivery.driver
-    if not driver:
-        print("⚠ No driver found for this order!")
-        return
-
-    # ✔ 3. delivery_charge confirm karo
-    delivery_charge = delivery.delivery_charge or 0
-    if delivery_charge <= 0:
-        delivery_charge = round((delivery.distance_km or 10) * (driver.rate_per_km or 12), 2)
-        delivery.delivery_charge = delivery_charge
-        delivery.save()
-
-    # ✔ 4. 5% commission calculate
-    commission = round(delivery_charge * 0.05, 2)
-
-    # ✔ 5. Notification send
-    Notification.objects.create(
-        receiver_driver=driver,
-        message=f"💰 Payment received for Order #{order.id}. Your 5% earning: ₹{commission}."
-    )
-
-    print(f"Notification sent to driver {driver.name}")
-
-# आपका पेमेंट प्रोसेसिंग व्यू
-def complete_order_payment(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-
-    if request.method == "POST" and request.POST.get('payment_status') == 'SUCCESS':
-
-        # Update order
-        order.status = "Paid & Completed"
-        order.save()
-
-        # Delivery update
-        delivery = Delivery.objects.filter(order=order).first()
-        if delivery:
-            delivery.status = "Completed"
-            delivery.save()
-
-        # ✔ FIX: Driver ko 5% earning notification
-        send_driver_payment_notification(order)
-
-        messages.success(request, f"Payment for Order #{order_id} complete.")
-        return redirect('retailer_dashboard')
-
-    messages.error(request, "Payment failed or not initiated.")
-    return redirect('order_detail', order_id=order_id)
-
-
-
-# views.py (या जहाँ भी आपका पेमेंट लॉजिक है)
-
-
-def retailer_products(request):
-    if request.session.get("user_type") != "retailer":
-        return redirect("retailer_login")
-
-    retailer_name = request.session.get('name')
-    retailer = get_object_or_404(Retailer, name=retailer_name)
-
-    orders = Order.objects.filter(retailer=retailer).order_by('-order_date')
-    for o in orders:
-        o.total_price = round(o.quantity * o.product.price, 2)
-
-    return render(request, "retailer_products.html", {"orders": orders})
+# views.py (Update 'mark_notification_read')
 
 
 # ---------- DRIVER AUTH / DASHBOARD ----------
@@ -1498,12 +1058,9 @@ def driver_login(request):
             messages.error(request, "Driver not found")
     return render(request, "driver_login.html")
 
-
-
 def driver_logout(request):
     request.session.flush()
     return redirect('home')
-
 
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib import messages
@@ -1570,85 +1127,6 @@ def driver_register(request):
     # नोट: आपको VEHICLE_CHOICES पास करने की आवश्यकता हो सकती है यदि आप ड्रॉपडाउन का उपयोग करते हैं
     return render(request, "driver_register.html")
 
-
-
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
-from django.views.decorators.http import require_POST
-from django.utils import timezone
-from .models import Order, Delivery  # सुनिश्चित करें कि Delivery मॉडल import है
-
-
-# views.py (Updated driver_mark_picked)
-
-@require_POST
-def driver_mark_picked(request, delivery_id):
-    delivery = get_object_or_404(Delivery, id=delivery_id)
-    order = delivery.order
-
-    if delivery.status == 'assigned':
-
-        # A. Delivery स्टेटस अपडेट करें
-        delivery.status = 'picked'
-        delivery.picked_at = timezone.now()
-        delivery.save()
-
-        # B. Order स्टेटस अपडेट करें
-        order.status = "Picked"
-        order.save()
-
-        messages.success(request, f"Order #{order.id} is picked and is now in transit.")
-    else:
-        messages.warning(request, f"Cannot mark picked. Current status: {delivery.status}")
-
-    # 💡 Note: URL कंसिस्टेंसी के लिए 'driver_assigned_deliveries' की जगह 'driver_deliveries' उपयोग करें
-    return redirect('driver_deliveries')
-
-
-# You should also update the driver_mark_delivered view for consistency:
-# views.py (Updated driver_mark_delivered)
-
-# views.py (Updated driver_mark_delivered)
-
-@require_POST
-def driver_mark_delivered(request, delivery_id):
-    delivery = get_object_or_404(Delivery, id=delivery_id)
-    order = delivery.order
-
-    if delivery.status == "picked":
-
-        # ✔ Correct Delivery Status
-        delivery.status = "delivered"
-        delivery.delivered_at = timezone.now()
-        delivery.save()
-
-        # ✔ Correct Order Status
-        order.status = "Delivered"
-        order.save()
-
-        # ✔ Make Driver Available
-        driver = delivery.driver
-        if driver:
-            driver.is_available = True
-            driver.save()
-
-        # ✔ Notification to Retailer
-        Notification.objects.create(
-            receiver_retailer=order.retailer,
-            message=f"Order #{order.id} has been delivered successfully!"
-        )
-
-        messages.success(request, f"Order #{order.id} marked as Delivered!")
-
-    else:
-        messages.warning(
-            request,
-            f"Order #{order.id} must be 'picked' before marking as Delivered. Current: {delivery.status}"
-        )
-
-    return redirect("driver_deliveries")
-
-
 def driver_toggle_availability(request):
     if request.method == "POST":
         driver_id = request.session.get("id")
@@ -1664,7 +1142,6 @@ def driver_toggle_availability(request):
 
 def driver_home(request):
     return render(request,"driver_home.html")
-
 
 from .models import Delivery, Driver
 
@@ -1687,54 +1164,42 @@ from django.utils import timezone
 
 # सुनिश्चित करें कि आपके सभी मॉडल यहां imported हैं
 
-def assign_driver(request, order_id):
-    if request.method == 'POST':
-        order = get_object_or_404(Order, id=order_id)
-        driver = get_object_or_404(Driver, id=request.POST['driver_id'])
+# views.py
 
-        if Delivery.objects.filter(order=order).exists():
-            messages.warning(request, "Delivery already exists for this order.")
-            return redirect('order_detail', order_id=order_id)
+from django.utils import timezone
+from datetime import timedelta
+from django.db.models import Sum
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Order, Driver, Delivery, Notification  # Ensure all models are imported!
 
-        # ------------------------------
-        # ⭐ CORRECT EARNING CALCULATION
-        # ------------------------------
-        retailer_amount = order.product.price * order.quantity
-        driver_earning = round(retailer_amount * 0.05, 2)  # 5% earning
-        delivery_charge = retailer_amount                  # retailer pays only product amount
 
-        # ------------------------------
-        # Create Delivery
-        # ------------------------------
-        delivery = Delivery.objects.create(
-            order=order,
-            driver=driver,
-            status='assigned',
-            assigned_at=timezone.now(),
-            distance_km=0.0,
-            delivery_charge=delivery_charge,
-            driver_earning=driver_earning
-        )
+# ---------------------------------------------------------------------------------
+# views.py
 
-        # Order status update
-        order.status = "Assigned to Driver"
+def complete_order_payment(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+
+    if request.method == "POST" and request.POST.get('payment_status') == 'SUCCESS':
+
+        # Update order
+        order.status = "Paid & Completed"
         order.save()
 
-        # Driver offline
-        driver.is_available = False
-        driver.save()
+        # Delivery update
+        delivery = Delivery.objects.filter(order=order).first()
+        if delivery:
+            delivery.status = "Completed"
+            # Agar payment success ho gaya hai, toh yahan driver ko payout 'True' kar dena chahiye
+            # ya yeh step ek alag admin process mein hota hai.
+            # Filhaal, hum status 'Completed' rakhte hain.
+            delivery.save()
 
-        # ⭐ DRIVER NOTIFICATION — वापस enabled
-        DriverNotification.objects.create(
-            driver=driver,
-            message=f"New delivery assigned! Order #{order.id}. Your earning: ₹{driver_earning}"
-        )
+        messages.success(request, f"Payment for Order #{order_id} complete.")
+        return redirect('retailer_dashboard')
 
-        messages.success(request, f"Order #{order.id} successfully assigned to {driver.name}.")
-        return redirect('order_detail', order_id=order_id)
-
+    messages.error(request, "Payment failed or not initiated.")
     return redirect('order_detail', order_id=order_id)
-
 
 from django.core.mail import send_mail
 from django.contrib import messages
@@ -1873,51 +1338,7 @@ from django.db.models import Sum
 from datetime import timedelta, date
 from django.utils import timezone
 
-def driver_dashboard(request):
-    driver_id = request.session.get("id")
-    if not driver_id:
-        return redirect("driver_login")
-
-    driver = get_object_or_404(Driver, id=driver_id)
-
-    # -------------------------
-    #  REAL TIME CALCULATIONS
-    # -------------------------
-
-    # Total earnings (all delivered)
-    total_earnings = (
-        Delivery.objects.filter(driver=driver, status="delivered")
-        .aggregate(sum=Sum("driver_earning"))["sum"] or 0.0
-    )
-
-    # Pending payout
-    pending_payout = (
-        Delivery.objects.filter(driver=driver, status="delivered", is_paid_out=False)
-        .aggregate(sum=Sum("driver_earning"))["sum"] or 0.0
-    )
-
-    # Weekly deliveries
-    one_week_ago = timezone.now() - timedelta(days=7)
-    weekly_deliveries = Delivery.objects.filter(
-        driver=driver,
-        status="delivered",
-        delivered_at__gte=one_week_ago
-    ).count()
-
-    # Last 5 deliveries
-    delivery_history = Delivery.objects.filter(
-        driver=driver, status="delivered"
-    ).order_by("-delivered_at")[:5]
-
-    context = {
-        "driver": driver,
-        "total_earnings": f"{total_earnings:.2f}",
-        "pending_payout": f"{pending_payout:.2f}",
-        "weekly_deliveries": weekly_deliveries,
-        "delivery_history": delivery_history,
-    }
-
-    return render(request, "driver_dashboard.html", context)
+# views.py
 
 
 from django.shortcuts import render, redirect
@@ -1962,28 +1383,6 @@ from django.views.decorators.http import require_POST
 from django.utils import timezone
 from .models import Delivery, Notification, Driver
 
-def driver_assigned_deliveries(request):
-    driver_id = request.session.get('id')
-    if not driver_id:
-        return redirect('driver_login')
-
-    driver = get_object_or_404(Driver, id=driver_id)
-
-    # 👉 Only active deliveries (Assigned or Picked)
-    active_deliveries = Delivery.objects.filter(
-        driver=driver
-    ).exclude(
-        Q(status__iexact='delivered') | Q(status__iexact='canceled')
-    ).select_related('order', 'order__product', 'order__retailer')
-
-    unread_notifications = Notification.objects.filter(receiver_driver=driver, is_read=False).count()
-
-    context = {
-        'deliveries': active_deliveries,
-        'driver': driver,
-        'unread_notifications': unread_notifications,
-    }
-    return render(request, "driver_assigned_deliveries.html", context)
 
 def update_delivery_status(request, delivery_id):
     delivery = get_object_or_404(Delivery, id=delivery_id)
@@ -2011,3 +1410,916 @@ def update_delivery_status(request, delivery_id):
         delivery.status = new_status
         delivery.save()
         return redirect("driver_dashboard")
+
+from django.shortcuts import render
+from django.db.models import Sum
+from django.http import JsonResponse
+from .models import Farmer, Product, Sale
+
+
+# projectapp/views.py
+# ================== FARMER DASHBOARD (FINAL WORKING) ==================
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Sum
+
+# ================== API FOR LIVE UPDATES IN DASHBOARD ==================
+
+from django.http import JsonResponse
+
+# ================== API FOR LIVE UPDATES IN DASHBOARD ==================
+
+from django.db.models import Sum
+
+# views.py (Corrected send_driver_payment_notification)
+def send_driver_payment_notification(order):
+    from .models import Notification, Delivery
+
+    delivery = Delivery.objects.filter(order=order).first()
+    if not delivery: return
+
+    driver = delivery.driver
+    if not driver: return
+
+    # ✔ 4. Driver's actual earning ko use karein, 5% commission nahi
+    driver_net_earning = delivery.driver_earning or 0
+
+    # ✔ 5. Notification send
+    Notification.objects.create(
+        receiver_driver=driver,
+        message=f"💰 Payout requested for Order #{order.id}. Your earning: ₹{driver_net_earning:.2f}."
+    )
+
+from django.db import transaction
+
+def place_order(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    # ✅ Retailer login check
+    retailer_name = request.session.get('name')
+    if not retailer_name or request.session.get('user_type') != 'retailer':
+        messages.error(request, "Please login as Retailer to place an order.")
+        return redirect('retailer_login')
+
+    retailer = get_object_or_404(Retailer, name=retailer_name)
+
+    if request.method == "POST":
+        # ✅ Quantity validation
+        try:
+            quantity = int(request.POST.get('quantity', '1'))
+            if quantity <= 0:
+                messages.error(request, "Quantity must be greater than zero.")
+                return redirect('place_order', product_id=product.id)
+        except ValueError:
+            messages.error(request, "Invalid quantity.")
+            return redirect('place_order', product_id=product.id)
+
+        # ✅ Stock check
+        if product.quantity < quantity:
+            messages.error(request, "Insufficient stock available.")
+            return redirect('place_order', product_id=product.id)
+
+        contact = request.POST.get('contact', '').strip()
+        address = request.POST.get('address', '').strip()
+
+        if not contact or not address:
+            messages.error(request, "Please provide address and contact.")
+            return redirect('place_order', product_id=product.id)
+
+        # ✅ Price calculation
+        unit_price = product.price
+        total_amount = unit_price * quantity
+
+        COMMISSION_RATE = 0.05
+        calculated_profit = total_amount * (1 - COMMISSION_RATE)
+
+        # 🔥🔥 ATOMIC BLOCK (MOST IMPORTANT)
+        with transaction.atomic():
+
+            # ✅ Create Order
+            order = Order.objects.create(
+                product=product,
+                quantity=quantity,
+                retailer=retailer,
+                contact=contact,
+                address=address,
+                farmer=product.farmer,
+                status='Pending'
+            )
+
+            # ✅ Create Sale
+            Sale.objects.create(
+                product=product,
+                amount=total_amount,
+                profit=calculated_profit,
+                quantity=quantity,
+                status='Pending'
+            )
+
+            # ✅ REDUCE STOCK
+            product.quantity -= quantity
+
+            # ✅ AUTO DELETE WHEN STOCK 0
+            if product.quantity <= 0:
+                product.delete()
+            else:
+                product.save()
+
+        messages.success(
+            request,
+            f"Order placed successfully! Total amount: ₹{total_amount:.2f}"
+        )
+
+        return redirect('payment_page', order_id=order.id)
+
+    return render(request, "place_order.html", {"product": product})
+
+
+# ================== API FOR LIVE UPDATES IN DASHBOARD ==================
+
+# B. sales_api (To fetch all data for the dashboard)
+
+def sales_api(request):
+    farmer_name = request.session.get("name")
+    farmer = get_object_or_404(Farmer, name=farmer_name)
+
+    # Calculate Totals
+    # Summing 'amount' for Total Sales (100% value)
+    total_sales = Sale.objects.filter(product__farmer=farmer).aggregate(total=Sum("amount"))["total"] or 0
+    # Summing 'profit' for Total Profit (95% net income)
+    total_profit = Sale.objects.filter(product__farmer=farmer).aggregate(total=Sum("profit"))["total"] or 0
+    total_products = Product.objects.filter(farmer=farmer).count()
+
+    # Get Recent Sales
+    last_sales = Sale.objects.filter(product__farmer=farmer).order_by("-date")[:5]
+
+    sales_data = [{
+        "product": sale.product.product,
+        "amount": sale.amount,
+        "profit": sale.profit,
+        "date": sale.date.strftime("%d-%m-%Y %H:%M")
+    } for sale in last_sales]
+
+    # Combined Data to send back
+    data = {
+        "totals": {
+            "total_sales": total_sales,
+            "total_profit": total_profit,
+            "total_products": total_products
+        },
+        "recent_sales": sales_data
+    }
+
+    return JsonResponse(data)
+
+def farmer_dashboard(request):
+
+    # ❗ LOGIN CHECK
+    if request.session.get("user_type") != "farmer":
+        return redirect("farmer_login")
+
+    farmer_name = request.session.get("name")
+    farmer = get_object_or_404(Farmer, name=farmer_name)
+
+    # 🌾 Total Sales (All orders of all products of this farmer)
+    total_sales = Sale.objects.filter(product__farmer=farmer).aggregate(total=Sum("amount"))["total"] or 0
+
+    # 📦 Total Products
+    total_products = Product.objects.filter(farmer=farmer).count()
+
+    # 💰 Total Profit
+    total_profit = Sale.objects.filter(product__farmer=farmer).aggregate(total=Sum("profit"))["total"] or 0
+
+    # 🔥 Recent 5 Sales Live View
+    recent_sales = Sale.objects.filter(product__farmer=farmer).order_by("-date")[:5]
+
+    return render(request, "farmer_dashboard.html", {
+        "farmer": farmer,
+        "total_sales": total_sales,
+        "total_products": total_products,
+        "total_profit": total_profit,
+        "recent_sales": recent_sales
+    })
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Count, Sum
+from .models import Retailer, Order  # Ensure Retailer and Order models are imported!
+from django.utils import timezone
+
+# def retailer_dashboard(request):
+#     retailer_name = request.session.get('name')
+#     if not retailer_name or request.session.get('user_type') != 'retailer':
+#         return redirect('retailer_login')
+#
+#     retailer = get_object_or_404(Retailer, name=retailer_name)
+#
+#     # ✅ Total Orders
+#     total_orders = Order.objects.filter(retailer=retailer).count()
+#
+#     # ✅ Delivered / Completed Orders - Status list simplified for consistency
+#     completed_statuses = ['Delivered', 'Completed'] # 'DELIVERED' removed for consistency
+#
+#     completed_orders = Order.objects.filter(
+#         retailer=retailer,
+#         status__in=completed_statuses
+#     )
+#
+#     # ✅ Total Amount Spent - UPDATED to use order.total_amount
+#     total_spent = 0
+#     for order in completed_orders:
+#         # ❌ OLD: total_spent += order.quantity * order.product.price
+#         # ✅ NEW: Use the saved total_amount for accurate spending
+#         total_spent += order.total_amount
+#
+#     # ✅ Pending Orders (anything NOT delivered/cancelled)
+#     pending_orders = Order.objects.filter(
+#         retailer=retailer
+#     ).exclude(
+#         status__in=completed_statuses + ['Cancelled']
+#     ).count()
+#
+#     # ✅ Recent Orders
+#     recent_orders = Order.objects.filter(
+#         retailer=retailer
+#     ).order_by('-order_date')[:5]
+#
+#     for order in recent_orders:
+#         # Use the saved total_amount if available, otherwise calculate
+#         order.calculated_amount = order.total_amount if order.total_amount is not None else (order.quantity * order.product.price)
+#
+#
+#     context = {
+#         'retailer': retailer,
+#         'total_orders': total_orders,
+#         'pending_orders': pending_orders,
+#         'total_spent': f"{total_spent:.2f}",
+#         'recent_orders': recent_orders,
+#     }
+#
+#     return render(request, "retailer_dashboard.html", context)
+
+#########################################################################################333
+
+
+# views.py (Only the modified/driver-related functions are shown)
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Sum, Q
+from datetime import timedelta
+from django.utils import timezone
+from django.contrib import messages
+# Ensure all required models are imported:
+from .models import Order, Driver, Delivery, Notification, Retailer, Farmer
+from django.views.decorators.http import require_POST
+
+
+# --- CORE DRIVER LOGIC FIXES ---
+
+from django.utils import timezone
+from .models import Delivery, Driver, Notification
+
+# def auto_assign_driver(order):
+#     if not order or not hasattr(order, 'id'):
+#         return None
+#
+#     driver = Driver.objects.filter(is_available=True).first()
+#
+#     if not driver:
+#         Notification.objects.create(
+#             receiver_farmer=order.farmer,
+#             message=f"No drivers available yet for Order #{order.id}."
+#         )
+#         return None
+#
+#     # ✅ Distance logic (temporary fallback)
+#     distance_km = order.distance_km if hasattr(order, "distance_km") and order.distance_km else 10
+#
+#     # ✅ Delivery charge calculation
+#     delivery_charge = round(distance_km * driver.rate_per_km, 2)
+#
+#     delivery = Delivery.objects.create(
+#         order=order,
+#         driver=driver,
+#         distance_km=distance_km,
+#         delivery_charge=delivery_charge,   # ✅ FIXED
+#         driver_earning=0.0,
+#         status='assigned',
+#         assigned_at=timezone.now()
+#     )
+#
+#     order.driver = driver
+#     order.status = "Assigned to Driver"
+#     order.save()
+#
+#     driver.is_available = False
+#     driver.save()
+#
+#     Notification.objects.create(
+#         receiver_driver=driver,
+#         message=f"You have been assigned Order #{order.id}."
+#     )
+#     Notification.objects.create(
+#         receiver_farmer=order.farmer,
+#         message=f"Driver {driver.name} assigned for Order #{order.id}."
+#     )
+#     Notification.objects.create(
+#         receiver_retailer=order.retailer,
+#         message=f"Driver {driver.name} will deliver Order #{order.id}."
+#     )
+#
+#     return delivery
+
+
+# ----------------------------------------------------------------------
+
+# --- DRIVER DASHBOARD VIEW (Data calculation is correct) ---
+
+from django.shortcuts import render, redirect
+from django.db.models import Sum
+from .models import Driver, Delivery
+
+# def driver_dashboard(request):
+#     driver_id = request.session.get("id")
+#     if not driver_id:
+#         return redirect("driver_login")
+#
+#     driver = Driver.objects.filter(id=driver_id).first()
+#     if not driver:
+#         return redirect("driver_login")
+#
+#     delivered = Delivery.objects.filter(driver=driver, status="delivered")
+#
+#     context = {
+#         "driver": driver,
+#         "completed_deliveries": delivered.count(),
+#         "total_earnings": delivered.aggregate(
+#             total=Sum("driver_earning")
+#         )["total"] or 0,
+#         "delivery_history": delivered.order_by("-delivered_at"),
+#     }
+#     return render(request, "driver_dashboard.html", context)
+
+# --- NOTIFICATION FIX (For click error) ---
+
+def mark_notification_read(request, nid):
+    user_type = request.session.get('user_type')
+    name = request.session.get('name')
+    n = None
+
+    # 1. Note object find karne ka logic (as before)
+    if user_type == "farmer":
+        user = Farmer.objects.filter(name=name).first()
+        n = get_object_or_404(Notification, id=nid, receiver_farmer=user)
+    elif user_type == "retailer":
+        user = Retailer.objects.filter(name=name).first()
+        n = get_object_or_404(Notification, id=nid, receiver_retailer=user)
+    elif user_type == "driver":
+        user = Driver.objects.filter(name=name).first()
+        n = get_object_or_404(Notification, id=nid, receiver_driver=user)
+
+    if not n:
+        return redirect("notifications")
+
+    # 2. 'पढ़ा गया' (Read) मार्क करें
+    n.is_read = True
+    n.save()
+
+    # 3. 🎯 Redirection Logic with robust error handling (FIXED)
+    if user_type in ["driver", "farmer", "retailer"] and ("Order #" in n.message):
+        try:
+            # Order ID extraction
+            parts = n.message.split('Order #')
+            if len(parts) > 1:
+                # Extracts the ID number, cleans up potential trailing characters, and converts to int
+                order_id_str = parts[1].split()[0].replace('.', '').replace(',', '')
+                order_id = int(order_id_str)
+                return redirect("order_detail", order_id=order_id)
+        except Exception:
+            # If parsing fails, fall through to default redirect
+            pass
+
+            # 4. Default redirect
+    return redirect("notifications")
+
+
+# ----------------------------------------------------------------------
+
+# --- DELIVERY STATUS ACTION VIEWS (FIXED Action buttons logic) ---
+
+@require_POST
+def driver_mark_picked(request, delivery_id):
+    delivery = get_object_or_404(Delivery, id=delivery_id)
+    order = delivery.order
+
+    if delivery.status == 'assigned':
+        delivery.status = 'picked'
+        delivery.picked_at = timezone.now()
+        delivery.save()
+
+        order.status = "Picked"
+        order.save()
+
+        messages.success(request, f"Order #{order.id} is picked and is now in transit.")
+    else:
+        messages.warning(request, f"Cannot mark picked. Current status: {delivery.status}")
+
+    # `driver_mark_picked` view के अंत में:
+    return redirect('driver_deliveries')
+
+from django.shortcuts import get_object_or_404, redirect
+from django.utils import timezone
+from .models import Delivery
+
+from django.utils import timezone
+
+# def driver_mark_delivered(request, delivery_id):
+#     delivery = get_object_or_404(Delivery, id=delivery_id)
+#
+#     # 1. Update Delivery
+#     # ✅ ONLY delivery_charge
+#     delivery.driver_earning = round(delivery.delivery_charge * 0.05, 2)
+#
+#     # Status को 'Delivered' (capitalize) किया गया है ताकि यह retailer_dashboard से मैच करे
+#     delivery.status = "Delivered"
+#     delivery.delivered_at = timezone.now()
+#     delivery.save()
+#
+#     # 2. ✅ Update the related Order's status
+#     try:
+#         # Assuming Delivery model has a ForeignKey to Order named 'order'
+#         order = delivery.order
+#         order.status = "Delivered"
+#         order.save()
+#     except Delivery.DoesNotExist:
+#         # Handle case where the Delivery object might not be linked to an Order
+#         # (Though it should be in a functional app)
+#         pass
+#
+#     return redirect("driver_dashboard")
+
+
+def driver_assigned_deliveries(request):
+    driver_id = request.session.get('id')
+    if not driver_id:
+        return redirect('driver_login')
+
+    driver = get_object_or_404(Driver, id=driver_id)
+
+    # Active deliveries: Assigned or Picked
+    active_deliveries = Delivery.objects.filter(
+        driver=driver
+    ).exclude(
+        Q(status__iexact='delivered') | Q(status__iexact='canceled')
+    ).select_related('order', 'order__product', 'order__retailer', 'order__farmer')  # Added farmer for pickup details
+
+    context = {
+        'deliveries': active_deliveries,
+        'driver': driver,
+    }
+    return render(request, "driver_assigned_deliveries.html", context)
+
+
+####################################################################################################333
+
+
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.db.models import Sum
+from django.db import transaction
+from django.http import HttpResponseForbidden, JsonResponse
+from django.views.decorators.http import require_POST
+from django.contrib import messages
+
+
+# Assuming models are imported correctly (Order, Driver, Delivery, Product, Retailer, Notification, Sale)
+# Assuming settings and razorpay are imported correctly
+
+# --- RETAILER VIEWS ---
+
+# def payment_page(request, order_id):
+#     # ... (No major changes needed here)
+#     order = get_object_or_404(Order, id=order_id)
+#     if request.session.get('user_type') != 'retailer' or request.session.get('name') != order.retailer.name:
+#         return HttpResponseForbidden("Not authorized.")
+#
+#     amount_rupees = order.quantity * order.product.price
+#     try:
+#         amount_paise = int(round(amount_rupees * 100))
+#     except Exception:
+#         amount_paise = int(order.product.price * 100)
+#
+#     # Assuming razorpay and settings are available
+#     # client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+#     # razorpay_order = client.order.create({"amount": amount_paise, "currency": "INR", "payment_capture": "1"})
+#
+#     context = {
+#         "product": order.product,
+#         "order": order,
+#         "amount": amount_rupees,
+#         # "razorpay_order_id": razorpay_order["id"], # Uncomment when razorpay client is active
+#         # "razorpay_key": settings.RAZORPAY_KEY_ID,   # Uncomment when settings is active
+#     }
+#     return render(request, "payment_page.html", context)
+#
+#
+# def payment_success(request, order_id):
+#     # ... (No major changes needed here)
+#     order = get_object_or_404(Order, id=order_id)
+#
+#     if request.session.get('user_type') != 'retailer' or request.session.get('name') != order.retailer.name:
+#         return HttpResponseForbidden("Not authorized")
+#
+#     if order.status != "Paid":
+#         order.status = "Paid"
+#         order.save()
+#
+#         product = order.product
+#         if product.quantity >= order.quantity:
+#             product.quantity -= order.quantity
+#             product.save()
+#
+#         total_amount = order.quantity * product.price
+#         order.total_amount = total_amount
+#         order.save()
+#
+#         farmer_amount = round(total_amount * 0.95, 2)
+#
+#         Notification.objects.create(
+#             sender_retailer=order.retailer,
+#             receiver_farmer=order.farmer,
+#             message=f"Payment received for Order #{order.id}. Farmer amount ₹{farmer_amount}"
+#         )
+#
+#         # ✅ Auto-assign driver immediately after payment success (Recommended for efficiency)
+#         # auto_assign_driver(order) # If you want to enable auto assignment
+#
+#     return render(request, "payment_success.html", {"order": order})
+
+
+def retailer_dashboard(request):
+    retailer_name = request.session.get('name')
+    if not retailer_name or request.session.get('user_type') != 'retailer':
+        return redirect('retailer_login')
+
+    retailer = get_object_or_404(Retailer, name=retailer_name)
+
+    # ✅ Total Orders
+    total_orders = Order.objects.filter(retailer=retailer).count()
+
+    # ✅ Delivered / Completed Orders - Status list simplified for consistency
+    completed_statuses = ['Delivered', 'Completed']
+
+    completed_orders = Order.objects.filter(
+        retailer=retailer,
+        status__in=completed_statuses
+    )
+
+    # ✅ Total Amount Spent - FIX for potential NULL values in total_amount
+    total_spent = 0
+    for order in completed_orders:
+        amount_to_add = order.total_amount
+
+        if amount_to_add is None or amount_to_add == 0:
+            # Fallback calculation if total_amount is not set (for old data)
+            amount_to_add = order.quantity * order.product.price
+
+        total_spent += amount_to_add
+
+        # ✅ Pending Orders (anything NOT delivered/cancelled) - FIX: Use consistent status list
+    pending_statuses = ['Pending', 'Paid', 'Accepted', 'Packed', 'Dispatched', 'Driver Assigned', 'Picked',
+                        'Assigned to Driver']
+
+    pending_orders = Order.objects.filter(
+        retailer=retailer,
+        status__in=pending_statuses
+    ).count()  # This is a better way to ensure consistency
+
+    # ✅ Recent Orders
+    recent_orders = Order.objects.filter(
+        retailer=retailer
+    ).order_by('-order_date')[:5]
+
+    for order in recent_orders:
+        # Use the saved total_amount or calculate fallback
+        order.calculated_amount = order.total_amount if order.total_amount is not None else (
+                    order.quantity * order.product.price)
+
+    context = {
+        'retailer': retailer,
+        'total_orders': total_orders,
+        'pending_orders': pending_orders,
+        'total_spent': f"{total_spent:.2f}",
+        'recent_orders': recent_orders,
+    }
+
+    return render(request, "retailer_dashboard.html", context)
+
+
+# --- DRIVER VIEWS ---
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Sum
+from .models import Driver, Delivery
+
+from django.db.models import Sum
+from django.shortcuts import render, redirect, get_object_or_404
+
+from django.db.models import Sum
+from django.shortcuts import render, redirect, get_object_or_404
+
+def driver_dashboard(request):
+    driver_id = request.session.get("id")
+    if not driver_id:
+        return redirect("driver_login")
+
+    driver = get_object_or_404(Driver, id=driver_id)
+
+    # ✅ Delivered orders
+    delivered_qs = Delivery.objects.filter(
+        driver=driver,
+        status="delivered"
+    )
+
+    # ✅ Pending (assigned / picked but not delivered)
+    pending_qs = Delivery.objects.filter(
+        driver=driver
+    ).exclude(status="delivered")
+
+    # ✅ Total earnings (5%)
+    total_earnings = delivered_qs.aggregate(
+        total=Sum("driver_earning")
+    )["total"] or 0
+
+    context = {
+        "driver": driver,
+        "total_earnings": round(total_earnings, 2),
+        "delivery_history": delivered_qs.order_by("-delivered_at")[:5],
+        "pending_deliveries": pending_qs.order_by("-id"),
+        "total_deliveries": delivered_qs.count(),
+    }
+
+    return render(request, "driver_dashboard.html", context)
+
+
+
+from django.shortcuts import get_object_or_404, redirect
+from django.utils import timezone
+from django.contrib import messages
+from .models import Delivery
+
+from django.utils import timezone
+from django.shortcuts import get_object_or_404, redirect
+from django.views.decorators.http import require_POST
+
+@require_POST
+def driver_mark_delivered(request, delivery_id):
+    delivery = get_object_or_404(Delivery, id=delivery_id)
+    order = delivery.order
+
+    if delivery.status != "picked":
+        return redirect("driver_deliveries")
+
+    # ✅ Order total
+    order_total = order.quantity * order.product.price
+
+    # ✅ Driver earning = 5%
+    driver_earning = order_total * 0.05
+
+    # ✅ Update delivery
+    delivery.status = "delivered"
+    delivery.delivered_at = timezone.now()
+    delivery.delivery_charge = order_total
+    delivery.driver_earning = driver_earning
+    delivery.is_paid_out = True   # ✅ IMMEDIATE PAYMENT
+    delivery.save()
+
+    # ✅ Update order
+    order.status = "Delivered"
+    order.save()
+
+    # ✅ Make driver available again
+    driver = delivery.driver
+    driver.is_available = True
+    driver.save()
+
+    # ✅ Notify retailer
+    Notification.objects.create(
+        receiver_retailer=order.retailer,
+        message=f"Order #{order.id} delivered by {driver.name}"
+    )
+
+    return redirect("driver_deliveries")
+
+# --- ADMIN/FARMER VIEWS ---
+
+def update_status(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+
+    drivers = Driver.objects.filter(is_available=True)
+
+    if request.method == "POST":
+        new_status = request.POST.get("status")
+        driver_id = request.POST.get("driver")
+
+        order.status = new_status
+
+        # ✅ MANUAL DRIVER ASSIGN
+        if driver_id:
+            driver = get_object_or_404(Driver, id=driver_id)
+
+            order.driver = driver
+            order.status = "Driver Assigned"
+            order.save()
+
+            Delivery.objects.get_or_create(
+                order=order,
+                defaults={
+                    "driver": driver,
+                    "distance_km": 0.0,
+                    "delivery_charge": 0.0,
+                    "driver_earning": 0.0,
+                    "status": "assigned",
+                    "assigned_at": timezone.now()
+                }
+            )
+
+            driver.is_available = False
+            driver.save()
+
+            Notification.objects.create(
+                receiver_driver=driver,
+                message=f"You are assigned Order #{order.id}"
+            )
+
+            Notification.objects.create(
+                receiver_retailer=order.retailer,
+                message=f"Driver {driver.name} assigned for Order #{order.id}"
+            )
+
+            Notification.objects.create(
+                receiver_farmer=order.farmer,
+                message=f"You assigned driver {driver.name}"
+            )
+
+        else:
+            order.save()
+
+        # ✅ STATUS BASED NOTIFICATIONS
+        if new_status == "Accepted":
+            Notification.objects.create(
+                receiver_retailer=order.retailer,
+                message=f"Order #{order.id} accepted by farmer"
+            )
+
+        elif new_status == "Packed":
+            Notification.objects.create(
+                receiver_retailer=order.retailer,
+                message=f"Order #{order.id} packed"
+            )
+
+        elif new_status == "Dispatched":
+            Notification.objects.create(
+                receiver_retailer=order.retailer,
+                message=f"Order #{order.id} dispatched"
+            )
+
+        elif new_status == "Delivered":
+            Notification.objects.create(
+                receiver_farmer=order.farmer,
+                message=f"Order #{order.id} delivered successfully"
+            )
+
+        return redirect("farmer_order")
+
+    return render(request, "update_status.html", {
+        "order": order,
+        "drivers": drivers
+    })
+
+
+
+
+from django.utils import timezone
+from .models import Delivery, Driver
+
+def assign_driver_to_order(order):
+    driver = Driver.objects.filter(is_available=True).first()
+    if not driver:
+        return None
+
+    DELIVERY_CHARGE = 50   # tum chaaho to dynamic bana sakte ho
+
+    delivery = Delivery.objects.create(
+        order=order,
+        driver=driver,
+        delivery_charge=DELIVERY_CHARGE,
+        driver_earning=0,
+        status="assigned",
+        assigned_at=timezone.now()
+    )
+
+    driver.is_available = False
+    driver.save()
+
+    return delivery
+
+
+
+
+# The rest of the views (place_order, driver_toggle_availability, complete_order_payment, update_delivery_status, auto_assign_driver)
+# are generally okay, but driver_mark_delivered was the main one needing earning and status fix.
+
+
+from django.shortcuts import redirect, get_object_or_404
+from django.contrib import messages
+
+def request_sample(request, product_id):
+    retailer_id = request.session.get("id")
+    if not retailer_id:
+        return redirect("retailer_login")
+
+    retailer = get_object_or_404(Retailer, id=retailer_id)
+    product = get_object_or_404(Product, id=product_id)
+
+    SampleRequest.objects.create(
+        product=product,
+        farmer=product.farmer,
+        retailer=retailer,
+        quantity=2  # default sample qty
+    )
+
+    messages.success(request, "Sample request sent to farmer")
+    return redirect("retailer_dashboard")
+
+
+def farmer_sample_requests(request):
+    farmer_id = request.session.get("id")
+    farmer = get_object_or_404(Farmer, id=farmer_id)
+
+    samples = SampleRequest.objects.filter(farmer=farmer).order_by("-created_at")
+
+    return render(request, "farmer_sample_requests.html", {
+        "samples": samples
+    })
+
+def approve_sample(request, id):
+    sample = get_object_or_404(SampleRequest, id=id)
+    sample.status = "approved"
+    sample.save()
+    return redirect("farmer_sample_requests")
+
+def reject_sample(request, id):
+    sample = get_object_or_404(SampleRequest, id=id)
+    sample.status = "rejected"
+    sample.save()
+    return redirect("farmer_sample_requests")
+
+def driver_sample_deliveries(request):
+    driver_id = request.session.get("id")
+    driver = get_object_or_404(Driver, id=driver_id)
+
+    samples = SampleRequest.objects.filter(
+        status="approved",
+        driver__isnull=True
+    )
+
+    return render(request, "driver_sample_deliveries.html", {
+        "samples": samples
+    })
+
+
+
+def assign_sample_driver(request, id):
+    driver_id = request.session.get("id")
+    sample = get_object_or_404(SampleRequest, id=id)
+
+    sample.driver_id = driver_id
+    sample.status = "picked"
+    sample.save()
+
+    return redirect("driver_sample_deliveries")
+
+
+def rate_sample(request, id):
+    sample = get_object_or_404(SampleRequest, id=id)
+
+    if request.method == "POST":
+        sample.rating = request.POST.get("rating")
+        sample.review = request.POST.get("review")
+        sample.status = "delivered"
+        sample.save()
+        return redirect("retailer_dashboard")
+
+    return render(request, "rate_sample.html", {"sample": sample})
+
+from django.utils import timezone
+
+def deliver_sample_complete(request, id):
+    # Driver confirm karega ki delivery ho gayi
+    sample = get_object_or_404(SampleRequest, id=id)
+    sample.status = "delivered"
+    sample.delivered_at = timezone.now()
+    sample.save()
+    messages.success(request, "Sample marked as Delivered!")
+    return redirect("driver_sample_deliveries")

@@ -2,89 +2,114 @@
 {% block title %}Driver Dashboard{% endblock %}
 
 {% block body %}
+<style>
+.driver-bg{
+    background:linear-gradient(135deg,#fff3e0,#e1f5fe);
+    padding:30px;
+    border-radius:20px;
+}
+.driver-card{
+    border-radius:22px;
+    transition:.3s;
+}
+.driver-card:hover{
+    transform:translateY(-10px);
+    box-shadow:0 25px 50px rgba(0,0,0,.2);
+}
+.row-hover:hover{
+    background:#f8f9fa;
+    transform:scale(1.01);
+    transition:.2s;
+}
+</style>
+
 <br><br>
+<div class="container mt-4 driver-bg">
 
-<div class="container mt-5 pt-4">
+<h2 class="fw-bold text-success">🚚 Driver Dashboard</h2>
+<p class="text-muted">Ready to deliver, <b>{{ driver.name }}</b></p>
 
-    <h2 class="text-success mb-1">🚚 Driver Dashboard</h2>
-    <p class="text-muted">Welcome, <b>{{ driver.name }}</b></p>
-
-    <hr>
-
-    <!-- STATS -->
-    <div class="row text-center mb-4">
-
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-lg border-success">
-                <div class="card-body">
-                    <h6 class="text-success">Total Earnings</h6>
-                    <h2>₹ {{ total_earnings }}</h2>
-                </div>
-            </div>
+<div class="row g-4 text-center mt-4">
+    <div class="col-md-4">
+        <div class="driver-card bg-success text-white p-4">
+            <h6>Total Earnings</h6>
+            <h2>₹ {{ total_earnings }}</h2>
+            <small>5% commission</small>
         </div>
-
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-lg border-primary">
-                <div class="card-body">
-                    <h6 class="text-primary">This Week</h6>
-                    <h2>{{ weekly_deliveries }}</h2>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4 mb-3">
-            <div class="card shadow-lg border-warning">
-                <div class="card-body">
-                    <h6 class="text-warning">Pending Payout</h6>
-                    <h2>₹ {{ pending_payout }}</h2>
-                </div>
-            </div>
-        </div>
-
     </div>
 
-    <hr>
-
-    <!-- LAST 5 DELIVERIES -->
-    <h4 class="mb-3">📦 Recent Deliveries</h4>
-
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead class="bg-light">
-                <tr>
-                    <th>#Order</th>
-                    <th>Date</th>
-                    <th>Retailer</th>
-                    <th>Charge (₹)</th>
-                    <th>Your Earning (₹)</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for d in delivery_history %}
-                <tr>
-                    <td>#{{ d.order.id }}</td>
-                    <td>{{ d.delivered_at|date:"d M Y" }}</td>
-                    <td>{{ d.order.retailer.name }}</td>
-                    <td>₹ {{ d.delivery_charge }}</td>
-                    <td class="text-success fw-bold">₹ {{ d.driver_earning }}</td>
-                    <td>
-                        {% if d.is_paid_out %}
-                        <span class="badge bg-success">Paid</span>
-                        {% else %}
-                        <span class="badge bg-warning text-dark">Pending</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="text-center text-muted">No deliveries yet.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="col-md-4">
+        <div class="driver-card bg-primary text-white p-4">
+            <h6>Delivered Orders</h6>
+            <h2>{{ delivery_history|length }}</h2>
+        </div>
     </div>
 
+    <div class="col-md-4">
+        <div class="driver-card bg-warning text-dark p-4">
+            <h6>Pending Deliveries</h6>
+            <h2>{{ pending_deliveries|length }}</h2>
+        </div>
+    </div>
 </div>
 
+<br>
+
+<div class="card shadow mb-4">
+  <div class="card-header bg-success text-white fw-bold">
+    ✅ Completed Deliveries
+  </div>
+  <table class="table table-hover align-middle mb-0">
+    <thead class="table-light">
+      <tr>
+        <th>Order</th>
+        <th>Retailer</th>
+        <th>Earning</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in delivery_history %}
+      <tr class="row-hover">
+        <td>#{{ d.order.id }}</td>
+        <td>{{ d.order.retailer.name }}</td>
+        <td class="text-success fw-bold">₹ {{ d.driver_earning }}</td>
+        <td>{{ d.delivered_at|date:"d M Y, h:i A" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="text-center text-muted py-3">No completed deliveries</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card shadow">
+  <div class="card-header bg-warning fw-bold">
+    ⏳ Pending Deliveries
+  </div>
+  <table class="table table-hover align-middle mb-0">
+    <thead class="table-light">
+      <tr>
+        <th>Order</th>
+        <th>Retailer</th>
+        <th>Farmer</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in pending_deliveries %}
+      <tr class="row-hover">
+        <td>#{{ p.order.id }}</td>
+        <td>{{ p.order.retailer.name }}</td>
+        <td>{{ p.order.farmer.name }}</td>
+        <td><span class="badge bg-warning text-dark">{{ p.status }}</span></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="text-center text-muted py-3">No pending deliveries 🎉</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+</div>
 {% endblock %}

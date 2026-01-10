@@ -1,0 +1,49 @@
+{% extends "master.html" %}
+{% block title %}Rate Sample{% endblock %}
+
+{% block body %}
+<br><br>
+
+<div class="container mt-5 d-flex justify-content-center">
+
+    <div class="card shadow-lg p-4 rounded-4" style="max-width:500px;width:100%;">
+
+        <h4 class="text-center mb-3">⭐ Rate Sample Product</h4>
+
+        <p class="text-center text-muted">
+            Product: <b>{{ sample.product.product }}</b>
+        </p>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label">Rating</label>
+                <select name="rating" class="form-control" required>
+                    <option value="">-- Select Rating --</option>
+                    <option value="5">⭐⭐⭐⭐⭐ (5)</option>
+                    <option value="4">⭐⭐⭐⭐ (4)</option>
+                    <option value="3">⭐⭐⭐ (3)</option>
+                    <option value="2">⭐⭐ (2)</option>
+                    <option value="1">⭐ (1)</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Review</label>
+                <textarea name="review"
+                          class="form-control"
+                          rows="3"
+                          placeholder="Write your feedback..."
+                          required></textarea>
+            </div>
+
+            <button class="btn btn-success w-100">
+                ✅ Submit Review
+            </button>
+        </form>
+
+    </div>
+</div>
+
+{% endblock %}

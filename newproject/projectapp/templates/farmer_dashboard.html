@@ -1,14 +1,86 @@
 {% extends 'master.html' %}
-{% load static %}
-{% block title %}contact Page{% endblock %}
+{% block title %}Farmer Dashboard{% endblock %}
 
-{% block css %}
-{% endblock %}
 {% block body %}
+<style>
+.farmer-bg{
+    background:linear-gradient(135deg,#e8f5e9,#f1f8e9);
+    padding:30px;
+    border-radius:20px;
+}
+.stat-card{
+    border-radius:20px;
+    transition:.3s;
+}
+.stat-card:hover{
+    transform:translateY(-8px);
+    box-shadow:0 20px 40px rgba(0,0,0,.15);
+}
+.sale-row:hover{
+    background:#f1fff5;
+    transform:scale(1.01);
+    transition:.2s;
+}
+</style>
 
-<br><br><br><br>
+<br><br>
+<div class="container-fluid px-lg-5 farmer-bg">
 
+<h2 class="fw-bold text-success">🌾 Farmer Dashboard</h2>
+<p class="text-muted">Welcome back, <b>{{ farmer.name }}</b></p>
 
-<h1>Farmer Dashboard</h1>
+<div class="row g-4 text-center mt-4">
+    <div class="col-md-4">
+        <div class="stat-card bg-success text-white p-4">
+            <h6>Total Sales</h6>
+            <h2>₹ {{ total_sales|floatformat:2 }}</h2>
+        </div>
+    </div>
 
+    <div class="col-md-4">
+        <div class="stat-card bg-primary text-white p-4">
+            <h6>Products Listed</h6>
+            <h2>{{ total_products }}</h2>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="stat-card bg-warning text-dark p-4">
+            <h6>Your Profit (95%)</h6>
+            <h2>₹ {{ total_profit|floatformat:2 }}</h2>
+        </div>
+    </div>
+</div>
+
+<br>
+
+<div class="card shadow-lg border-0">
+  <div class="card-header bg-success text-white fw-bold">
+    📦 Recent Sales Activity
+  </div>
+  <table class="table table-hover align-middle mb-0">
+    <thead class="table-light">
+      <tr>
+        <th>Product</th>
+        <th>Amount</th>
+        <th>Profit</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sale in recent_sales %}
+      <tr class="sale-row">
+        <td>{{ sale.product.product }}</td>
+        <td>₹ {{ sale.amount|floatformat:2 }}</td>
+        <td class="text-success fw-bold">₹ {{ sale.profit|floatformat:2 }}</td>
+        <td>{{ sale.date|date:"d M Y, h:i A" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="text-center text-muted py-4">No sales yet 🚜</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+</div>
 {% endblock %}

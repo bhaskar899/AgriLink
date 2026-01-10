@@ -2,29 +2,80 @@
 {% load static %}
 {% block title %}My Products{% endblock %}
 {% block body %}
-<br><br>
+
+<!-- BACK BUTTON -->
+<div class="back-btn-wrapper">
+    <button class="back-btn" onclick="goBack()">⬅ Back</button>
+</div>
+
+<style>
+.back-btn-wrapper{
+    margin-top: 89px; /* adjust this according to your navbar height */
+    margin-bottom: 15px;
+    margin-left:20px;
+}
+.back-btn{
+    border: none;
+    padding: 12px 26px;
+    border-radius: 35px;
+    background: linear-gradient(135deg,#198754,#2ecc71);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    transition: .3s;
+}
+.back-btn:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(0,0,0,.35);
+}
+.back-btn:active{
+    transform: scale(.95);
+}
+</style>
+
+<script>
+function goBack(){
+    window.history.back();
+}
+</script>
+
+
 <div class="container mt-5">
   <h2 class="text-center mb-4">📦 My Products</h2>
 
   <div class="row g-4">
     {% for p in products %}
     <div class="col-md-4">
-      <div class="card h-100 shadow-sm">
+      <div class="card h-100 shadow-sm product-card">
         {% if p.image %}
-          <img src="{{ p.image.url }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+          <img src="{{ p.image.url }}" class="card-img-top" style="height:200px;object-fit:cover;">
         {% else %}
-          <img src="{% static 'images/no-image.jpg' %}" class="card-img-top" style="height: 200px; object-fit: cover;">
+          <img src="{% static 'images/no-image.jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
         {% endif %}
+
         <div class="card-body d-flex flex-column">
-          <h5 class="card-title">{{ p.product }}</h5>
+          <h5 class="card-title fw-bold">{{ p.product }}</h5>
           <p class="card-text">{{ p.description|truncatewords:20 }}</p>
-          <p class="mb-1">💰 Price: ₹{{ p.price }}</p>
-          <p class="mb-1">📦 Quantity: {{ p.quantity }}</p>
-          <p class="mb-1">📍 Location: {{ p.location }}</p>
+          <p class="mb-1">💰 ₹{{ p.price }}</p>
+          <p class="mb-1">📦 {{ p.quantity }} kg</p>
+          <p class="mb-1">📍 {{ p.location }}</p>
         </div>
       </div>
     </div>
     {% endfor %}
   </div>
 </div>
+
+<style>
+.product-card{
+    transition:.3s;
+    border-radius:15px;
+}
+.product-card:hover{
+    transform: translateY(-6px);
+    box-shadow:0 18px 40px rgba(0,0,0,.2);
+}
+</style>
+
 {% endblock %}

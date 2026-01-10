@@ -1,97 +1,110 @@
-{% extends "master.html" %}
-{% block title %}Assigned Deliveries{% endblock %}
-
-{% block body %}<br><br>
-
-<div class="container mt-5 pt-4">
-
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-success">🚚 Assigned Deliveries</h2>
-    </div>
-
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-    {% endif %}
-
-    <div class="table-responsive">
-        <table class="table table-hover table-striped align-middle">
-            <thead class="bg-light">
-                <tr>
-                    <th>Order ID</th>
-                    <th>Product</th>
-                    <th>Retailer Details</th>
-                    <th>Pickup (Farmer)</th>
-                    <th>Status</th>
-                    <th style="width: 20%;">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for delivery in deliveries %}
-                <tr>
-
-                    <!-- Order ID -->
-                    <td>#{{ delivery.order.id }}</td>
-
-                    <!-- Product Details -->
-                    <td>
-                        <b>{{ delivery.order.product.product }}</b><br>
-                        Qty: {{ delivery.order.quantity }} kg<br>
-                        Price: ₹{{ delivery.order.product.price }}
-                    </td>
-
-                    <!-- Retailer Full Details -->
-                    <td>
-                        <b>{{ delivery.order.retailer.name }}</b><br>
-                        📍 {{ delivery.order.retailer.address }}<br>
-                        📞 {{ delivery.order.retailer.contact }}<br>
-                        ✉ {{ delivery.order.retailer.email }}
-                    </td>
-
-                    <!-- Farmer Pickup Details -->
-                    <td>
-                        <b>{{ delivery.order.farmer.name }}</b><br>
-                        📍 {{ delivery.order.farmer.address }}<br>
-                        📞 {{ delivery.order.farmer.contact }}
-                    </td>
-
-                    <!-- Delivery Status -->
-                    <td>
-                        <span class="badge bg-info">{{ delivery.status|capfirst }}</span>
-                    </td>
-
-                    <!-- Action Buttons -->
-                    <td>
-                        {% if delivery.status == 'assigned' %}
-                            <form method="POST" action="{% url 'driver_mark_picked' delivery_id=delivery.id %}" class="d-inline">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-primary btn-sm">Mark Picked</button>
-                            </form>
-
-                        {% elif delivery.status == 'picked' %}
-                            <form method="POST" action="{% url 'driver_mark_delivered' delivery_id=delivery.id %}" class="d-inline">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-success btn-sm">Mark Delivered</button>
-                            </form>
-
-                        {% else %}
-                            <span class="text-muted">{{ delivery.status|capfirst }}</span>
-                        {% endif %}
-                    </td>
-                </tr>
-
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="text-center text-muted p-4">
-                        <i class="fas fa-box-open me-2"></i> No deliveries assigned yet.
-                    </td>
-                </tr>
-
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
+{% extends 'master.html' %}
+{% block title %}Driver Deliveries{% endblock %}
+{% block body %}
+<!-- BACK BUTTON -->
+<div class="back-btn-wrapper">
+    <button class="back-btn" onclick="goBack()">⬅ Back</button>
 </div>
+
+<style>
+.back-btn-wrapper{
+    margin-top: 89px; /* adjust this according to your navbar height */
+    margin-bottom: 15px;
+    margin-left:20px;
+}
+.back-btn{
+    border: none;
+    padding: 12px 26px;
+    border-radius: 35px;
+    background: linear-gradient(135deg,#198754,#2ecc71);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    transition: .3s;
+}
+.back-btn:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(0,0,0,.35);
+}
+.back-btn:active{
+    transform: scale(.95);
+}
+</style>
+
+<script>
+function goBack(){
+    window.history.back();
+}
+</script>
+
+<div class="container mt-4">
+<h2 class="text-primary">🚚 Your Assigned Deliveries</h2>
+<p class="text-muted">Pickup > Deliver > Mark Complete</p>
+<hr>
+
+<div class="table-responsive">
+<table class="table table-striped text-center align-middle">
+
+<thead class="bg-light">
+<tr>
+    <th>Order</th>
+    <th>Product</th>
+    <th>Farmer Pickup</th>
+    <th>Retail Delivery</th>
+    <th>Status</th>
+    <th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+{% for d in deliveries %}
+<tr>
+    <td>#{{ d.order.id }}</td>
+    <td>{{ d.order.product.product }} <br><small>Qty {{ d.order.quantity }}</small></td>
+
+    <td>
+        👨‍🌾 <b>{{ d.order.farmer.name }}</b><br>
+        📍 {{ d.order.farmer.address }}
+    </td>
+
+    <td>
+        🛍 <b>{{ d.order.retailer.name }}</b><br>
+        📍 {{ d.order.retailer.address }}
+    </td>
+
+    <td>
+        <span class="badge bg-{% if d.status == 'assigned' %}warning text-dark{% elif d.status == 'picked' %}info{% else %}success{% endif %}">
+            {{ d.status|capfirst }}
+        </span>
+    </td>
+
+    <td>
+        {% if d.status == "assigned" %}
+        <form method="post" action="{% url 'driver_mark_picked' d.id %}">
+            {% csrf_token %}
+            <button class="btn btn-primary btn-sm">Mark Picked</button>
+        </form>
+
+        {% elif d.status == "picked" %}
+        <form method="post" action="{% url 'driver_mark_delivered' d.id %}">
+            {% csrf_token %}
+            <button class="btn btn-success btn-sm">Mark Delivered</button>
+        </form>
+
+        {% else %}
+            <span class="text-success fw-bold">Delivered ✓</span>
+        {% endif %}
+    </td>
+
+</tr>
+{% empty %}
+<tr><td colspan="6" class="text-muted">No active deliveries</td></tr>
+{% endfor %}
+</tbody>
+
+</table>
+</div>
+</div>
+
 {% endblock %}

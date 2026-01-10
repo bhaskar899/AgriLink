@@ -4,6 +4,8 @@ from django.contrib import admin
 from django.urls import path
 from django.shortcuts import redirect
 from . import views
+from .views import farmer_dashboard, sales_api, farmer_sample_requests, approve_sample, reject_sample, \
+    driver_sample_deliveries, assign_sample_driver, rate_sample
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -36,8 +38,6 @@ urlpatterns = [
     path("track_order/<int:order_id>/", views.track_order, name="track_order"),
     path("place_order/<int:product_id>/", views.place_order, name="place_order"),
 
-    # 🛑 REMOVED DUPLICATE OTP PATHS (retailer/send_email_otp/ & retailer/verify_email_otp/)
-
     # Payment
     path('payment/<int:order_id>/', views.payment_page, name='payment_page'),
     path('payment_success/<int:order_id>/', views.payment_success, name='payment_success'),
@@ -48,7 +48,8 @@ urlpatterns = [
     path("chat/<int:order_id>/search_json/", views.chat_search_api, name="chat_search_api"),
     path('notifications/', views.notifications, name='notifications'),
     path('notifications/read/<int:nid>/', views.mark_notification_read, name='mark_notification_read'),
-
+    path('notifications/delete/<int:id>/', views.delete_notification, name="delete_notification"),
+    path('notifications/delete_all/', views.delete_all_notification, name="delete_all_notification"),
     # Logout
     path("logout/", views.logout, name="logout"),
 
@@ -82,8 +83,8 @@ urlpatterns = [
     path('driver/profile_delete_confirm/', views.driver_profile_delete_confirm, name='driver_profile_delete_confirm'),
 
     # Driver AJAX / status updates & GLOBAL OTP
-    path("send-email-otp/", views.send_email_otp, name="send_email_otp"), # ✅ Global Email OTP Send
-    path("verify-email-otp/", views.verify_email_otp, name="verify_email_otp"), # ✅ Global Email OTP Verify (Added based on template usage)
+    path("send-email-otp/", views.send_email_otp, name="send_email_otp"),
+    path("verify-email-otp/", views.verify_email_otp, name="verify_email_otp"),
 
     path('driver/toggle_availability/', views.driver_toggle_availability, name='driver_toggle_availability'),
     path('driver/delivery/picked/<int:delivery_id>/', views.driver_mark_picked, name='driver_mark_picked'),
@@ -91,6 +92,19 @@ urlpatterns = [
     path('driver/verify-otp/', views.verify_driver_otp, name='verify_driver_otp'),
     path('driver/mark_delivered/<int:delivery_id>/', views.driver_mark_delivered, name='driver_mark_delivered'),
     path('driver/deliveries/', views.driver_assigned_deliveries, name='driver_deliveries'),
+
+    # API PATHS FOR DASHBOARD LIVE UPDATES
+    path("sales/api/",sales_api,name="sales_api"),
+    path("api/",sales_api,name="sales_api_short"), # Added to match frontend request
+
+path("farmer/samples/", farmer_sample_requests, name="farmer_sample_requests"),
+path("sample/approve/<int:id>/", approve_sample, name="approve_sample"),
+path("sample/reject/<int:id>/", reject_sample, name="reject_sample"),
+
+path("driver/samples/", driver_sample_deliveries, name="driver_sample_deliveries"),
+path("sample/assign/<int:id>/", assign_sample_driver, name="assign_sample_driver"),
+path('request_sample/<int:product_id>/', views.request_sample, name='request_sample'),
+path("sample/rate/<int:id>/", rate_sample, name="rate_sample"),
 ]
 
 # MEDIA & STATIC

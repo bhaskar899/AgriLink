@@ -1,23 +1,202 @@
 {% extends "master.html" %}
+{% load static %}
 {% block title %}Notifications{% endblock %}
 
-{% block body %}<br><br>
-<div class="contzainer mt-5">
-    <h3>Notifications</h3>
-    <ul class="list-group">
-        {% for n in notifications %}
-      <li class="list-group-item d-flex justify-content-between align-items-start {% if not n.is_read %}fw-bold{% endif %}">
-    <a href="{% url 'mark_notification_read' n.id %}" style="text-decoration:none; color:inherit;">
-        {{ n.message }} <br>
-        <small class="text-muted">{{ n.timestamp|date:"d M, h:i A" }}</small>
-    </a>
-    {% if not n.is_read %}
-    <span class="badge bg-primary rounded-pill">New</span>
-    {% endif %}
-</li>
-        {% empty %}
-        <li class="list-group-item">No notifications yet.</li>
-        {% endfor %}
-    </ul>
+{% block body %}
+<!-- BACK BUTTON -->
+<div class="back-btn-wrapper">
+    <button class="back-btn" onclick="goBack()">⬅ Back</button>
 </div>
+
+<style>
+.back-btn-wrapper{
+    margin-top: 89px; /* adjust this according to your navbar height */
+    margin-bottom: 15px;
+    margin-left:20px;
+}
+.back-btn{
+    border: none;
+    padding: 12px 26px;
+    border-radius: 35px;
+    background: linear-gradient(135deg,#198754,#2ecc71);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    transition: .3s;
+}
+.back-btn:hover{
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(0,0,0,.35);
+}
+.back-btn:active{
+    transform: scale(.95);
+}
+</style>
+
+<script>
+function goBack(){
+    window.history.back();
+}
+</script>
+
+<style>
+/* ===== Page Background ===== */
+.notification-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+    padding: 40px 0;
+}
+
+/* ===== Header ===== */
+.notify-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.notify-header h3 {
+    font-weight: 700;
+    color: #2e7d32;
+}
+
+/* ===== Notification Card ===== */
+.notify-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+    transition: all 0.25s ease;
+    border-left: 6px solid transparent;
+}
+
+.notify-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+}
+
+/* ===== Unread Highlight ===== */
+.notify-unread {
+    background: #f1f8e9;
+    border-left: 6px solid #43a047;
+}
+
+.notify-message {
+    cursor: pointer;
+    width: 85%;
+}
+
+.notify-message strong {
+    color: #1b5e20;
+}
+
+.notify-time {
+    font-size: 12px;
+    color: #777;
+}
+
+/* ===== Badge NEW ===== */
+.new-badge {
+    background: #43a047;
+    color: #fff;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    margin-left: 8px;
+}
+
+/* ===== Delete Button ===== */
+.notify-delete {
+    background: #e53935;
+    color: #fff;
+    border-radius: 50%;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.notify-delete:hover {
+    background: #b71c1c;
+    transform: scale(1.1);
+}
+
+/* ===== Empty State ===== */
+.empty-box {
+    background: #fff;
+    padding: 40px;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    color: #777;
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 768px) {
+    .notify-message {
+        width: 75%;
+    }
+}
+</style>
+<br><br>
+<div class="notification-page">
+    <div class="container">
+
+        <!-- Header -->
+        <div class="notify-header">
+            <h3>🔔 Notifications</h3>
+
+            <a href="{% url 'delete_all_notification' %}"
+               class="btn btn-danger btn-sm"
+               onclick="return confirm('Delete ALL notifications?')">
+                🗑 Delete All
+            </a>
+        </div>
+
+        <!-- Notification List -->
+        {% for n in notifications %}
+        <div class="notify-card {% if not n.is_read %}notify-unread{% endif %}"
+             onclick="openNotification('{{ n.id }}')">
+
+            <div class="notify-message">
+                <strong>{{ n.message }}</strong>
+                {% if not n.is_read %}
+                    <span class="new-badge">NEW</span>
+                {% endif %}
+                <div class="notify-time">
+                    {{ n.timestamp|date:"d M Y, h:i A" }}
+                </div>
+            </div>
+
+            <a href="{% url 'delete_notification' n.id %}"
+               class="notify-delete"
+               onclick="event.stopPropagation(); return confirm('Delete this notification?')">
+                ✕
+            </a>
+
+        </div>
+        {% empty %}
+        <div class="empty-box">
+            🔕 No notifications available
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
+
+<script>
+function openNotification(id) {
+    window.location.href = "/notifications/read/" + id + "/";
+}
+</script>
+
 {% endblock %}

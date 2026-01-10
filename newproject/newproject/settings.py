@@ -25,10 +25,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'projectapp',
     'cloudinary_storage',
     'cloudinary',
     'channels'
+
 ]
 
 ASGI_APPLICATION = 'newproject.asgi.application'
@@ -180,4 +182,16 @@ ssl._create_default_https_context = lambda: ssl._create_unverified_context()
 PLATFORM_COMMISSION = 0.05   # 5% default
 
 # settings.py
+
+# settings.py
+
+# 1. Time zone enable karein
+USE_TZ = True
+
+# 2. Apne time zone ko set karein
+# India Standard Time (IST) ke liye
+TIME_ZONE = 'Asia/Kolkata'
+
+# 3. Agar aap dates ko local time mein dikhana chahte hain:
+USE_L10N = True
 

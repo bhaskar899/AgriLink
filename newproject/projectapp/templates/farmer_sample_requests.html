@@ -1,0 +1,77 @@
+{% extends "master.html" %}
+{% block title %}Sample Requests{% endblock %}
+
+{% block body %}
+<br><br>
+
+<div class="container mt-4">
+
+    <div class="card shadow-lg p-4 rounded-4">
+
+        <h3 class="text-center mb-4">🧪 Sample Requests from Retailers</h3>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle text-center">
+
+                <thead class="table-success">
+                    <tr>
+                        <th>#</th>
+                        <th>Product</th>
+                        <th>Retailer</th>
+                        <th>Quantity (kg)</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for s in samples %}
+                    <tr>
+                        <td>#{{ s.id }}</td>
+                        <td>{{ s.product.product }}</td>
+                        <td>{{ s.retailer.name }}</td>
+                        <td>{{ s.quantity }}</td>
+
+                        <td>
+                            <span class="badge 
+                                {% if s.status == 'pending' %}bg-secondary
+                                {% elif s.status == 'approved' %}bg-primary
+                                {% elif s.status == 'rejected' %}bg-danger
+                                {% elif s.status == 'picked' %}bg-warning text-dark
+                                {% elif s.status == 'delivered' %}bg-success
+                                {% endif %}">
+                                {{ s.status|capfirst }}
+                            </span>
+                        </td>
+
+                        <td>
+                            {% if s.status == "pending" %}
+                                <a href="{% url 'approve_sample' s.id %}"
+                                   class="btn btn-success btn-sm">
+                                   ✅ Approve
+                                </a>
+                                <a href="{% url 'reject_sample' s.id %}"
+                                   class="btn btn-danger btn-sm">
+                                   ❌ Reject
+                                </a>
+                            {% else %}
+                                <span class="text-muted">No Action</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-muted py-4">
+                            No sample requests found
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
