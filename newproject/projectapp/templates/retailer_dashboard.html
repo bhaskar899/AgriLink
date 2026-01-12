@@ -30,6 +30,7 @@
 <h2 class="fw-bold text-primary">🛒 Retailer Dashboard</h2>
 <p class="text-muted">Hello, <b>{{ retailer.name }}</b></p>
 
+<!-- DASHBOARD CARDS -->
 <div class="row g-4 text-center mt-4">
     <div class="col-md-4">
         <div class="retail-card bg-primary text-white p-4">
@@ -55,7 +56,8 @@
 
 <br>
 
-<div class="card shadow-lg">
+<!-- RECENT ORDERS -->
+<div class="card shadow-lg mb-5">
   <div class="card-header retail-header fw-bold">
     📦 Recent Orders
   </div>
@@ -79,7 +81,72 @@
         <td><span class="badge bg-secondary">{{ order.status }}</span></td>
       </tr>
       {% empty %}
-      <tr><td colspan="5" class="text-center text-muted py-4">No recent orders</td></tr>
+      <tr>
+        <td colspan="5" class="text-center text-muted py-4">
+            No recent orders
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- ⭐ SAMPLE REQUESTS & RATINGS -->
+<div class="card shadow-lg">
+  <div class="card-header retail-header fw-bold">
+    🧪 My Sample Requests
+  </div>
+
+  <table class="table table-hover align-middle mb-0">
+    <thead class="table-light">
+      <tr>
+        <th>#</th>
+        <th>Product</th>
+        <th>Farmer</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% for s in samples %}
+      <tr>
+        <td>#{{ s.id }}</td>
+        <td>{{ s.product.product }}</td>
+        <td>{{ s.farmer.name }}</td>
+        <td>
+            <span class="badge bg-info text-dark">
+                {{ s.status|title }}
+            </span>
+        </td>
+
+        <td>
+            {% if s.status == "delivered" and not s.rating %}
+                <a href="{% url 'rate_sample' s.id %}"
+                   class="btn btn-sm btn-outline-primary">
+                    ⭐ Rate Sample
+                </a>
+
+            {% elif s.rating %}
+                <span class="text-success fw-bold">
+                    ⭐ Rated ({{ s.rating }}/5)
+                </span>
+
+            {% else %}
+                <span class="text-muted">
+                    Waiting for delivery
+                </span>
+            {% endif %}
+        </td>
+      </tr>
+
+      {% empty %}
+      <tr>
+        <td colspan="5"
+            class="text-center text-muted py-4">
+            No sample requests found
+        </td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>

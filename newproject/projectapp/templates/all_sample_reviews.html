@@ -1,0 +1,108 @@
+{% extends 'master.html' %}
+{% block title %}All Sample Reviews{% endblock %}
+
+{% block body %}
+
+<style>
+/* Review Section */
+#all-reviews {
+  background: linear-gradient(135deg, #e3f2fd, #fce4ec);
+  padding: 60px 0;
+}
+
+.review-card {
+  border-radius: 20px;
+  transition: transform 0.3s, box-shadow 0.3s;
+  background: white;
+  border: none;
+}
+
+.review-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.review-avatar {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.review-rating {
+  color: #fbc02d;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.review-text {
+  font-size: 0.95rem;
+  color: #555;
+  min-height: 60px;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Responsive grid spacing */
+.row.g-4 {
+  justify-content: center;
+}
+
+/* Header styling */
+#all-reviews h2 {
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+  color: #198754;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+/* No reviews text */
+.no-reviews {
+  text-align: center;
+  font-style: italic;
+  color: #666;
+  width: 100%;
+  padding: 40px 0;
+}
+</style>
+<br><br>
+<div id="all-reviews">
+  <div class="container">
+    <h2 class="text-center fw-bold">🌟 All Retailer Reviews</h2>
+
+    <div class="row g-4">
+      {% for r in reviews %}
+      <div class="col-md-6 col-lg-4">
+        <div class="card review-card shadow-sm p-4 h-100 text-center">
+          <div class="review-avatar">👤</div>
+          <h5 class="card-title fw-bold">{{ r.retailer.name }}</h5>
+          <div class="review-rating">⭐ {{ r.rating }} / 5</div>
+          <p class="review-text">{{ r.review }}</p>
+        </div>
+      </div>
+      {% empty %}
+      <div class="no-reviews">No reviews yet</div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Optional JS for small animation -->
+<script>
+const reviewCards = document.querySelectorAll('.review-card');
+reviewCards.forEach(card => {
+  card.addEventListener('mouseenter', () => {
+    card.style.transform = 'scale(1.05)';
+    card.style.boxShadow = '0 20px 40px rgba(0,0,0,0.2)';
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = 'scale(1)';
+    card.style.boxShadow = '0 15px 35px rgba(0,0,0,0.15)';
+  });
+});
+</script>
+
+{% endblock %}

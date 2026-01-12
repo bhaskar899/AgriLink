@@ -64,19 +64,16 @@
   </div>
 </section>
 
-<!-- ABOUT -->
-
+<!-- ABOUT SECTION -->
 <style>
-  /* ABOUT SECTION IMAGE HOVER EFFECT */
-  .about-img {
-    transition: 0.4s ease;
-    border-radius: 12px;
+  .about-img{
+    transition:0.4s ease;
+    border-radius:12px;
   }
-
-  .about-img:hover {
-    transform: scale(1.05);
-    box-shadow: 0 0 25px rgba(25,135,84,0.3);
-    border-radius: 20px;
+  .about-img:hover{
+    transform:scale(1.05);
+    box-shadow:0 0 25px rgba(25,135,84,0.3);
+    border-radius:20px;
   }
 </style>
 
@@ -88,16 +85,14 @@
     <!-- STEP 1: Farmer -->
     <div class="row align-items-center mb-5">
       <div class="col-md-6 text-center">
-<img src="{% static 'images/farmer2.jpg' %}" class="img-fluid rounded shadow w-75 about-img" alt="Farmer">
+        <img src="{% static 'images/farmer2.jpg' %}" class="img-fluid rounded shadow w-75 about-img" alt="Farmer">
       </div>
       <div class="col-md-6"><br>
-
         <h3 class="fw-bold">👨‍🌾 How AgriLink Empowers Farmers</h3>
         <p class="lead">
           AgriLink helps farmers sell directly to retailers without middlemen, ensuring fair prices
           and transparent business.
         </p>
-
         <ul class="list-unstyled">
           <li>🌾 Upload fresh products easily</li>
           <li>💰 Set your own fair price</li>
@@ -113,24 +108,22 @@
     <!-- STEP 2: Driver Pickup -->
     <div class="row align-items-center mb-5">
       <div class="col-md-6">
-
         <h3 class="fw-bold">🚛 Driver Picks Up Orders</h3>
         <p class="lead">
           After a retailer places an order, a verified AgriLink driver collects products from the
           farmer with complete tracking and status updates.
         </p>
-
         <ul class="list-unstyled">
           <li>📍 Gets pickup location instantly</li>
           <li>🧾 Driver receives order details automatically</li>
           <li>👨‍🔧 Verified & trained delivery partner</li>
           <li>🔄 Status updates: Picked → On the Way</li>
           <li>📸 Can upload delivery proof images</li>
-
         </ul>
       </div>
       <div class="col-md-6 text-center">
-<img src="{% static 'images/driver_pickup2.jpg' %}" class="img-fluid rounded shadow w-75 about-img" alt="Pickup">      </div>
+        <img src="{% static 'images/driver_pickup2.jpg' %}" class="img-fluid rounded shadow w-75 about-img" alt="Pickup">
+      </div>
     </div>
 
     <hr class="my-4">
@@ -138,16 +131,14 @@
     <!-- STEP 3: Driver Delivers to Retailer -->
     <div class="row align-items-center">
       <div class="col-md-6 text-center">
-<img src="{% static 'images/driver_pickup.jpg' %}" class="img-fluid rounded shadow w-75 about-img" alt="Delivery">      </div>
-
+        <img src="{% static 'images/driver_pickup.jpg' %}" class="img-fluid rounded shadow w-75 about-img" alt="Delivery">
+      </div>
       <div class="col-md-6"><br>
-
         <h3 class="fw-bold">🏪 Driver Delivers to Retailer</h3>
         <p class="lead">
           The driver safely delivers the product to the retailer with full monitoring, ensuring timely
           and secure handover.
         </p>
-
         <ul class="list-unstyled">
           <li>🛣 Real-time route tracking</li>
           <li>✔ Retailer receives live updates</li>
@@ -166,11 +157,128 @@
   </div>
 </section>
 
+<hr>
+
+<!-- CUSTOMER REVIEWS SECTION -->
+<section id="reviews" class="py-5 bg-light position-relative">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-4">🌟 What Retailers Say</h2>
+
+    <div class="position-relative">
+      <!-- LEFT ARROW -->
+      <button id="prevReview" class="review-arrow left-arrow">
+        &#10094;
+      </button>
+
+      <!-- REVIEW TRACK -->
+      <div class="d-flex overflow-hidden gap-3" id="reviewsTrack">
+        {% for r in reviews %}
+        <div class="card review-card p-3 flex-shrink-0">
+          <div class="card-body text-center">
+            <div class="avatar mb-2 fs-3">👤</div>
+            <h5 class="card-title fw-bold">{{ r.retailer.name }}</h5>
+            <h6 class="card-subtitle mb-2 text-warning">⭐ {{ r.rating }} / 5</h6>
+            <p class="card-text">{{ r.review }}</p>
+          </div>
+        </div>
+        {% empty %}
+        <div class="text-center w-100 py-4 text-muted">No reviews yet</div>
+        {% endfor %}
+      </div>
+       <div class="text-center mt-4">
+      <a href="{% url 'retailer_sample_reviews' %}" class="btn btn-outline-success px-4">
+        See All Reviews
+      </a>
+    </div>
 
 
-<!-- CONTACT -->
+      <!-- RIGHT ARROW -->
+      <button id="nextReview" class="review-arrow right-arrow">
+        &#10095;
+      </button>
+    </div>
+
+    <!-- OVERALL RATING -->
+    <div class="overall-rating mt-3 text-end">
+      <strong>Overall Rating:</strong> ⭐ {{ avg_rating }} / 5
+    </div>
+
+  </div>
+</section>
+
 <style>
-  /* Form hover effect */
+/* REVIEW SECTION */
+#reviews {
+  background: linear-gradient(135deg,#e3f2fd,#fce4ec);
+}
+
+.review-card {
+  min-width: 280px;
+  max-width: 300px;
+  border-radius: 20px;
+  transition: transform 0.3s, box-shadow 0.3s;
+  background:white;
+}
+
+.review-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.review-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background-color: #198754;
+  color: white;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: 0.3s;
+}
+
+.review-arrow:hover {
+  background-color: #145c2b;
+  opacity: 1;
+}
+
+.left-arrow {
+  left: -20px;
+}
+
+.right-arrow {
+  right: -20px;
+}
+
+#reviewsTrack {
+  scroll-behavior: smooth;
+}
+</style>
+
+<script>
+const track = document.getElementById("reviewsTrack");
+const prevBtn = document.getElementById("prevReview");
+const nextBtn = document.getElementById("nextReview");
+
+const cardWidth = 320; // includes margin/gap
+
+prevBtn.addEventListener("click", () => {
+  track.scrollBy({ left: -cardWidth, behavior: "smooth" });
+});
+
+nextBtn.addEventListener("click", () => {
+  track.scrollBy({ left: cardWidth, behavior: "smooth" });
+});
+</script>
+
+
+<!-- CONTACT SECTION -->
+<style>
   .contact-card {
     transition: 0.3s ease;
   }
@@ -178,15 +286,11 @@
     transform: scale(1.02);
     box-shadow: 0 0 25px rgba(25, 135, 84, 0.3);
   }
-
-  /* Input hover glow */
   .contact-input:hover {
     border-color: #198754;
     box-shadow: 0 0 8px rgba(25, 135, 84, 0.4);
     transition: 0.3s;
   }
-
-  /* Button hover */
   .contact-btn {
     transition: 0.3s ease;
   }
@@ -196,24 +300,12 @@
   }
 </style>
 
-<!-- FLASH MESSAGES -->
-{% if messages %}
-  <div class="container mt-4">
-    {% for message in messages %}
-      <div class="alert alert-success text-center fw-bold">
-        {{ message }}
-      </div>
-    {% endfor %}
-  </div>
-{% endif %}
-
-<!-- CONTACT SECTION -->
-<section id="contact" class="py-5 bg-light">
+<section id="contact" class="py-5 bg-white">
   <div class="container">
     <h2 class="text-center mb-4">📩 Contact Us</h2>
 
     <form method="post" action="{% url 'contact_submit' %}"
-          class="shadow-lg p-4 bg-white rounded-4 contact-card"
+          class="shadow-lg p-4 bg-light rounded-4 contact-card"
           style="max-width: 700px; margin:auto;">
       {% csrf_token %}
 

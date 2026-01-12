@@ -3,47 +3,44 @@
 
 {% block body %}
 <br><br>
-
 <div class="container mt-5 d-flex justify-content-center">
 
-    <div class="card shadow-lg p-4 rounded-4" style="max-width:500px;width:100%;">
-
-        <h4 class="text-center mb-3">⭐ Rate Sample Product</h4>
-
-        <p class="text-center text-muted">
-            Product: <b>{{ sample.product.product }}</b>
-        </p>
+    <div class="card shadow-lg p-4 rounded-4" style="max-width:520px;width:100%; background: #f9f9f9;">
+        <h4 class="text-center mb-3 text-success">⭐ Rate Sample Product</h4>
+        <p class="text-center text-muted mb-2"><b>{{ sample.product.product }}</b></p>
+        <p class="text-center mb-3">From Farmer: <b>{{ sample.farmer.name }}</b></p>
+        <hr>
 
         <form method="post">
             {% csrf_token %}
 
             <div class="mb-3">
-                <label class="form-label">Rating</label>
-                <select name="rating" class="form-control" required>
+                <label class="form-label fw-semibold">Rating</label>
+                <select name="rating" class="form-select" required>
                     <option value="">-- Select Rating --</option>
-                    <option value="5">⭐⭐⭐⭐⭐ (5)</option>
-                    <option value="4">⭐⭐⭐⭐ (4)</option>
-                    <option value="3">⭐⭐⭐ (3)</option>
-                    <option value="2">⭐⭐ (2)</option>
-                    <option value="1">⭐ (1)</option>
+                    <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                    <option value="4">⭐⭐⭐⭐ Very Good</option>
+                    <option value="3">⭐⭐⭐ Good</option>
+                    <option value="2">⭐⭐ Fair</option>
+                    <option value="1">⭐ Poor</option>
                 </select>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Review</label>
-                <textarea name="review"
-                          class="form-control"
-                          rows="3"
-                          placeholder="Write your feedback..."
-                          required></textarea>
+                <label class="form-label fw-semibold">Review</label>
+                <textarea name="review" class="form-control" rows="4"
+                          placeholder="Write your feedback..." required></textarea>
             </div>
 
-            <button class="btn btn-success w-100">
-                ✅ Submit Review
-            </button>
+            <button class="btn btn-success w-100 fw-bold">✅ Submit Review</button>
         </form>
-
     </div>
 </div>
 
+<style>
+.card:hover {
+    transform: scale(1.02);
+    transition: 0.3s;
+}
+</style>
 {% endblock %}

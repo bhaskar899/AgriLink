@@ -3,67 +3,62 @@
 
 {% block body %}
 <br><br>
-
 <div class="container mt-4">
-
-    <div class="card shadow-lg p-4 rounded-4">
-
-        <h3 class="text-center mb-4">🚚 Sample Deliveries</h3>
-
+    <div class="card shadow p-4 rounded-4">
+        <h3 class="text-center mb-4 text-success">🚚 Sample Deliveries</h3>
         <div class="table-responsive">
-            <table class="table table-hover align-middle text-center">
-
+            <table class="table table-bordered align-middle text-center table-hover">
                 <thead class="table-warning">
                     <tr>
-                        <th>#</th>
+                        <th>ID</th>
                         <th>Product</th>
-                        <th>Farmer</th>
-                        <th>Retailer</th>
+                        <th>Pickup (Farmer)</th>
+                        <th>Drop (Retailer)</th>
                         <th>Qty</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
                 </thead>
-
                 <tbody>
                 {% for s in samples %}
                     <tr>
                         <td>#{{ s.id }}</td>
                         <td>{{ s.product.product }}</td>
-                        <td>{{ s.farmer.name }}</td>
-                        <td>{{ s.retailer.name }}</td>
+                        <td>👨‍🌾 {{ s.farmer.name }}<br>📍 {{ s.farmer.address }}</td>
+                        <td>🛒 {{ s.retailer.name }}<br>📍 {{ s.retailer.address }}</td>
                         <td>{{ s.quantity }} kg</td>
-
                         <td>
-                            <span class="badge bg-primary">
-                                {{ s.status|capfirst }}
-                            </span>
+                            <span class="badge
+                                {% if s.status == 'approved' %}bg-warning
+                                {% elif s.status == 'picked' %}bg-info
+                                {% elif s.status == 'delivered' %}bg-success
+                                {% endif %}">{{ s.status|capfirst }}</span>
                         </td>
-
                         <td>
-                            {% if not s.driver %}
-                                <a href="{% url 'assign_sample_driver' s.id %}"
-                                   class="btn btn-success btn-sm">
-                                   🚚 Pick Sample
-                                </a>
+                            {% if s.status == "approved" %}
+                                <a href="{% url 'driver_mark_sample_picked' s.id %}" class="btn btn-primary btn-sm">Mark Picked</a>
+                            {% elif s.status == "picked" %}
+                                <a href="{% url 'deliver_sample_complete' s.id %}" class="btn btn-success btn-sm">Mark Delivered</a>
                             {% else %}
-                                <span class="text-muted">Assigned</span>
+                                <span class="text-success fw-bold">Completed ✓</span>
                             {% endif %}
                         </td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="7" class="text-muted py-4">
-                            No sample deliveries available
-                        </td>
+                        <td colspan="7" class="text-muted">No sample deliveries assigned</td>
                     </tr>
                 {% endfor %}
                 </tbody>
-
             </table>
         </div>
-
     </div>
 </div>
 
+<style>
+.table-hover tbody tr:hover {
+    background: #fff3e0;
+    transition: 0.2s;
+}
+</style>
 {% endblock %}

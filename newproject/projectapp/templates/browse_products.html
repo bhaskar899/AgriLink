@@ -5,10 +5,7 @@
 
 {% block body %}
 
-<!-- BACK BUTTON -->
-<div class="back-btn-wrapper">
-    <button class="back-btn" onclick="goBack()">⬅ Back</button>
-</div>
+
 
 <style>
 .back-btn-wrapper{
@@ -72,7 +69,10 @@ function goBack(){
 }
 </style>
 
-
+<!-- BACK BUTTON -->
+<div class="back-btn-wrapper">
+    <button class="back-btn" onclick="goBack()">⬅ Back</button>
+</div>
 
 <div class="container mt-5"><br>
 
@@ -132,12 +132,11 @@ function goBack(){
                     <p>📍 {{ p.location }}</p>
                 </div>
 
-                <div class="card-footer bg-white card-footer-stick">
-                    <a href="{% url 'place_order' product_id=p.id %}" class="btn btn-primary w-100">Buy Now</a>
-                </div>
-                <div class="card-footer bg-white card-footer-stick">
-<a href="{% url 'request_sample' p.id %}" class="btn btn-outline-warning btn-sm w-100">Request Sample</a>
-                </div>
+                 <div class="mt-auto">
+                        <a href="{% url 'place_order' p.id %}" class="btn btn-primary w-100 mb-2">Buy Now</a>
+                        <a href="{% url 'request_sample' p.id %}" class="btn btn-outline-warning w-100">Request Sample</a>
+                    </div>
+
 
             </div>
         </div>

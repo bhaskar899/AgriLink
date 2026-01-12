@@ -9,9 +9,23 @@ from django.conf import settings
 def master(request):
     return render(request, "master.html")
 
-def home(request):
-    return render(request, "home.html")
 
+from .models import RetailerSampleReview
+
+
+from .models import SampleRequest  # ya jo model tumhare reviews ka hai
+
+from django.db.models import Avg
+from .models import SampleRequest
+
+def home(request):
+    reviews = SampleRequest.objects.all().order_by('-id')[:10]  # latest 10 reviews
+    avg_rating = reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+
+    return render(request, "home.html", {
+        "reviews": reviews,
+        "avg_rating": round(avg_rating, 1),  # one decimal
+    })
 def about(request):
     return render(request, "about.html")
 
@@ -39,6 +53,8 @@ def farmer_login(request):
         try:
             user = Farmer.objects.get(name=name)
             if user.password == password:
+                # Save id in session
+                request.session['id'] = user.id
                 request.session['name'] = user.name
                 request.session['user_type'] = 'farmer'
                 request.session['profile_image'] = user.profile_image.url if user.profile_image else "/media/profiles/default.jpg"
@@ -190,10 +206,13 @@ def retailer_login(request):
             retailer = Retailer.objects.get(name=name)
 
             if retailer.password.strip() == password.strip():
+                # ✅ Save retailer id in session for future requests
+                request.session['id'] = retailer.id       # <-- important
                 request.session['name'] = retailer.name
                 request.session['user_type'] = 'retailer'
+
                 messages.success(request, "Login successful!")
-                return redirect("retailer_dashboard")  # replace with your dashboard
+                return redirect("retailer_dashboard")
             else:
                 messages.error(request, "Invalid password.")
                 return redirect('retailer_login')
@@ -202,6 +221,7 @@ def retailer_login(request):
             return redirect('retailer_login')
 
     return render(request, "retailer_login.html")
+
 
 def logout(request):
     request.session.flush()
@@ -1040,22 +1060,39 @@ from django.contrib import messages
 from .models import Driver
 
 # For Driver Login (same idea for Farmer/Retailer)
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Driver
+
 def driver_login(request):
     if request.method == "POST":
-        email = request.POST.get("email")
-        password = request.POST.get("password")
+        email = request.POST.get("email", "").strip()
+        password = request.POST.get("password", "").strip()
+
+        if not email or not password:
+            messages.error(request, "Both email and password are required")
+            return redirect("driver_login")
+
         try:
             driver = Driver.objects.get(email=email)
-            if driver.password == password:
+
+            if driver.password.strip() == password.strip():
+                # ✅ Save session
                 request.session['id'] = driver.id
                 request.session['user_type'] = 'driver'
                 request.session['name'] = driver.name
                 request.session['profile_image'] = driver.driver_photo.url if driver.driver_photo else '/static/images/no-image.jpg'
+
+                messages.success(request, f"Welcome {driver.name}!")
                 return redirect('driver_dashboard')
             else:
                 messages.error(request, "Incorrect password")
+                return redirect("driver_login")
+
         except Driver.DoesNotExist:
             messages.error(request, "Driver not found")
+            return redirect("driver_login")
+
     return render(request, "driver_login.html")
 
 def driver_logout(request):
@@ -2231,95 +2268,218 @@ def assign_driver_to_order(order):
 # are generally okay, but driver_mark_delivered was the main one needing earning and status fix.
 
 
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from django.utils import timezone
+from .models import SampleRequest
+
+# -------------------------------
+# Retailer: Request Sample
+# -------------------------------
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from .models import Retailer, Product, SampleRequest
 
 def request_sample(request, product_id):
+    # ✅ Get retailer id from session
     retailer_id = request.session.get("id")
     if not retailer_id:
+        messages.error(request, "Please login first")
         return redirect("retailer_login")
 
     retailer = get_object_or_404(Retailer, id=retailer_id)
     product = get_object_or_404(Product, id=product_id)
 
+    # ✅ Create sample request
     SampleRequest.objects.create(
         product=product,
-        farmer=product.farmer,
         retailer=retailer,
-        quantity=2  # default sample qty
+        farmer=product.farmer,
+        quantity=2  # default sample quantity
     )
 
-    messages.success(request, "Sample request sent to farmer")
+    messages.success(request, f"Sample request for '{product.product}' sent successfully!")
     return redirect("retailer_dashboard")
-
+# -------------------------------
+# Farmer: View Sample Requests
+# -------------------------------
+from django.shortcuts import get_object_or_404, render
+from .models import Farmer, SampleRequest
+from django.contrib import messages
 
 def farmer_sample_requests(request):
-    farmer_id = request.session.get("id")
-    farmer = get_object_or_404(Farmer, id=farmer_id)
 
-    samples = SampleRequest.objects.filter(farmer=farmer).order_by("-created_at")
+    # ✅ STRICT CHECK
+    if request.session.get("user_type") != "farmer":
+        return redirect("farmer_login")
+
+    farmer_id = request.session.get("id")
+    if not farmer_id:
+        return redirect("farmer_login")
+
+    farmer = Farmer.objects.get(id=farmer_id)
+
+    samples = SampleRequest.objects.filter(farmer=farmer)
+
+    # ✅ NO EXTRA FILTER – DIRECT
+    available_drivers = Driver.objects.all()
+
+    print("DEBUG DRIVERS:", available_drivers)  # 👈 MUST PRINT
 
     return render(request, "farmer_sample_requests.html", {
-        "samples": samples
+        "samples": samples,
+        "available_drivers": available_drivers
     })
 
+# -------------------------------
+# Farmer: Approve / Reject Sample
+# -------------------------------
 def approve_sample(request, id):
     sample = get_object_or_404(SampleRequest, id=id)
     sample.status = "approved"
     sample.save()
+    messages.success(request, "Sample request approved!")
     return redirect("farmer_sample_requests")
+
 
 def reject_sample(request, id):
     sample = get_object_or_404(SampleRequest, id=id)
     sample.status = "rejected"
     sample.save()
+    messages.success(request, "Sample request rejected!")
     return redirect("farmer_sample_requests")
 
-def driver_sample_deliveries(request):
-    driver_id = request.session.get("id")
-    driver = get_object_or_404(Driver, id=driver_id)
 
+# -------------------------------
+# Driver: Assign Sample & Deliver
+# -------------------------------
+def assign_sample_driver(request, id):
+
+    # ✅ Only FARMER can assign
+    if request.session.get("user_type") != "farmer":
+        return redirect("farmer_login")
+
+    if request.method == "POST":
+
+        driver_id = request.POST.get("driver_id")
+        if not driver_id:
+            messages.error(request, "Please select a driver")
+            return redirect("farmer_sample_requests")
+
+        sample = get_object_or_404(SampleRequest, id=id)
+        driver = get_object_or_404(Driver, id=driver_id)
+
+        sample.driver = driver
+        sample.status = "picked"
+        sample.save()
+
+        messages.success(request, f"Driver {driver.name} assigned successfully")
+
+    return redirect("farmer_sample_requests")
+
+def driver_mark_sample_picked(request, id):
+    if request.session.get("user_type") != "driver":
+        return redirect("driver_login")
+
+    sample = get_object_or_404(SampleRequest, id=id)
+
+    sample.status = "picked"
+    sample.save()
+
+    messages.success(request, "Sample picked successfully")
+    return redirect("driver_sample_deliveries")
+
+def deliver_sample_complete(request, id):
+    if request.session.get("user_type") != "driver":
+        return redirect("driver_login")
+
+    sample = get_object_or_404(SampleRequest, id=id)
+
+    sample.status = "delivered"
+    sample.save()
+
+    messages.success(request, "Sample delivered successfully")
+
+    # 🔥 AFTER DELIVERY → RETAILER CAN REVIEW
+    return redirect("driver_sample_deliveries")
+# projectapp/views.py
+from django.shortcuts import render, get_object_or_404
+from .models import SampleRequest, Driver
+
+def driver_sample_deliveries(request):
+
+    # ✅ Only driver allowed
+    if request.session.get("user_type") != "driver":
+        return redirect("driver_login")
+
+    driver_id = request.session.get("id")
+    if not driver_id:
+        return redirect("driver_login")
+
+    driver = Driver.objects.get(id=driver_id)
+
+    # 🔥 IMPORTANT FILTER
     samples = SampleRequest.objects.filter(
-        status="approved",
-        driver__isnull=True
-    )
+        driver=driver
+    ).order_by("-id")
 
     return render(request, "driver_sample_deliveries.html", {
         "samples": samples
     })
+# -------------------------------
+# Retailer: Rate & Review Sample
+# -------------------------------
+# views.py
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .models import SampleRequest, Retailer
 
-
-
-def assign_sample_driver(request, id):
-    driver_id = request.session.get("id")
-    sample = get_object_or_404(SampleRequest, id=id)
-
-    sample.driver_id = driver_id
-    sample.status = "picked"
-    sample.save()
-
-    return redirect("driver_sample_deliveries")
-
+# views.py
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .models import SampleRequest, Retailer
 
 def rate_sample(request, id):
-    sample = get_object_or_404(SampleRequest, id=id)
+    # ✅ Only retailer
+    if request.session.get("user_type") != "retailer":
+        messages.error(request, "Please login first")
+        return redirect("retailer_login")
+
+    retailer_id = request.session.get("id")
+    retailer = get_object_or_404(Retailer, id=retailer_id)
+
+    sample = get_object_or_404(SampleRequest, id=id, retailer=retailer)
 
     if request.method == "POST":
-        sample.rating = request.POST.get("rating")
-        sample.review = request.POST.get("review")
-        sample.status = "delivered"
+        rating = int(request.POST.get("rating"))
+        review = request.POST.get("review")
+        sample.rating = rating
+        sample.review = review
         sample.save()
-        return redirect("retailer_dashboard")
+        messages.success(request, "Thank you for your review!")
+        return redirect("retailer_dashboard")  # ✅ changed
 
     return render(request, "rate_sample.html", {"sample": sample})
 
-from django.utils import timezone
+def retailer_samples(request):
+    if request.session.get('user_type') != 'retailer':
+        return redirect('retailer_login')
 
-def deliver_sample_complete(request, id):
-    # Driver confirm karega ki delivery ho gayi
-    sample = get_object_or_404(SampleRequest, id=id)
-    sample.status = "delivered"
-    sample.delivered_at = timezone.now()
-    sample.save()
-    messages.success(request, "Sample marked as Delivered!")
-    return redirect("driver_sample_deliveries")
+    retailer_id = request.session.get('id')
+    retailer = Retailer.objects.get(id=retailer_id)
+
+    # Delivered samples
+    samples = SampleRequest.objects.filter(
+        retailer=retailer,
+        status='delivered'
+    )
+
+    return render(request, "retailer_samples.html", {"samples": samples})
+
+from django.shortcuts import render
+from .models import SampleRequest  # jo model me reviews store hote hai
+
+def all_sample_reviews(request):
+    # Show all submitted reviews
+    reviews = SampleRequest.objects.select_related('retailer').all().order_by('-id')
+    return render(request, "all_sample_reviews.html", {"reviews": reviews})

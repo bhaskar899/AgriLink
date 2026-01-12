@@ -207,8 +207,9 @@
             <li><a class="dropdown-item" href="{% url 'retailer_dashboard' %}">Dashboard</a></li>
             <li><a class="dropdown-item" href="{% url 'browse_products' %}">Browse Products</a></li>
             <li><a class="dropdown-item" href="{% url 'retailer_products' %}">My Orders</a></li>
-              <li><a class="dropdown-item" href="{% url 'retailer_dashboard' %}#samples">⭐ My Sample Ratings</a></li>
-
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'retailer_samples' %}">My Sample Ratings</a>
+</li>
           </ul>
         </li>
         {% endif %}

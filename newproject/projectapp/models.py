@@ -252,8 +252,9 @@ class Delivery(models.Model):
 
 from django.db import models
 
-class SampleRequest(models.Model):
+from django.db import models
 
+class SampleRequest(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('approved', 'Approved'),
@@ -262,12 +263,12 @@ class SampleRequest(models.Model):
         ('delivered', 'Delivered'),
     ]
 
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE)
-    retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE)
-    driver = models.ForeignKey(Driver, on_delete=models.SET_NULL, null=True, blank=True)
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+    farmer = models.ForeignKey('Farmer', on_delete=models.CASCADE)
+    retailer = models.ForeignKey('Retailer', on_delete=models.CASCADE)
+    driver = models.ForeignKey('Driver', on_delete=models.SET_NULL, null=True, blank=True)
 
-    quantity = models.FloatField(help_text="Sample quantity in kg")
+    quantity = models.FloatField(default=2, help_text="Sample quantity in kg")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 
     rating = models.IntegerField(null=True, blank=True)
@@ -276,9 +277,26 @@ class SampleRequest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     delivered_at = models.DateTimeField(null=True, blank=True)
 
-    def __str__(self):
+    def _str_(self):
         return f"Sample #{self.id} - {self.product.product}"
 
+from django.db import models
+from django.contrib.auth import get_user_model
+
+# Assuming you have SampleRequest, Retailer models already
+class RetailerSampleReview(models.Model):
+    sample = models.ForeignKey('SampleRequest', on_delete=models.CASCADE)
+    retailer = models.ForeignKey('Retailer', on_delete=models.CASCADE)
+    rating = models.PositiveSmallIntegerField()  # 1-5 stars
+    review = models.TextField(blank=True, null=True)
+    reviewed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('sample', 'retailer')  # prevents multiple reviews for same sample
+
+    def _str_(self):
+        return f"{self.retailer.name} - {self.sample.product.product} - {self.rating}"
 # models.py
 from django.db import models
 
