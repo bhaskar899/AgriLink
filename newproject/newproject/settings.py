@@ -153,8 +153,8 @@ CLOUDINARY_STORAGE = {
 # ---------------------
 # RAZORPAY
 # ---------------------
-RAZORPAY_KEY_ID = "rzp_live_S2Ul60XW9jAhey"
-RAZORPAY_KEY_SECRET = "9mhmhg1InicJECS7hEY3qQmw"
+RAZORPAY_KEY_ID = "rzp_live_SBGptQHcH84vXn"
+RAZORPAY_KEY_SECRET = "WD7Jz4t5KS6fhu0wwv36N0hl"
 
 # ---------------------
 # EMAIL CONFIGURATION
