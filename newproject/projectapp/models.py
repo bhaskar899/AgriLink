@@ -30,6 +30,8 @@ class Farmer(models.Model):
     account_number = models.CharField(max_length=30, blank=True, null=True)
     ifsc_code = models.CharField(max_length=15, blank=True, null=True)
     upi_id = models.CharField(max_length=100, blank=True, null=True)
+    farmer_paid = models.BooleanField(default=False)
+
 
     def str(self):
         return self.name

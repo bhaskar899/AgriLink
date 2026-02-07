@@ -177,6 +177,8 @@ path('retailer/samples/', views.retailer_samples, name='retailer_samples'),
 
 path("admin-payouts/", views.admin_payout_dashboard, name="admin_payout_dashboard"),
     path("admin-payouts/pay/<int:order_id>/", views.mark_farmer_paid, name="mark_farmer_paid"),
+path("mark_farmer_paid/<int:order_id>/", views.mark_farmer_paid, name="mark_farmer_paid"),
+
 ]
 
 # ---------------- MEDIA & STATIC ----------------

@@ -74,8 +74,8 @@ function goBack(){
       <label class="fw-bold">Account Number</label>
       <input type="text" name="account_number" class="form-control mb-3 rounded-3" value="{{ user.account_number }}">
 
-      <label class="fw-bold">IFSC Code</label>
-      <input type="text" name="ifsc_code" class="form-control mb-3 rounded-3" value="{{ user.ifsc_code }}">
+     <label class="fw-bold">IFSC Code</label>
+<input type="text" id="ifsc_code" name="ifsc_code" class="form-control mb-3 rounded-3" onblur="fetchBankDetails()" required>
 
       <label class="fw-bold">UPI ID</label>
       <input type="text" name="upi_id" class="form-control mb-4 rounded-3" value="{{ user.upi_id }}">
@@ -85,4 +85,25 @@ function goBack(){
     </form>
   </div>
 </div>
+
+<script>
+function fetchBankDetails() {
+    const ifsc = document.getElementById("ifsc_code").value.trim();
+    if (ifsc.length < 11) return;
+
+    fetch(`https://ifsc.razorpay.com/${ifsc}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data && data.BANK) {
+                document.getElementById("bank_name").value = data.BANK;
+                document.getElementById("branch_name").value = data.BRANCH;
+                document.getElementById("bank_address").value = data.ADDRESS;
+            } else {
+                alert("Invalid IFSC Code");
+            }
+        })
+        .catch(() => alert("Unable to fetch bank details"));
+}
+</script>
+
 {% endblock %}

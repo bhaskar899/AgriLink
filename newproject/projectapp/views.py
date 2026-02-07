@@ -1649,6 +1649,9 @@ from .models import Farmer, Sale, Order
 from django.db.models import Sum
 from django.shortcuts import render, redirect, get_object_or_404
 
+from django.db.models import Sum
+from django.shortcuts import render, redirect, get_object_or_404
+
 def farmer_dashboard(request):
 
     # ❗ LOGIN CHECK
@@ -1676,12 +1679,31 @@ def farmer_dashboard(request):
         status="Paid"
     ).order_by("-order_date")[:5]
 
+    # 💸 Pending payout (paid orders but farmer not yet paid)
+    pending_payout = Order.objects.filter(
+        farmer=farmer,
+        status="Paid",
+        farmer_paid=False
+    ).aggregate(total=Sum("total_amount"))["total"] or 0
+
+    pending_payout = round(pending_payout * 0.95, 2)
+
+    # ✅ Already paid amount
+    paid_amount = Order.objects.filter(
+        farmer=farmer,
+        farmer_paid=True
+    ).aggregate(total=Sum("total_amount"))["total"] or 0
+
+    paid_amount = round(paid_amount * 0.95, 2)
+
     return render(request, "farmer_dashboard.html", {
         "farmer": farmer,
         "total_sales": total_sales,
         "total_products": total_products,
         "total_profit": total_profit,
-        "recent_sales": recent_sales
+        "recent_sales": recent_sales,
+        "pending_payout": pending_payout,
+        "paid_amount": paid_amount,
     })
 
 
@@ -2546,38 +2568,20 @@ def admin_payout_dashboard(request):
 
 @staff_member_required
 def mark_farmer_paid(request, order_id):
+    if request.session.get("user_type") != "admin":
+        return redirect("admin_login")
+
     order = get_object_or_404(Order, id=order_id)
 
-    if order.payout_status == "Paid":
-        messages.info(request, "This order is already paid to farmer.")
-        return redirect("admin_payout_dashboard")
+    if not order.farmer_paid:
+        order.farmer_paid = True
+        order.save()
 
-    total_amount = order.total_amount
-    farmer_amount = round(total_amount * 0.95, 2)
-    platform_amount = round(total_amount * 0.05, 2)
-
-    # ✅ Create Sale (Farmer Profit Record)
-    Sale.objects.create(
-        product=order.product,
-        amount=total_amount,
-        profit=farmer_amount,
-        quantity=order.quantity,
-        status="Completed"
-    )
-
-    # ✅ Update order payout status
-    order.payout_status = "Paid"
-    order.save()
-
-    # ✅ Notify Farmer
-    Notification.objects.create(
-        sender_admin=True,
-        receiver_farmer=order.farmer,
-        message=(
-            f"Your payment for Order #{order.id} has been sent. "
-            f"Amount ₹{farmer_amount} credited to your bank account."
+        Notification.objects.create(
+            receiver_farmer=order.farmer,
+            message=f"₹{round(order.total_amount * 0.95, 2)} transferred to your bank account for Order #{order.id}"
         )
-    )
 
-    messages.success(request, f"Farmer paid successfully for Order #{order.id}.")
-    return redirect("admin_payout_dashboard")
+        messages.success(request, "Farmer marked as paid successfully.")
+
+    return redirect("admin_dashboard")

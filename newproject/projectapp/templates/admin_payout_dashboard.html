@@ -35,11 +35,9 @@
           <td>₹ {{ order.total_amount|floatformat:2 }}</td>
           <td class="text-success fw-bold">₹ {{ order.total_amount|floatformat:2|mul:0.95 }}</td>
           <td>
-            <a href="{% url 'mark_farmer_paid' order.id %}"
-               class="btn btn-success btn-sm"
-               onclick="return confirm('Confirm farmer payment?')">
-              ✅ Mark as Paid
-            </a>
+         <a href="{% url 'mark_farmer_paid' order.id %}" class="btn btn-success btn-sm">
+    Mark as Paid
+</a>
           </td>
         </tr>
         {% empty %}
