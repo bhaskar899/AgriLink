@@ -29,7 +29,9 @@ INSTALLED_APPS = [
     'projectapp',
     'cloudinary_storage',
     'cloudinary',
-    'channels'
+    'channels',
+    'rest_framework',
+    'api',
 
 ]
 

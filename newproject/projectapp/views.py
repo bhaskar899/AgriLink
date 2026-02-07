@@ -975,6 +975,17 @@ from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseForbidden
 from .models import Order, Notification
 
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponseForbidden
+from .models import Order, Notification, Product
+
+from django.http import HttpResponseForbidden
+from .models import Order, Product, Notification
+
+from django.http import HttpResponseForbidden
+from django.shortcuts import render, get_object_or_404
+from .models import Order, Notification
+
 def payment_success(request, order_id):
     order = get_object_or_404(Order, id=order_id)
 
@@ -999,7 +1010,7 @@ def payment_success(request, order_id):
         Notification.objects.create(
             sender_retailer=order.retailer,
             receiver_farmer=order.farmer,
-            message=f"Payment received for Order #{order.id}. Farmer amount ₹{farmer_amount}"
+            message=f"Your product has been purchased! Farmer payout ₹{farmer_amount} will be sent within 24–48 hours."
         )
 
     return render(request, "payment_success.html", {"order": order})
@@ -1488,6 +1499,21 @@ def send_driver_payment_notification(order):
     )
 
 from django.db import transaction
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib import messages
+from .models import Product, Retailer, Order, Sale
+import razorpay
+from django.conf import settings
+
+from django.db import transaction
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Product, Order, Retailer, Farmer
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.db import transaction
+from .models import Product, Retailer, Order, Sale
 
 def place_order(request, product_id):
     product = get_object_or_404(Product, id=product_id)
@@ -1530,10 +1556,10 @@ def place_order(request, product_id):
         COMMISSION_RATE = 0.05
         calculated_profit = total_amount * (1 - COMMISSION_RATE)
 
-        # 🔥🔥 ATOMIC BLOCK (MOST IMPORTANT)
+        # 🔥 ATOMIC BLOCK
         with transaction.atomic():
 
-            # ✅ Create Order
+            # ✅ Create Order (NO payment_status or payout_status)
             order = Order.objects.create(
                 product=product,
                 quantity=quantity,
@@ -1541,10 +1567,11 @@ def place_order(request, product_id):
                 contact=contact,
                 address=address,
                 farmer=product.farmer,
-                status='Pending'
+                status='Pending',
+                total_amount=total_amount
             )
 
-            # ✅ Create Sale
+            # ✅ Create Sale (Farmer payout pending)
             Sale.objects.create(
                 product=product,
                 amount=total_amount,
@@ -1553,14 +1580,7 @@ def place_order(request, product_id):
                 status='Pending'
             )
 
-            # ✅ REDUCE STOCK
-            product.quantity -= quantity
-
-            # ✅ AUTO DELETE WHEN STOCK 0
-            if product.quantity <= 0:
-                product.delete()
-            else:
-                product.save()
+            # ❌ DO NOT reduce stock here — reduce only after payment success
 
         messages.success(
             request,
@@ -1570,6 +1590,7 @@ def place_order(request, product_id):
         return redirect('payment_page', order_id=order.id)
 
     return render(request, "place_order.html", {"product": product})
+
 
 
 # ================== API FOR LIVE UPDATES IN DASHBOARD ==================
@@ -1609,6 +1630,14 @@ def sales_api(request):
 
     return JsonResponse(data)
 
+from django.shortcuts import render, get_object_or_404, redirect
+from django.db.models import Sum
+from .models import Farmer, Product, Sale, Order
+
+from django.db.models import Sum
+from django.shortcuts import render, get_object_or_404
+from .models import Farmer, Sale, Order
+
 def farmer_dashboard(request):
 
     # ❗ LOGIN CHECK
@@ -1618,24 +1647,41 @@ def farmer_dashboard(request):
     farmer_name = request.session.get("name")
     farmer = get_object_or_404(Farmer, name=farmer_name)
 
-    # 🌾 Total Sales (All orders of all products of this farmer)
-    total_sales = Sale.objects.filter(product__farmer=farmer).aggregate(total=Sum("amount"))["total"] or 0
+    # 🌾 Total Sales (only COMPLETED payouts)
+    total_sales = Sale.objects.filter(
+        product__farmer=farmer,
+        status="Completed"
+    ).aggregate(total=Sum("amount"))["total"] or 0
 
     # 📦 Total Products
     total_products = Product.objects.filter(farmer=farmer).count()
 
-    # 💰 Total Profit
-    total_profit = Sale.objects.filter(product__farmer=farmer).aggregate(total=Sum("profit"))["total"] or 0
+    # 💰 Total Profit (only COMPLETED payouts)
+    total_profit = Sale.objects.filter(
+        product__farmer=farmer,
+        status="Completed"
+    ).aggregate(total=Sum("profit"))["total"] or 0
 
-    # 🔥 Recent 5 Sales Live View
-    recent_sales = Sale.objects.filter(product__farmer=farmer).order_by("-date")[:5]
+    # 🔥 Recent 5 COMPLETED Sales
+    recent_sales = Sale.objects.filter(
+        product__farmer=farmer,
+        status="Completed"
+    ).order_by("-date")[:5]
+
+    # 🟡 Pending Payout Orders (Paid by retailer but not paid to farmer)
+    pending_payouts = Order.objects.filter(
+        farmer=farmer,
+        payment_status="Paid",
+        payout_status="Pending"
+    ).order_by("-order_date")
 
     return render(request, "farmer_dashboard.html", {
         "farmer": farmer,
         "total_sales": total_sales,
         "total_products": total_products,
         "total_profit": total_profit,
-        "recent_sales": recent_sales
+        "recent_sales": recent_sales,
+        "pending_payouts": pending_payouts
     })
 
 
@@ -2483,3 +2529,55 @@ def all_sample_reviews(request):
     # Show all submitted reviews
     reviews = SampleRequest.objects.select_related('retailer').all().order_by('-id')
     return render(request, "all_sample_reviews.html", {"reviews": reviews})
+
+
+from django.contrib.admin.views.decorators import staff_member_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Order, Sale, Notification
+
+@staff_member_required
+def admin_payout_dashboard(request):
+    pending_orders = Order.objects.filter(payment_status="Paid", payout_status="Pending")
+
+    return render(request, "admin_payout_dashboard.html", {
+        "pending_orders": pending_orders
+    })
+
+@staff_member_required
+def mark_farmer_paid(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+
+    if order.payout_status == "Paid":
+        messages.info(request, "This order is already paid to farmer.")
+        return redirect("admin_payout_dashboard")
+
+    total_amount = order.total_amount
+    farmer_amount = round(total_amount * 0.95, 2)
+    platform_amount = round(total_amount * 0.05, 2)
+
+    # ✅ Create Sale (Farmer Profit Record)
+    Sale.objects.create(
+        product=order.product,
+        amount=total_amount,
+        profit=farmer_amount,
+        quantity=order.quantity,
+        status="Completed"
+    )
+
+    # ✅ Update order payout status
+    order.payout_status = "Paid"
+    order.save()
+
+    # ✅ Notify Farmer
+    Notification.objects.create(
+        sender_admin=True,
+        receiver_farmer=order.farmer,
+        message=(
+            f"Your payment for Order #{order.id} has been sent. "
+            f"Amount ₹{farmer_amount} credited to your bank account."
+        )
+    )
+
+    messages.success(request, f"Farmer paid successfully for Order #{order.id}.")
+    return redirect("admin_payout_dashboard")

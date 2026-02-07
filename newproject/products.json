@@ -1,0 +1,54 @@
+[
+{
+  "model": "projectapp.product",
+  "pk": 23,
+  "fields": {
+    "product": "Custard Apple",
+    "description": "jdsufhjdc",
+    "price": 100.0,
+    "quantity": 828,
+    "location": "Turbhe, Navi Mumbai, Thane Taluka, Thane, Maharashtra, 400705, India",
+    "image": "product_images/custard_apple_ZChbs9b.jpg",
+    "farmer": 10
+  }
+},
+{
+  "model": "projectapp.product",
+  "pk": 24,
+  "fields": {
+    "product": "pineapple",
+    "description": "jhbfc",
+    "price": 20.0,
+    "quantity": 10,
+    "location": "Wadala Telephone Exchange (MTNL), G.D. Ambedkar Marg, Naigaon, Parel, F/S Ward, Zone 2, Mumbai, Mumbai City, Maharashtra, 400014, India",
+    "image": "product_images/pineapple_MqWMem5.jpg",
+    "farmer": 13
+  }
+},
+{
+  "model": "projectapp.product",
+  "pk": 25,
+  "fields": {
+    "product": "mango",
+    "description": "sadf",
+    "price": 25.0,
+    "quantity": 298,
+    "location": "Turbhe, Navi Mumbai, Thane Taluka, Thane, Maharashtra, 400705, India",
+    "image": "product_images/mango_vNAcqok.jpg",
+    "farmer": 8
+  }
+},
+{
+  "model": "projectapp.product",
+  "pk": 26,
+  "fields": {
+    "product": "black",
+    "description": "12232e",
+    "price": 1.0,
+    "quantity": 999,
+    "location": "Turbhe, Navi Mumbai, Thane Taluka, Thane, Maharashtra, 400705, India",
+    "image": "product_images/m.jpg",
+    "farmer": 8
+  }
+}
+]

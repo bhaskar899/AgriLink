@@ -332,6 +332,8 @@ class Order(models.Model):
     address = models.TextField(blank=True, null=True)
     contact = models.CharField(max_length=20, blank=True, null=True)
     current_lat = models.FloatField(null=True, blank=True)
+    farmer_paid = models.BooleanField(default=False)
+
     current_lng = models.FloatField(null=True, blank=True)
     driver = models.ForeignKey('Driver', on_delete=models.SET_NULL, null=True, blank=True)
 
