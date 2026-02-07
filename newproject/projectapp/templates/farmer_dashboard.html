@@ -141,9 +141,10 @@
         <td>{{ order.retailer.name }}</td>
         <td>{{ order.quantity }} kg</td>
         <td>₹ {{ order.total_amount|floatformat:2 }}</td>
-        <td class="text-success fw-bold">
-            ₹ {{ order.total_amount|floatformat:2|mul:0.95 }}
-        </td>
+       <td class="text-success fw-bold">
+    ₹ {{ order.farmer_amount|floatformat:2 }}
+</td>
+
         <td>
             <span class="badge bg-warning text-dark">
                 Pending Admin Payment
