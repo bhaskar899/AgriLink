@@ -628,6 +628,14 @@ def profile_update(request):
         if request.FILES.get("profile_image"):
             user.profile_image = request.FILES["profile_image"]
 
+        # 🏦 Bank details — ONLY for farmer (no logic change)
+        if user_type == "farmer":
+            user.bank_name = request.POST.get("bank_name")
+            user.account_holder_name = request.POST.get("account_holder_name")
+            user.account_number = request.POST.get("account_number")
+            user.ifsc_code = request.POST.get("ifsc_code")
+            user.upi_id = request.POST.get("upi_id")
+
         user.save()
         request.session['profile_image'] = user.profile_image.url if user.profile_image else '/static/images/no-image.jpg'
         messages.success(request, "Profile updated successfully")

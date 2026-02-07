@@ -60,6 +60,27 @@ function goBack(){
       <label class="fw-bold">Profile Image</label>
       <input type="file" name="profile_image" class="form-control mb-4 rounded-3">
 
+      <!-- 🏦 Bank Details (Only Farmer will see & update) -->
+      {% if request.session.user_type == "farmer" %}
+      <hr>
+      <h5 class="fw-bold mt-3">💳 Bank Details for Payout</h5>
+
+      <label class="fw-bold">Bank Name</label>
+      <input type="text" name="bank_name" class="form-control mb-3 rounded-3" value="{{ user.bank_name }}">
+
+      <label class="fw-bold">Account Holder Name</label>
+      <input type="text" name="account_holder_name" class="form-control mb-3 rounded-3" value="{{ user.account_holder_name }}">
+
+      <label class="fw-bold">Account Number</label>
+      <input type="text" name="account_number" class="form-control mb-3 rounded-3" value="{{ user.account_number }}">
+
+      <label class="fw-bold">IFSC Code</label>
+      <input type="text" name="ifsc_code" class="form-control mb-3 rounded-3" value="{{ user.ifsc_code }}">
+
+      <label class="fw-bold">UPI ID</label>
+      <input type="text" name="upi_id" class="form-control mb-4 rounded-3" value="{{ user.upi_id }}">
+      {% endif %}
+
       <button class="btn btn-success w-100 py-2 rounded-3">Save Changes</button>
     </form>
   </div>

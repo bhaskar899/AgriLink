@@ -25,6 +25,11 @@ class Farmer(models.Model):
     gender = models.CharField(max_length=10)
     first_login = models.BooleanField(default=True)
     profile_image = models.ImageField(upload_to='profiles/', default='profiles/default.jpg')
+    bank_name = models.CharField(max_length=100, blank=True, null=True)
+    account_holder_name = models.CharField(max_length=100, blank=True, null=True)
+    account_number = models.CharField(max_length=30, blank=True, null=True)
+    ifsc_code = models.CharField(max_length=15, blank=True, null=True)
+    upi_id = models.CharField(max_length=100, blank=True, null=True)
 
     def str(self):
         return self.name

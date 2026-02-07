@@ -58,6 +58,17 @@ function goBack(){
 
     <hr>
 
+    <!-- 🏦 Bank Details (Only Farmer will see values) -->
+    {% if request.session.user_type == "farmer" %}
+    <h5 class="fw-bold mt-3">💳 Bank Details for Payout</h5>
+    <p><strong>Bank Name:</strong> {{ user.bank_name|default:"Not provided" }}</p>
+    <p><strong>Account Holder:</strong> {{ user.account_holder_name|default:"Not provided" }}</p>
+    <p><strong>Account Number:</strong> {{ user.account_number|default:"Not provided" }}</p>
+    <p><strong>IFSC Code:</strong> {{ user.ifsc_code|default:"Not provided" }}</p>
+    <p><strong>UPI ID:</strong> {{ user.upi_id|default:"Not provided" }}</p>
+    <hr>
+    {% endif %}
+
     <a href="/profile_update/" class="btn btn-success w-100 py-2 rounded-3">Update Profile</a>
 
   </div>
