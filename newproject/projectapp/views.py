@@ -1649,9 +1649,6 @@ from .models import Farmer, Sale, Order
 from django.db.models import Sum
 from django.shortcuts import render, redirect, get_object_or_404
 
-from django.db.models import Sum
-from django.shortcuts import render, redirect, get_object_or_404
-
 def farmer_dashboard(request):
 
     # ❗ LOGIN CHECK
@@ -1679,31 +1676,12 @@ def farmer_dashboard(request):
         status="Paid"
     ).order_by("-order_date")[:5]
 
-    # 💸 Pending payout (paid orders but farmer not yet paid)
-    pending_payout = Order.objects.filter(
-        farmer=farmer,
-        status="Paid",
-        farmer_paid=False
-    ).aggregate(total=Sum("total_amount"))["total"] or 0
-
-    pending_payout = round(pending_payout * 0.95, 2)
-
-    # ✅ Already paid amount
-    paid_amount = Order.objects.filter(
-        farmer=farmer,
-        farmer_paid=True
-    ).aggregate(total=Sum("total_amount"))["total"] or 0
-
-    paid_amount = round(paid_amount * 0.95, 2)
-
     return render(request, "farmer_dashboard.html", {
         "farmer": farmer,
         "total_sales": total_sales,
         "total_products": total_products,
         "total_profit": total_profit,
-        "recent_sales": recent_sales,
-        "pending_payout": pending_payout,
-        "paid_amount": paid_amount,
+        "recent_sales": recent_sales
     })
 
 
