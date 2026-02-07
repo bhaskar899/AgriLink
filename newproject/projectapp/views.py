@@ -1638,6 +1638,9 @@ from django.db.models import Sum
 from django.shortcuts import render, get_object_or_404
 from .models import Farmer, Sale, Order
 
+from django.db.models import Sum
+from django.shortcuts import render, redirect, get_object_or_404
+
 def farmer_dashboard(request):
 
     # ❗ LOGIN CHECK
@@ -1647,41 +1650,30 @@ def farmer_dashboard(request):
     farmer_name = request.session.get("name")
     farmer = get_object_or_404(Farmer, name=farmer_name)
 
-    # 🌾 Total Sales (only COMPLETED payouts)
-    total_sales = Sale.objects.filter(
-        product__farmer=farmer,
-        status="Completed"
-    ).aggregate(total=Sum("amount"))["total"] or 0
+    # 🌾 Total Sales (Only PAID orders of this farmer)
+    total_sales = Order.objects.filter(
+        farmer=farmer,
+        status="Paid"
+    ).aggregate(total=Sum("total_amount"))["total"] or 0
 
     # 📦 Total Products
     total_products = Product.objects.filter(farmer=farmer).count()
 
-    # 💰 Total Profit (only COMPLETED payouts)
-    total_profit = Sale.objects.filter(
-        product__farmer=farmer,
-        status="Completed"
-    ).aggregate(total=Sum("profit"))["total"] or 0
+    # 💰 Total Profit (95% of total sales)
+    total_profit = round(total_sales * 0.95, 2)
 
-    # 🔥 Recent 5 COMPLETED Sales
-    recent_sales = Sale.objects.filter(
-        product__farmer=farmer,
-        status="Completed"
-    ).order_by("-date")[:5]
-
-    # 🟡 Pending Payout Orders (Paid by retailer but not paid to farmer)
-    pending_payouts = Order.objects.filter(
+    # 🔥 Recent 5 PAID orders
+    recent_sales = Order.objects.filter(
         farmer=farmer,
-        payment_status="Paid",
-        payout_status="Pending"
-    ).order_by("-order_date")
+        status="Paid"
+    ).order_by("-order_date")[:5]
 
     return render(request, "farmer_dashboard.html", {
         "farmer": farmer,
         "total_sales": total_sales,
         "total_products": total_products,
         "total_profit": total_profit,
-        "recent_sales": recent_sales,
-        "pending_payouts": pending_payouts
+        "recent_sales": recent_sales
     })
 
 
