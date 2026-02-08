@@ -54,39 +54,6 @@
 
 <br>
 
-<!-- 🔔 Pending Payout Section -->
-<div class="card shadow-lg border-0 mb-4">
-  <div class="card-header bg-warning text-dark fw-bold">
-    ⏳ Pending Payout Orders
-  </div>
-  <table class="table table-hover align-middle mb-0">
-    <thead class="table-light">
-      <tr>
-        <th>Order ID</th>
-        <th>Product</th>
-        <th>Quantity</th>
-        <th>Retailer</th>
-        <th>Amount</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for order in pending_payout_orders %}
-      <tr class="sale-row">
-        <td>#{{ order.id }}</td>
-        <td>{{ order.product.product }}</td>
-        <td>{{ order.quantity }} kg</td>
-        <td>{{ order.retailer.name }}</td>
-        <td>₹ {{ order.total_amount|floatformat:2 }}</td>
-        <td class="text-warning fw-bold">Pending Payout</td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="6" class="text-center text-muted py-4">No pending payouts 🚜</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-
 <div class="card shadow-lg border-0">
   <div class="card-header bg-success text-white fw-bold">
     📦 Recent Sales Activity
@@ -113,55 +80,6 @@
       {% endfor %}
     </tbody>
   </table>
-
-    <br>
-
-<div class="card shadow-lg border-0">
-  <div class="card-header bg-warning text-dark fw-bold">
-    ⏳ Pending Payouts (Retailer Paid, Awaiting Admin Transfer)
-  </div>
-
-  <table class="table table-hover align-middle mb-0">
-    <thead class="table-light">
-      <tr>
-        <th>Order ID</th>
-        <th>Product</th>
-        <th>Retailer</th>
-        <th>Quantity</th>
-        <th>Total Paid</th>
-        <th>Your Amount (95%)</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for order in pending_payouts %}
-      <tr>
-        <td>#{{ order.id }}</td>
-        <td>{{ order.product.product }}</td>
-        <td>{{ order.retailer.name }}</td>
-        <td>{{ order.quantity }} kg</td>
-        <td>₹ {{ order.total_amount|floatformat:2 }}</td>
-       <td class="text-success fw-bold">
-    ₹ {{ order.farmer_amount|floatformat:2 }}
-</td>
-
-        <td>
-            <span class="badge bg-warning text-dark">
-                Pending Admin Payment
-            </span>
-        </td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="7" class="text-center text-muted py-4">
-            No pending payouts 🎉
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-
 </div>
 
 </div>

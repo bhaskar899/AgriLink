@@ -628,14 +628,6 @@ def profile_update(request):
         if request.FILES.get("profile_image"):
             user.profile_image = request.FILES["profile_image"]
 
-        # 🏦 Bank details — ONLY for farmer (no logic change)
-        if user_type == "farmer":
-            user.bank_name = request.POST.get("bank_name")
-            user.account_holder_name = request.POST.get("account_holder_name")
-            user.account_number = request.POST.get("account_number")
-            user.ifsc_code = request.POST.get("ifsc_code")
-            user.upi_id = request.POST.get("upi_id")
-
         user.save()
         request.session['profile_image'] = user.profile_image.url if user.profile_image else '/static/images/no-image.jpg'
         messages.success(request, "Profile updated successfully")
@@ -983,17 +975,6 @@ from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseForbidden
 from .models import Order, Notification
 
-from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponseForbidden
-from .models import Order, Notification, Product
-
-from django.http import HttpResponseForbidden
-from .models import Order, Product, Notification
-
-from django.http import HttpResponseForbidden
-from django.shortcuts import render, get_object_or_404
-from .models import Order, Notification
-
 def payment_success(request, order_id):
     order = get_object_or_404(Order, id=order_id)
 
@@ -1018,7 +999,7 @@ def payment_success(request, order_id):
         Notification.objects.create(
             sender_retailer=order.retailer,
             receiver_farmer=order.farmer,
-            message=f"Your product has been purchased! Farmer payout ₹{farmer_amount} will be sent within 24–48 hours."
+            message=f"Payment received for Order #{order.id}. Farmer amount ₹{farmer_amount}"
         )
 
     return render(request, "payment_success.html", {"order": order})
@@ -1507,21 +1488,6 @@ def send_driver_payment_notification(order):
     )
 
 from django.db import transaction
-from django.shortcuts import get_object_or_404, redirect, render
-from django.contrib import messages
-from .models import Product, Retailer, Order, Sale
-import razorpay
-from django.conf import settings
-
-from django.db import transaction
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from .models import Product, Order, Retailer, Farmer
-
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from django.db import transaction
-from .models import Product, Retailer, Order, Sale
 
 def place_order(request, product_id):
     product = get_object_or_404(Product, id=product_id)
@@ -1564,10 +1530,10 @@ def place_order(request, product_id):
         COMMISSION_RATE = 0.05
         calculated_profit = total_amount * (1 - COMMISSION_RATE)
 
-        # 🔥 ATOMIC BLOCK
+        # 🔥🔥 ATOMIC BLOCK (MOST IMPORTANT)
         with transaction.atomic():
 
-            # ✅ Create Order (NO payment_status or payout_status)
+            # ✅ Create Order
             order = Order.objects.create(
                 product=product,
                 quantity=quantity,
@@ -1575,11 +1541,10 @@ def place_order(request, product_id):
                 contact=contact,
                 address=address,
                 farmer=product.farmer,
-                status='Pending',
-                total_amount=total_amount
+                status='Pending'
             )
 
-            # ✅ Create Sale (Farmer payout pending)
+            # ✅ Create Sale
             Sale.objects.create(
                 product=product,
                 amount=total_amount,
@@ -1588,7 +1553,14 @@ def place_order(request, product_id):
                 status='Pending'
             )
 
-            # ❌ DO NOT reduce stock here — reduce only after payment success
+            # ✅ REDUCE STOCK
+            product.quantity -= quantity
+
+            # ✅ AUTO DELETE WHEN STOCK 0
+            if product.quantity <= 0:
+                product.delete()
+            else:
+                product.save()
 
         messages.success(
             request,
@@ -1598,7 +1570,6 @@ def place_order(request, product_id):
         return redirect('payment_page', order_id=order.id)
 
     return render(request, "place_order.html", {"product": product})
-
 
 
 # ================== API FOR LIVE UPDATES IN DASHBOARD ==================
@@ -1638,52 +1609,40 @@ def sales_api(request):
 
     return JsonResponse(data)
 
-from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Sum
-from .models import Farmer, Product, Sale, Order
-
-from django.db.models import Sum
-from django.shortcuts import render, get_object_or_404
-from .models import Farmer, Sale, Order
-
-from django.db.models import Sum
-from django.shortcuts import render, redirect, get_object_or_404
-
 def farmer_dashboard(request):
 
-    # ❗ LOGIN CHECK
     if request.session.get("user_type") != "farmer":
         return redirect("farmer_login")
 
-    farmer_name = request.session.get("name")
-    farmer = get_object_or_404(Farmer, name=farmer_name)
+    farmer = get_object_or_404(Farmer, name=request.session.get("name"))
 
-    # 🌾 Total Sales (Only PAID orders of this farmer)
-    total_sales = Order.objects.filter(
-        farmer=farmer,
-        status="Paid"
-    ).aggregate(total=Sum("total_amount"))["total"] or 0
+    total_sales = Sale.objects.filter(
+        product__farmer=farmer
+    ).aggregate(total=Sum("amount"))["total"] or 0
 
-    # 📦 Total Products
+    total_profit = Sale.objects.filter(
+        product__farmer=farmer
+    ).aggregate(total=Sum("profit"))["total"] or 0
+
     total_products = Product.objects.filter(farmer=farmer).count()
 
-    # 💰 Total Profit (95% of total sales)
-    total_profit = round(total_sales * 0.95, 2)
+    recent_sales = Sale.objects.filter(
+        product__farmer=farmer
+    ).order_by("-date")[:5]
 
-    # 🔥 Recent 5 PAID orders
-    recent_sales = Order.objects.filter(
-        farmer=farmer,
-        status="Paid"
-    ).order_by("-order_date")[:5]
+    pending_sales = Sale.objects.filter(
+        product__farmer=farmer,
+        status="Pending"
+    )
 
     return render(request, "farmer_dashboard.html", {
         "farmer": farmer,
         "total_sales": total_sales,
         "total_products": total_products,
         "total_profit": total_profit,
-        "recent_sales": recent_sales
+        "recent_sales": recent_sales,
+        "pending_sales": pending_sales
     })
-
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Count, Sum
@@ -2529,37 +2488,3 @@ def all_sample_reviews(request):
     # Show all submitted reviews
     reviews = SampleRequest.objects.select_related('retailer').all().order_by('-id')
     return render(request, "all_sample_reviews.html", {"reviews": reviews})
-
-
-from django.contrib.admin.views.decorators import staff_member_required
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
-from .models import Order, Sale, Notification
-
-@staff_member_required
-def admin_payout_dashboard(request):
-    pending_orders = Order.objects.filter(payment_status="Paid", payout_status="Pending")
-
-    return render(request, "admin_payout_dashboard.html", {
-        "pending_orders": pending_orders
-    })
-
-@staff_member_required
-def mark_farmer_paid(request, order_id):
-    if request.session.get("user_type") != "admin":
-        return redirect("admin_login")
-
-    order = get_object_or_404(Order, id=order_id)
-
-    if not order.farmer_paid:
-        order.farmer_paid = True
-        order.save()
-
-        Notification.objects.create(
-            receiver_farmer=order.farmer,
-            message=f"₹{round(order.total_amount * 0.95, 2)} transferred to your bank account for Order #{order.id}"
-        )
-
-        messages.success(request, "Farmer marked as paid successfully.")
-
-    return redirect("admin_dashboard")

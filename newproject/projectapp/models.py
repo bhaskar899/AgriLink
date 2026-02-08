@@ -25,13 +25,6 @@ class Farmer(models.Model):
     gender = models.CharField(max_length=10)
     first_login = models.BooleanField(default=True)
     profile_image = models.ImageField(upload_to='profiles/', default='profiles/default.jpg')
-    bank_name = models.CharField(max_length=100, blank=True, null=True)
-    account_holder_name = models.CharField(max_length=100, blank=True, null=True)
-    account_number = models.CharField(max_length=30, blank=True, null=True)
-    ifsc_code = models.CharField(max_length=15, blank=True, null=True)
-    upi_id = models.CharField(max_length=100, blank=True, null=True)
-    farmer_paid = models.BooleanField(default=False)
-
 
     def str(self):
         return self.name
@@ -339,8 +332,6 @@ class Order(models.Model):
     address = models.TextField(blank=True, null=True)
     contact = models.CharField(max_length=20, blank=True, null=True)
     current_lat = models.FloatField(null=True, blank=True)
-    farmer_paid = models.BooleanField(default=False)
-
     current_lng = models.FloatField(null=True, blank=True)
     driver = models.ForeignKey('Driver', on_delete=models.SET_NULL, null=True, blank=True)
 

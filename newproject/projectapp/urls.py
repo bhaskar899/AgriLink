@@ -174,11 +174,6 @@ path('retailer/reviews/', views.all_sample_reviews, name='retailer_sample_review
     path("api/", sales_api, name="sales_api_short"),
 
 path('retailer/samples/', views.retailer_samples, name='retailer_samples'),
-
-path("admin-payouts/", views.admin_payout_dashboard, name="admin_payout_dashboard"),
-    path("admin-payouts/pay/<int:order_id>/", views.mark_farmer_paid, name="mark_farmer_paid"),
-path("mark_farmer_paid/<int:order_id>/", views.mark_farmer_paid, name="mark_farmer_paid"),
-
 ]
 
 # ---------------- MEDIA & STATIC ----------------
