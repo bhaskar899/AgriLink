@@ -180,11 +180,39 @@
         }
     }
 
-    // 2. OTP UI Toggle
-    function sendOTP() {
-        alert("Verification code sent to your email!");
-        document.getElementById("otpBox").style.display = "block";
+function sendOTP() {
+    const email = document.getElementById("emailInput").value;
+
+    if (!email) {
+        alert("Enter email first!");
+        return;
     }
+
+    fetch("{% url 'send_email_otp' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: "email=" + encodeURIComponent(email)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);   // 🔎 debug
+
+        if (data.status === "success") {
+            alert("OTP sent successfully!");
+            document.getElementById("otpBox").style.display = "block";
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.log("Error:", error);
+        alert("Server error");
+    });
+}
+
 
     // 3. GST OCR (Simple Logic)
     document.getElementById('gstFile').onchange = async function() {
@@ -196,6 +224,7 @@
             this.value = "";
             return;
         }
+
 
         status.innerText = "Scanning Certificate...";
         status.className = "text-warning";
