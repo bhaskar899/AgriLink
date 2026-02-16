@@ -3,7 +3,13 @@
 {% load static %}
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="theme-color" content="#198754">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="description" content="AgriLink - Connecting Farmers & Retailers with Transparency">
+
   <title>{% block title %}AgriLink{% endblock %}</title>
 
   <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
@@ -15,146 +21,569 @@
     body > .skiptranslate {display:none !important;}
     body {top:0 !important;}
 
-    /* Floating Translate Button */
+    /* ===== FLOATING TRANSLATE BUTTON - ENHANCED ===== */
     #translate-floating-btn {
         position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: #198754;
+        bottom: 160px; /* Adjusted for stacking */
+        right: 20px; /* Same as other buttons */
+        background: linear-gradient(135deg, #198754, #0f6c3e);
         color: white;
-        width: 55px;
-        height: 55px;
+        width: 55px; /* Same as other buttons */
+        height: 55px; /* Same as other buttons */
         border-radius: 50%;
         display: flex;
         justify-content: center;
         align-items: center;
         font-size: 24px;
         cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        box-shadow: 0 5px 20px rgba(25,135,84,0.4);
         z-index: 99999;
-        transition: 0.25s;
+        transition: all 0.3s ease;
+        animation: floatPulse 3s ease-in-out infinite;
     }
+
     #translate-floating-btn:hover {
         transform: scale(1.15);
-        background: #157347;
+        box-shadow: 0 8px 30px rgba(25,135,84,0.6);
+    }
+
+    @keyframes floatPulse {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-5px); }
     }
 
     #translate-popup {
         position: fixed;
-        bottom: 90px;
+        bottom: 230px; /* Adjusted position */
         right: 20px;
         background: white;
-        padding: 12px 15px;
-        border-radius: 10px;
+        padding: 15px 20px;
+        border-radius: 15px;
         z-index: 99999;
         display: none;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        border: 2px solid #198754;
+        animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     .goog-logo-link {display:none !important;}
     .goog-te-gadget {font-size:0 !important;}
 
-    /* Navigation improvements */
-    .navbar-nav .nav-link {
-        position: relative;
-        padding: 8px 15px !important;
-        transition: 0.25s ease;
-    }
-    .navbar-nav .nav-link:hover {
-        color: #fff000 !important;
-        transform: translateY(-2px);
+    /* ===== NAVBAR ENHANCEMENTS ===== */
+    .navbar {
+        backdrop-filter: blur(10px);
+        background: linear-gradient(135deg, #198754 0%, #0f6c3e 100%) !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
     }
 
+    .navbar.scrolled {
+        padding: 8px 0;
+        box-shadow: 0 6px 30px rgba(0,0,0,0.25);
+    }
+
+    .navbar-brand {
+        font-size: 24px !important;
+        font-weight: 800 !important;
+        transition: all 0.3s ease;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .navbar-brand:hover {
+        transform: scale(1.05);
+        color: #fff000 !important;
+    }
+
+    .navbar-nav .nav-link {
+        position: relative;
+        padding: 10px 18px !important;
+        transition: all 0.3s ease;
+        font-weight: 500;
+        font-size: 1.05rem;
+    }
+
+    .navbar-nav .nav-link::after {
+        content: '';
+        position: absolute;
+        bottom: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 3px;
+        background: #fff000;
+        transition: width 0.3s ease;
+        border-radius: 2px;
+    }
+
+    .navbar-nav .nav-link:hover::after {
+        width: 70%;
+    }
+
+    .navbar-nav .nav-link:hover {
+        color: #fff000 !important;
+        transform: translateY(-3px);
+    }
+
+    /* ===== DROPDOWN MENU ENHANCEMENTS ===== */
     .dropdown-menu {
-        background: #e8f6ec;
-        border-radius: 10px;
-        border: 1px solid #c6e6d0;
-        padding: 10px;
-        transition: 0.25s ease;
-        box-shadow: 0px 5px 15px rgba(0,0,0,0.15);
+        background: linear-gradient(135deg, #e8f6ec, #ffffff);
+        border-radius: 15px;
+        border: 2px solid #c6e6d0;
+        padding: 12px;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     .dropdown-item {
-        border-radius: 6px;
-        padding: 8px 14px;
+        border-radius: 8px;
+        padding: 10px 16px;
         color: #165f3f !important;
         font-weight: 500;
-        transition: 0.25s ease;
+        transition: all 0.3s ease;
+        margin-bottom: 4px;
+        position: relative;
+        overflow: hidden;
     }
+
+    .dropdown-item::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 4px;
+        height: 100%;
+        background: #198754;
+        transform: scaleY(0);
+        transition: transform 0.3s ease;
+    }
+
+    .dropdown-item:hover::before {
+        transform: scaleY(1);
+    }
+
     .dropdown-item:hover {
         background: #198754 !important;
         color: white !important;
-        transform: translateX(4px);
+        transform: translateX(8px);
+        box-shadow: 0 4px 12px rgba(25,135,84,0.3);
     }
 
+    /* ===== PROFILE IMAGE ENHANCEMENT ===== */
     .navbar img {
-        transition: 0.3s ease;
+        transition: all 0.3s ease;
+        border: 3px solid white !important;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
     }
+
     .navbar img:hover {
-        transform: scale(1.12);
+        transform: scale(1.15) rotate(5deg);
         border-color: #fff000 !important;
+        box-shadow: 0 5px 15px rgba(255,240,0,0.4);
     }
 
-    /* Footer Styling (Cleaned Up) */
-    footer {
-      background: #198754 !important;
-      color: white !important;
-      padding: 30px 0;
-      margin-top: 50px;
+    /* ===== NOTIFICATION BELL ENHANCEMENT ===== */
+    .nav-link.position-relative {
+        font-size: 1.5rem;
+        padding: 5px 15px !important;
     }
 
-    footer a {
-        text-decoration: none !important;
-        color: #e0e0e0 !important; /* हल्का सफ़ेद रंग */
-        transition: 0.2s;
-    }
-    footer a:hover {
-        text-decoration: underline !important;
-        color: #fff000 !important; /* पीला hover रंग */
+    .badge.bg-danger {
+        animation: bellPulse 2s ease-in-out infinite;
     }
 
-    .content-wrapper {padding-top: 0px;} /* Navbar gap removed */
+    @keyframes bellPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+    }
 
-    /* 💡 FIX: Bell Notification Hover Expansion (पूरे item पर hover effect के लिए) */
+    /* Bell Dropdown */
     .dropdown-menu .dropdown-item {
-        white-space: normal; /* ताकि टेक्स्ट Wrap हो सके */
-        transition: background-color 0.25s ease;
-
-        /* Bell Dropdown के अंदर के Link को पूरे Item पर फैलाता है */
+        white-space: normal;
+        transition: background-color 0.3s ease;
         display: block;
     }
 
-    /* Bell Dropdown: Text Color Change on Hover */
     .dropdown-menu a {
-        color: #165f3f !important; /* Default green text */
+        color: #165f3f !important;
     }
+
     .dropdown-menu .dropdown-item:hover {
-        background: #198754 !important; /* Green Hover Background */
+        background: #198754 !important;
     }
-    /* Hover पर, dropdown-item के अंदर के टेक्स्ट (a और small) का रंग सफ़ेद हो जाए */
+
     .dropdown-menu .dropdown-item:hover,
     .dropdown-menu .dropdown-item:hover small {
         color: white !important;
     }
 
-  </style>
+    /* ===== FOOTER ENHANCEMENTS ===== */
+    footer {
+      background: linear-gradient(135deg, #198754 0%, #0f6c3e 100%) !important;
+      color: white !important;
+      padding: 40px 0 20px;
+      margin-top: 50px;
+      box-shadow: 0 -5px 20px rgba(0,0,0,0.15);
+    }
 
+    footer h5 {
+        font-weight: 700;
+        margin-bottom: 20px;
+        font-size: 1.3rem;
+        position: relative;
+        display: inline-block;
+        padding-bottom: 10px;
+    }
+
+    footer h5::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 50px;
+        height: 3px;
+        background: #fff000;
+        border-radius: 2px;
+    }
+
+    footer a {
+        text-decoration: none !important;
+        color: #e8f5e9 !important;
+        transition: all 0.3s ease;
+        display: inline-block;
+        padding: 5px 0;
+        position: relative;
+    }
+
+    footer a::before {
+        content: '→ ';
+        opacity: 0;
+        margin-right: 0;
+        transition: all 0.3s ease;
+    }
+
+    footer a:hover::before {
+        opacity: 1;
+        margin-right: 5px;
+    }
+
+    footer a:hover {
+        color: #fff000 !important;
+        transform: translateX(5px);
+    }
+
+    footer p {
+        line-height: 1.8;
+        color: #e8f5e9;
+        margin-bottom: 10px;
+    }
+
+    .footer-bottom {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid rgba(255,255,255,0.2);
+        font-size: 0.95rem;
+        color: #e8f5e9;
+    }
+
+    .content-wrapper {
+        padding-top: 0px;
+        min-height: calc(100vh - 200px);
+    }
+
+    /* ===== MOBILE RESPONSIVE - APP-LIKE EXPERIENCE ===== */
+    @media (max-width: 768px) {
+        /* Navbar Mobile Optimization */
+        .navbar {
+            padding: 10px 0 !important;
+        }
+
+        .navbar-brand {
+            font-size: 18px !important;
+        }
+
+        .navbar-toggler {
+            border: 2px solid white;
+            padding: 6px 10px;
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 0.2rem rgba(255,255,255,0.5);
+        }
+
+        /* Mobile Menu - Full Screen Feel */
+        .navbar-collapse {
+            background: linear-gradient(135deg, #198754, #0f6c3e);
+            margin: 15px -12px -10px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .navbar-nav {
+            gap: 8px !important;
+        }
+
+        .navbar-nav .nav-link {
+            padding: 12px 15px !important;
+            font-size: 1.05rem;
+            border-radius: 10px;
+            background: rgba(255,255,255,0.1);
+            margin-bottom: 5px;
+        }
+
+        .navbar-nav .nav-link:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Mobile Dropdowns */
+        .dropdown-menu {
+            border: none;
+            background: rgba(255,255,255,0.95);
+            margin-top: 5px;
+        }
+
+        .dropdown-item {
+            padding: 12px 15px;
+            font-size: 1rem;
+        }
+
+        /* Profile Image Mobile */
+        .navbar img {
+            width: 36px !important;
+            height: 36px !important;
+        }
+
+        /* Floating Buttons Mobile */
+        #translate-floating-btn {
+            width: 50px;
+            height: 50px;
+            font-size: 22px;
+            bottom: 150px;
+            right: 15px;
+        }
+
+        #translate-popup {
+            bottom: 210px;
+            right: 15px;
+            width: calc(100vw - 30px);
+            max-width: 300px;
+        }
+
+        /* Footer Mobile */
+        footer {
+            padding: 25px 15px 15px;
+            text-align: center;
+        }
+
+        footer h5 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+        }
+
+        footer h5::after {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        footer .col-md-4 {
+            margin-bottom: 25px;
+        }
+
+        footer a {
+            font-size: 0.95rem;
+        }
+
+        footer p {
+            font-size: 0.95rem;
+        }
+
+        /* Content Padding for Mobile */
+        .content-wrapper {
+            padding-top: 0;
+        }
+
+        /* Touch-friendly sizing */
+        .btn {
+            padding: 12px 20px !important;
+            font-size: 1rem !important;
+        }
+
+        /* Card spacing */
+        .card {
+            margin-bottom: 15px;
+        }
+    }
+
+    /* ===== EXTRA SMALL DEVICES (phones < 576px) ===== */
+    @media (max-width: 576px) {
+        .navbar-brand {
+            font-size: 16px !important;
+        }
+
+        .navbar-nav .nav-link {
+            font-size: 1rem;
+            padding: 10px 12px !important;
+        }
+
+        #translate-floating-btn {
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+            bottom: 12px;
+            right: 12px;
+        }
+
+        footer {
+            font-size: 0.9rem;
+        }
+
+        .dropdown-menu {
+            font-size: 0.9rem;
+        }
+    }
+
+    /* ===== PREVENT HORIZONTAL SCROLL ON MOBILE ===== */
+    body {
+        overflow-x: hidden;
+    }
+
+    /* ===== TOUCH OPTIMIZATIONS ===== */
+    @media (hover: none) {
+        /* For touch devices - make tap targets bigger */
+        .nav-link, .dropdown-item, .btn {
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Remove hover effects on touch devices */
+        .navbar-nav .nav-link:hover::after {
+            width: 0;
+        }
+    }
+
+    /* ===== MOBILE RESPONSIVE - FIXED & SCROLLABLE MENU ===== */
+    @media (max-width: 768px) {
+        .navbar {
+            padding: 8px 0 !important;
+        }
+
+        /* Navbar collapse menu scroll fix */
+        .navbar-collapse {
+            background: linear-gradient(135deg, #198754, #0f6c3e);
+            margin: 10px 0 0 0;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+
+            /* Ye lines menu ko scrollable banati hain */
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Menu ke andar ke items ki spacing */
+        .navbar-nav {
+            gap: 5px !important;
+            padding-bottom: 10px;
+        }
+
+        .navbar-nav .nav-link {
+            padding: 12px 15px !important;
+            font-size: 1rem;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.08);
+            margin-bottom: 2px;
+            text-align: center; /* Mobile pe center dikhne ke liye */
+        }
+
+        /* Dropdown menus on mobile */
+        .dropdown-menu {
+            border: none;
+            background: rgba(255,255,255,0.95);
+            margin-top: 5px;
+            text-align: center;
+            box-shadow: none;
+        }
+
+        .dropdown-item {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Profile image adjustment */
+        .navbar .dropdown-toggle img {
+            margin: 0 auto;
+            display: block;
+        }
+
+        /* Floating buttons position adjust */
+        #translate-floating-btn {
+            bottom: 20px;
+            right: 15px;
+            width: 50px;
+            height: 50px;
+        }
+
+        /* Content padding fix */
+        .content-wrapper {
+            padding-top: 60px; /* Navbar ke peeche content na dabe */
+        }
+    }
+
+    /* Small phones fix */
+    @media (max-width: 576px) {
+        .navbar-brand {
+            font-size: 1.2rem !important;
+        }
+
+        /* Menu ko thoda chota karna taaki pixels na phate */
+        .navbar-collapse {
+            max-height: 75vh;
+        }
+    }
+
+    /* ===== SCROLL BEHAVIOR ===== */
+    html {
+        scroll-behavior: smooth;
+    }
+
+    /* ===== CLICK SOUND FEEDBACK ===== */
+    a:active, button:active {
+        transform: scale(0.95);
+    }
+
+  </style>
 
 </head>
 
 <body>
 
+<!-- Click Sound -->
 <audio id="clickSound" src="{% static 'audio/universfield-computer-mouse-click-352734.mp3' %}" preload="auto"></audio>
 
-<div id="translate-floating-btn">🌐</div>
+<!-- Translate Floating Button -->
+<div id="translate-floating-btn" title="Change Language">🌐</div>
 <div id="translate-popup">
   <div id="google_translate_element"></div>
 </div>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-success fixed-top shadow-sm">
+<!-- Enhanced Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-success fixed-top" id="mainNavbar">
   <div class="container-fluid">
 
-    <a class="navbar-brand fw-bold" href="{% url 'home' %}" style="font-size:22px;">🌿 AgriLink</a>
+    <a class="navbar-brand fw-bold" href="{% url 'home' %}">🌿 AgriLink</a>
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
       <span class="navbar-toggler-icon"></span>
@@ -172,48 +601,49 @@
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Farmer</a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="{% url 'farmer_register' %}">Register</a></li>
-            <li><a class="dropdown-item" href="{% url 'farmer_login' %}">Login</a></li>
+            <li><a class="dropdown-item" href="{% url 'farmer_register' %}">📝 Register</a></li>
+            <li><a class="dropdown-item" href="{% url 'farmer_login' %}">🔐 Login</a></li>
           </ul>
         </li>
 
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Retailer</a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="{% url 'retailer_register' %}">Register</a></li>
-            <li><a class="dropdown-item" href="{% url 'retailer_login' %}">Login</a></li>
+            <li><a class="dropdown-item" href="{% url 'retailer_register' %}">📝 Register</a></li>
+            <li><a class="dropdown-item" href="{% url 'retailer_login' %}">🔐 Login</a></li>
           </ul>
         </li>
         {% endif %}
 
-        {% if request.session.user_type == "farmer" %}
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Farmer</a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="{% url 'farmer_dashboard' %}">Dashboard</a></li>
-            <li><a class="dropdown-item" href="{% url 'add_product' %}">Add Product</a></li>
-            <li><a class="dropdown-item" href="{% url 'show_products' %}">My Products</a></li>
-            <li><a class="dropdown-item" href="{% url 'farmer_order' %}">Orders</a></li>
-              <li><a class="dropdown-item" href="{% url 'farmer_sample_requests' %}">🧪 Sample Requests</a></li>
+       {% if request.session.user_type == "farmer" %}
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Farmer</a>
+  <ul class="dropdown-menu dropdown-menu-end shadow">
+    <li><a class="dropdown-item" href="{% url 'farmer_dashboard' %}">📊 Dashboard</a></li>
+    <li><a class="dropdown-item" href="{% url 'add_product' %}">➕ Add Product</a></li>
+    <li><a class="dropdown-item" href="{% url 'show_products' %}">🌾 My Products</a></li>
 
-          </ul>
-        </li>
-        {% endif %}
+    <li><a class="dropdown-item" href="{% url 'manage_bids' %}">📩 Price Offers</a></li>
+
+    <li><a class="dropdown-item" href="{% url 'farmer_order' %}">📦 Orders</a></li>
+    <li><a class="dropdown-item" href="{% url 'farmer_sample_requests' %}">🧪 Sample Requests</a></li>
+  </ul>
+</li>
+{% endif %}
 
         {% if request.session.user_type == "retailer" %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Retailer</a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="{% url 'retailer_dashboard' %}">Dashboard</a></li>
-            <li><a class="dropdown-item" href="{% url 'browse_products' %}">Browse Products</a></li>
-            <li><a class="dropdown-item" href="{% url 'retailer_products' %}">My Orders</a></li>
-<li class="nav-item">
-    <a class="nav-link" href="{% url 'retailer_samples' %}">My Sample Ratings</a>
-</li>
+            <li><a class="dropdown-item" href="{% url 'retailer_dashboard' %}">📊 Dashboard</a></li>
+            <li><a class="dropdown-item" href="{% url 'browse_products' %}">🔍 Browse Products</a></li>
+            <li><a class="dropdown-item" href="{% url 'retailer_products' %}">🛒 My Orders</a></li>
+            <li><a class="dropdown-item" href="{% url 'retailer_samples' %}">⭐ My Sample Ratings</a></li>
           </ul>
         </li>
         {% endif %}
 
+        <!-- Notification Bell -->
         <li class="nav-item dropdown">
             {% if user_type %}
                 <a class="nav-link dropdown-toggle position-relative" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -223,7 +653,7 @@
                     {% endif %}
                 </a>
 
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown" style="width:300px; max-height:400px; overflow-y:auto;">
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown" style="width:320px; max-height:400px; overflow-y:auto;">
                     {% if navbar_notes %}
                         {% for n in navbar_notes %}
                             <a class="dropdown-item" href="{% url 'mark_notification_read' n.id %}" data-nid="{{ n.id }}">
@@ -235,62 +665,45 @@
                             </a>
                         {% endfor %}
                     {% else %}
-                        <li class="dropdown-item">No new notifications</li>
+                        <li class="dropdown-item text-center">📭 No new notifications</li>
                     {% endif %}
                 </ul>
             {% endif %}
         </li>
 
-        <script>
-        document.querySelectorAll('.dropdown-menu a[data-nid]').forEach(link => {
-            link.addEventListener('click', function(){
-                const badge = document.getElementById('bellBadge');
-                // Decrement badge count
-                if(badge) {
-                    let count = parseInt(badge.textContent);
-                    if (count > 1) {
-                        badge.textContent = count - 1;
-                    } else {
-                        badge.remove();
-                    }
-                }
-            });
-        });
-        </script>
-
-
+        <!-- Profile Dropdown for Farmer/Retailer -->
         {% if request.session.user_type in "farmer retailer" %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
             <img src="{{ request.session.profile_image|default:'/static/images/no-image.jpg' }}"
-                 style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid white;">
+                 style="width:38px;height:38px;border-radius:50%;object-fit:cover;" alt="Profile">
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="{% url 'profile' %}">My Profile</a></li>
-            <li><a class="dropdown-item" href="{% url 'profile_update' %}">Update Profile</a></li>
-            <li><a class="dropdown-item text-danger" href="{% url 'profile_delete' %}">Delete Profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'profile' %}">👤 My Profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'profile_update' %}">✏️ Update Profile</a></li>
+            <li><a class="dropdown-item text-danger" href="{% url 'profile_delete' %}">🗑️ Delete Profile</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-warning" href="{% url 'logout' %}">Logout</a></li>
+            <li><a class="dropdown-item text-warning" href="{% url 'logout' %}">🚪 Logout</a></li>
           </ul>
         </li>
         {% endif %}
 
+        <!-- Profile Dropdown for Driver -->
         {% if request.session.user_type == "driver" %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" data-bs-toggle="dropdown">
             <img src="{{ request.session.profile_image|default:'/static/images/no-image.jpg' }}"
-              style="width:34px;height:34px;border-radius:50%;object-fit:cover;border:2px solid white;">
+              style="width:38px;height:38px;border-radius:50%;object-fit:cover;" alt="Profile">
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="{% url 'driver_dashboard' %}">Dashboard</a></li>
-            <li><a class="dropdown-item" href="{% url 'driver_deliveries' %}">Assigned Deliveries</a></li>
-              <li><a class="dropdown-item" href="{% url 'driver_sample_deliveries' %}">🚚 Sample Deliveries</a></li>
-
-            <li><a class="dropdown-item" href="{% url 'driver_profile' %}">Profile</a></li>
-            <li><a class="dropdown-item" href="{% url 'driver_profile_update' %}">Update Profile</a></li>
-            <li><a class="dropdown-item text-danger" href="{% url 'driver_profile_delete' %}">Delete Profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'driver_dashboard' %}">📊 Dashboard</a></li>
+            <li><a class="dropdown-item" href="{% url 'driver_deliveries' %}">🚚 Assigned Deliveries</a></li>
+            <li><a class="dropdown-item" href="{% url 'driver_sample_deliveries' %}">🧪 Sample Deliveries</a></li>
+            <li><a class="dropdown-item" href="{% url 'driver_profile' %}">👤 Profile</a></li>
+            <li><a class="dropdown-item" href="{% url 'driver_profile_update' %}">✏️ Update Profile</a></li>
+            <li><a class="dropdown-item text-danger" href="{% url 'driver_profile_delete' %}">🗑️ Delete Profile</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-warning" href="{% url 'logout' %}">Logout</a></li>
+            <li><a class="dropdown-item text-warning" href="{% url 'logout' %}">🚪 Logout</a></li>
           </ul>
         </li>
         {% endif %}
@@ -300,55 +713,108 @@
   </div>
 </nav>
 
+<!-- Main Content -->
 <div class="container-fluid p-0 content-wrapper">
   {% block body %}{% endblock %}
 </div>
 
-<footer class="site-footer" >
+<!-- Enhanced Footer -->
+<footer class="site-footer">
   <div class="container">
     <div class="row">
 
-      <div class="col-md-4">
+      <div class="col-md-4 mb-4">
         <h5>About AgriLink</h5>
-        <p>Agrilink connects farmers and retailers directly, removing middlemen and enabling fair pricing.</p>
+        <p>AgriLink connects farmers and retailers directly, removing middlemen and enabling fair pricing for everyone.</p>
+        <p><strong>🌾 Farm to Store, Direct & Fair!</strong></p>
       </div>
 
-     <div class="col-md-4">
+     <div class="col-md-4 mb-4">
         <h5>Quick Links</h5>
-        <a href="{% url 'home' %}" class="footer-link">🏠 Home</a><br>
-        <a href="{% url 'home' %}#about" class="footer-link">ℹ About</a><br>
-        <a href="{% url 'home' %}#contact" class="footer-link">📩 Contact</a><br>
-        <a href="{% url 'farmer_register' %}" class="footer-link">👨‍🌾 Farmer Register</a><br>
-        <a href="{% url 'retailer_register' %}" class="footer-link">🏪 Retailer Register</a><br><br>
+        <a href="{% url 'home' %}" class="d-block">🏠 Home</a>
+        <a href="{% url 'home' %}#about" class="d-block">ℹ️ About</a>
+        <a href="{% url 'home' %}#contact" class="d-block">📩 Contact</a>
+        <a href="{% url 'farmer_register' %}" class="d-block">👨‍🌾 Farmer Register</a>
+        <a href="{% url 'retailer_register' %}" class="d-block">🏪 Retailer Register</a>
     </div>
 
-      <div class="col-md-4">
+      <div class="col-md-4 mb-4">
         <h5>Contact Info</h5>
-        <p>📍 Pune, Maharashtra</p>
-        <p>📞 +91 8928958677</p>
-        <p>✉ support@agrilink.com</p>
+        <p>📍 Pune, Maharashtra, India</p>
+        <p>📞 <a href="tel:+918928958677" style="color: #e8f5e9 !important;">+91 8928958677</a></p>
+        <p>✉️ <a href="mailto:support@agrilink.com" style="color: #e8f5e9 !important;">support@agrilink.com</a></p>
+        <p>⏰ Mon - Sat: 9:00 AM - 6:00 PM</p>
       </div>
 
     </div>
-    <div class="footer-bottom text-center">
-      &copy; 2025 AgriLink. All Rights Reserved.
+
+    <div class="footer-bottom">
+      &copy; 2025 AgriLink. All Rights Reserved. | Made with 💚 for Farmers
     </div>
   </div>
 </footer>
 
+<!-- JavaScript -->
 <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+
 <script>
-document.querySelectorAll("a, button").forEach(el=>{
-    el.addEventListener("click", ()=>{
-        document.getElementById("clickSound").play();
+// Click Sound Effect
+document.querySelectorAll("a, button").forEach(el => {
+    el.addEventListener("click", () => {
+        const sound = document.getElementById("clickSound");
+        if (sound) {
+            sound.currentTime = 0;
+            sound.play().catch(() => {});
+        }
     });
 });
-document.getElementById("translate-floating-btn").onclick = function() {
-    let box = document.getElementById("translate-popup");
-    box.style.display = box.style.display === "block" ? "none" : "block";
-};
+
+// Translate Button Toggle
+const translateBtn = document.getElementById("translate-floating-btn");
+const translatePopup = document.getElementById("translate-popup");
+
+if (translateBtn && translatePopup) {
+    translateBtn.onclick = function() {
+        translatePopup.style.display = translatePopup.style.display === "block" ? "none" : "block";
+    };
+
+    // Close popup when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!translateBtn.contains(event.target) && !translatePopup.contains(event.target)) {
+            translatePopup.style.display = "none";
+        }
+    });
+}
+
+// Notification Badge Update
+document.querySelectorAll('.dropdown-menu a[data-nid]').forEach(link => {
+    link.addEventListener('click', function(){
+        const badge = document.getElementById('bellBadge');
+        if(badge) {
+            let count = parseInt(badge.textContent);
+            if (count > 1) {
+                badge.textContent = count - 1;
+            } else {
+                badge.remove();
+            }
+        }
+    });
+});
+
+// Navbar Scroll Effect
+const navbar = document.getElementById('mainNavbar');
+if (navbar) {
+    window.addEventListener('scroll', function() {
+        if (window.scrollY > 50) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
+    });
+}
 </script>
 
+<!-- Google Translate -->
 <script type="text/javascript">
 function googleTranslateElementInit() {
   new google.translate.TranslateElement({
@@ -358,5 +824,8 @@ function googleTranslateElementInit() {
 }
 </script>
 <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
+
 </body>
 </html>
+
+

@@ -1,209 +1,306 @@
 {% extends "master.html" %}
-{% block title %}Chat{% endblock %}
+{% block title %}AgriLink | Secure Chat{% endblock %}
 
 {% block body %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-<!-- BACK BUTTON -->
+<style>
+    :root {
+        --primary-green: #198754;
+        --dark-green: #16423C;
+        --chat-bg: #e5ddd5;
+    }
+
+    body {
+        background: #f0f2f5;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .back-btn-wrapper {
+        margin-top: 100px;
+        margin-left: 20px;
+        margin-bottom: 15px;
+    }
+
+    .chat-main-container {
+        max-width: 900px;
+        margin: 0 auto 50px auto;
+        background: white;
+        border-radius: 25px;
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        height: 80vh; /* Fixed height for better chat experience */
+    }
+
+    /* Header Section */
+    .chat-header-custom {
+        background: var(--dark-green);
+        color: white;
+        padding: 15px 25px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 10;
+    }
+
+    .profile-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .profile-section img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid rgba(255,255,255,0.3);
+    }
+
+    .header-text h6 { margin: 0; font-weight: 700; font-size: 1.1rem; }
+    .header-text span { font-size: 0.75rem; opacity: 0.8; }
+
+    /* Search Bar inside Header */
+    .search-input-chat {
+        background: rgba(255,255,255,0.15);
+        border: none;
+        border-radius: 50px;
+        padding: 6px 15px;
+        color: white;
+        font-size: 0.85rem;
+        width: 180px;
+        outline: none;
+    }
+    .search-input-chat::placeholder { color: rgba(255,255,255,0.6); }
+
+    /* Chat Messages Box */
+    .chat-box-body {
+        flex-grow: 1;
+        background: var(--chat-bg) url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');
+        padding: 25px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Message Bubbles */
+    .message-bubble {
+        max-width: 70%;
+        padding: 10px 15px;
+        border-radius: 15px;
+        margin-bottom: 12px;
+        position: relative;
+        font-size: 0.95rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        word-wrap: break-word;
+    }
+
+    .message-bubble.me {
+        background: #dcf8c6;
+        align-self: flex-end;
+        border-bottom-right-radius: 2px;
+    }
+
+    .message-bubble.other {
+        background: white;
+        align-self: flex-start;
+        border-bottom-left-radius: 2px;
+    }
+
+    .msg-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 4px;
+        gap: 10px;
+    }
+
+    .sender-name { font-size: 0.7rem; font-weight: 800; color: var(--dark-green); }
+    .msg-timestamp { font-size: 0.65rem; color: #888; }
+
+    .file-attachment {
+        max-width: 100%;
+        border-radius: 10px;
+        margin-top: 8px;
+        cursor: pointer;
+    }
+
+    /* Emoji & Footer */
+    .emoji-panel {
+        background: #f0f0f0;
+        padding: 10px 20px;
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+        border-top: 1px solid #ddd;
+    }
+
+    .emoji-item {
+        font-size: 1.3rem;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .emoji-item:hover { transform: scale(1.3); }
+
+    .chat-footer-form {
+        background: #f0f0f0;
+        padding: 15px 25px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .input-wrapper {
+        flex-grow: 1;
+        background: white;
+        border-radius: 50px;
+        padding: 5px 20px;
+        display: flex;
+        align-items: center;
+    }
+
+    .input-wrapper input {
+        border: none;
+        width: 100%;
+        padding: 10px;
+        outline: none;
+    }
+
+    .btn-send {
+        background: var(--primary-green);
+        color: white;
+        border: none;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s;
+    }
+    .btn-send:hover { background: var(--dark-green); transform: rotate(15deg); }
+
+    .attach-label { cursor: pointer; color: #555; transition: 0.3s; }
+    .attach-label:hover { color: var(--primary-green); }
+
+    /* Hide scrollbar but keep functionality */
+    .chat-box-body::-webkit-scrollbar { width: 6px; }
+    .chat-box-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+</style>
+
 <div class="back-btn-wrapper">
-    <button class="back-btn" onclick="goBack()">⬅ Back</button>
+    <button class="btn btn-success rounded-pill px-4 shadow-sm fw-bold" onclick="window.history.back()">
+        <i class="fas fa-arrow-left me-2"></i> Back
+    </button>
 </div>
 
-<style>
-.back-btn-wrapper{
-    margin-top: 89px; /* adjust this according to your navbar height */
-    margin-bottom: 15px;
-    margin-left:20px;
-}
-.back-btn{
-    border: none;
-    padding: 12px 26px;
-    border-radius: 35px;
-    background: linear-gradient(135deg,#198754,#2ecc71);
-    color: #fff;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    transition: .3s;
-}
-.back-btn:hover{
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(0,0,0,.35);
-}
-.back-btn:active{
-    transform: scale(.95);
-}
-</style>
+<div class="container">
+    <div class="chat-main-container">
 
-<script>
-function goBack(){
-    window.history.back();
-}
-</script>
-<style>
-.chat-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 15px;
-}
-.chat-header img {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-.chat-header .header-info {
-    display: flex;
-    flex-direction: column;
-}
-.chat-header .header-info .name {
-    font-weight: bold;
-    font-size: 18px;
-}
-.chat-header .header-info .order-no {
-    font-size: 13px;
-    color: #555;
-}
-.chat-box {
-    height: 420px;
-    overflow-y: auto;
-    background: #f7f7f7;
-    padding: 12px;
-    border-radius: 10px;
-}
-.msg {
-    padding: 8px 12px;
-    margin: 6px 0;
-    border-radius: 10px;
-    max-width: 65%;
-    font-size: 15px;
-    word-wrap: break-word;
-}
-.me { background: #d1ffd6; margin-left: auto; }
-.other { background: #fff; border: 1px solid #ddd; }
-.msg .msg-header {
-    font-weight: bold;
-    font-size: 14px;
-    margin-bottom: 3px;
-}
-.msg .msg-header .timestamp {
-    font-weight: normal;
-    font-size: 12px;
-    color: #555;
-    margin-left: 6px;
-}
-.msg img.file-img {
-    max-width: 180px;
-    margin-top: 5px;
-    border-radius: 8px;
-}
-.search-container {
-    position: relative;
-}
-.search-container input {
-    padding-left: 35px;
-}
-.search-container .search-icon {
-    position: absolute;
-    top: 50%;
-    left: 10px;
-    transform: translateY(-50%);
-    font-size: 18px;
-    color: #999;
-}
-</style>
-
-<div class="container mt-4">
-
-    <!-- Chat Header -->
-    <div class="chat-header">
-        {% comment %} Show the other participant's profile {% endcomment %}
-        {% if user_type == "farmer" and order.retailer %}
-            <img src="{{ order.retailer.profile_image.url|default:'/static/default_user.png' }}" alt="Profile">
-            <div class="header-info">
-                <span class="name">{{ order.retailer.name }}</span>
-                <span class="order-no">Order #{{ order.id }}</span>
-            </div>
-        {% elif user_type == "retailer" and order.farmer %}
-            <img src="{{ order.farmer.profile_image.url|default:'/static/default_user.png' }}" alt="Profile">
-            <div class="header-info">
-                <span class="name">{{ order.farmer.name }}</span>
-                <span class="order-no">Order #{{ order.id }}</span>
-            </div>
-        {% endif %}
-    </div>
-
-    <!-- Search Bar with Icon -->
-    <div class="mb-3 search-container">
-        <span class="search-icon">🔍</span>
-        <input id="chatSearch" class="form-control" placeholder="Search messages..." />
-    </div>
-
-    <!-- Chat Messages -->
-    <div id="chatBox" class="chat-box mb-3">
-        {% for m in messages_list %}
-        <div class="msg {% if user_type == 'farmer' and m.sender_farmer %}me{% elif user_type == 'retailer' and m.sender_retailer %}me{% else %}other{% endif %}">
-            <div class="msg-header">
-                {% if m.sender_farmer %}
-                    {{ m.sender_farmer.name }}
-                {% elif m.sender_retailer %}
-                    {{ m.sender_retailer.name }}
-                {% else %}
-                    Unknown
+        <div class="chat-header-custom">
+            <div class="profile-section">
+                {% if user_type == "farmer" and order.retailer %}
+                    <img src="{{ order.retailer.profile_image.url|default:'/static/default_user.png' }}" alt="Profile">
+                    <div class="header-text">
+                        <h6>{{ order.retailer.name }} (Retailer)</h6>
+                        <span>Order #{{ order.id }}</span>
+                    </div>
+                {% elif user_type == "retailer" and order.farmer %}
+                    <img src="{{ order.farmer.profile_image.url|default:'/static/default_user.png' }}" alt="Profile">
+                    <div class="header-text">
+                        <h6>{{ order.farmer.name }} (Farmer)</h6>
+                        <span>Order #{{ order.id }}</span>
+                    </div>
                 {% endif %}
-                <span class="timestamp">{{ m.timestamp|date:"h:i A" }}</span>
             </div>
-            {% if m.message %} {{ m.message }} <br>{% endif %}
-            {% if m.image %}
-                <a href="{{ m.image.url }}" target="_blank">
-                    <img src="{{ m.image.url }}" class="file-img">
-                </a>
-            {% endif %}
+            <input type="text" id="chatSearch" class="search-input-chat" placeholder="Search message...">
         </div>
-        {% endfor %}
-    </div>
 
-    <!-- Emoji Panel -->
-    <div class="mb-2 d-flex flex-wrap" style="gap:5px;">
-        {% for e in "😀😁😂😊😍😘🤝👍🙏🌾🚜📦🛒💯❤"|make_list %}
-            <button type="button" class="btn btn-light btn-sm emoji-btn">{{ e }}</button>
-        {% endfor %}
-    </div>
+        <div id="chatBox" class="chat-box-body">
+            {% for m in messages_list %}
+            <div class="message-bubble {% if user_type == 'farmer' and m.sender_farmer %}me{% elif user_type == 'retailer' and m.sender_retailer %}me{% else %}other{% endif %}">
 
-    <!-- Message Input -->
-    <form method="post" enctype="multipart/form-data" class="d-flex">
-        {% csrf_token %}
-        <input name="message" class="form-control me-2" placeholder="Type message...">
-        <input type="file" name="image" class="form-control me-2" style="max-width:190px;">
-        <button class="btn btn-success">Send</button>
-    </form>
+                <div class="msg-content">
+                    {% if m.message %}{{ m.message }}{% endif %}
+                </div>
+
+                {% if m.image %}
+                    <a href="{{ m.image.url }}" target="_blank">
+                        <img src="{{ m.image.url }}" class="file-attachment">
+                    </a>
+                {% endif %}
+
+                <div class="msg-info">
+                    <span class="sender-name">
+                        {% if m.sender_farmer %}{{ m.sender_farmer.name }}{% else %}{{ m.sender_retailer.name }}{% endif %}
+                    </span>
+                    <span class="msg-timestamp">{{ m.timestamp|date:"h:i A" }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="emoji-panel">
+            <span class="emoji-item">😀</span>
+            <span class="emoji-item">😂</span>
+            <span class="emoji-item">😊</span>
+            <span class="emoji-item">😍</span>
+            <span class="emoji-item">🤝</span>
+            <span class="emoji-item">👍</span>
+            <span class="emoji-item">🙏</span>
+            <span class="emoji-item">🌾</span>
+            <span class="emoji-item">🚜</span>
+            <span class="emoji-item">📦</span>
+            <span class="emoji-item">🛒</span>
+            <span class="emoji-item">💯</span>
+            <span class="emoji-item">❤️</span>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="chat-footer-form">
+            {% csrf_token %}
+
+            <label class="attach-label">
+                <i class="fas fa-paperclip fa-lg"></i>
+                <input type="file" name="image" class="d-none">
+            </label>
+
+            <div class="input-wrapper">
+                <input name="message" id="msgInput" placeholder="Type your message here..." autocomplete="off">
+            </div>
+
+            <button type="submit" class="btn-send">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </form>
+
+    </div>
 </div>
 
-<!-- Autoscroll -->
 <script>
-const chatBox = document.getElementById('chatBox');
-chatBox.scrollTop = chatBox.scrollHeight;
-</script>
+    // 1. Auto Scroll to Bottom
+    const chatBox = document.getElementById('chatBox');
+    chatBox.scrollTop = chatBox.scrollHeight;
 
-<!-- Emoji insertion -->
-<script>
-document.querySelectorAll('.emoji-btn').forEach(b=>{
-    b.onclick = ()=> {
-        const input = document.querySelector('input[name="message"]');
-        input.value += b.textContent;
-        input.focus();
-    };
-});
-</script>
-
-<!-- Instant Search -->
-<script>
-document.getElementById("chatSearch").addEventListener("input", function(){
-    let q = this.value.toLowerCase();
-    document.querySelectorAll("#chatBox .msg").forEach(div=>{
-        div.style.display = div.innerText.toLowerCase().includes(q) ? "" : "none";
+    // 2. Emoji Insertion
+    document.querySelectorAll('.emoji-item').forEach(emoji => {
+        emoji.onclick = () => {
+            const input = document.getElementById('msgInput');
+            input.value += emoji.textContent;
+            input.focus();
+        };
     });
-});
+
+    // 3. Instant Chat Search
+    document.getElementById("chatSearch").addEventListener("input", function(){
+        let query = this.value.toLowerCase();
+        document.querySelectorAll(".message-bubble").forEach(bubble => {
+            let text = bubble.innerText.toLowerCase();
+            bubble.style.display = text.includes(query) ? "block" : "none";
+        });
+    });
 </script>
 
 {% endblock %}

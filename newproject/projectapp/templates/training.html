@@ -1,160 +1,181 @@
+
 {% extends 'master.html' %}
 {% load static %}
-{% block title %}Training Mode - AgriLink{% endblock %}
-
+{% block title %}Platform Training - AgriLink{% endblock %}
 {% block body %}
-<!-- BACK BUTTON -->
-<div class="back-btn-wrapper">
-    <button class="back-btn" onclick="goBack()">⬅ Back</button>
-</div>
 
 <style>
-.back-btn-wrapper{
-    margin-top: 89px; /* adjust this according to your navbar height */
+.training-wrapper {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+    padding: 100px 20px 50px;
+}
+
+.training-card {
+    max-width: 650px;
+    margin: 0 auto;
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    text-align: center;
+}
+
+.training-icon {
+    font-size: 5rem;
+    margin-bottom: 20px;
+}
+
+.training-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #198754;
     margin-bottom: 15px;
-    margin-left:20px;
 }
-.back-btn{
-    border: none;
-    padding: 12px 26px;
-    border-radius: 35px;
-    background: linear-gradient(135deg,#198754,#2ecc71);
-    color: #fff;
+
+.training-desc {
+    font-size: 1.1rem;
+    color: #555;
+    line-height: 1.7;
+    margin-bottom: 30px;
+}
+
+.training-progress {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 30px;
+}
+
+.progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ddd;
+    transition: all 0.3s ease;
+}
+
+.progress-dot.active {
+    background: #198754;
+    transform: scale(1.3);
+}
+
+.btn-group {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.btn-training {
+    padding: 12px 30px;
+    border-radius: 10px;
     font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    transition: .3s;
+    transition: all 0.3s ease;
+    border: none;
 }
-.back-btn:hover{
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(0,0,0,.35);
+
+.btn-training-back {
+    background: #f0f0f0;
+    color: #666;
 }
-.back-btn:active{
-    transform: scale(.95);
+
+.btn-training-back:hover:not(:disabled) {
+    background: #e0e0e0;
+}
+
+.btn-training-next {
+    background: linear-gradient(135deg, #198754, #0f6c3e);
+    color: white;
+}
+
+.btn-training-next:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(25,135,84,0.4);
+}
+
+.btn-training:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 </style>
 
-<script>
-function goBack(){
-    window.history.back();
-}
-</script>
-<style>
-    .training-box {
-        max-width: 600px;
-        margin: 80px auto;
-        background: white;
-        padding: 25px;
-        border-radius: 12px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-        text-align: center;
-    }
+<button class="back-btn" onclick="window.history.back()"
+        style="position: absolute; top: 20px; left: 20px; z-index: 10; background: linear-gradient(135deg, #198754, #0f6c3e); border: none; color: white; padding: 10px 20px; border-radius: 25px; font-weight: 600;">
+    ⬅ Back
+</button>
 
-    .step-title {
-        font-size: 1.6rem;
-        font-weight: bold;
-        color: #198754;
-    }
+<div class="training-wrapper">
+    <div class="training-card">
+        <div class="training-icon" id="stepIcon">👋</div>
+        <h2 class="training-title" id="stepTitle">Welcome to AgriLink</h2>
+        <p class="training-desc" id="stepDesc">
+            This quick tour will help you understand the platform.
+        </p>
 
-    .step-desc {
-        font-size: 1.1rem;
-        margin-top: 10px;
-        line-height: 1.5;
-        color: #555;
-    }
+        <!-- Progress Dots -->
+        <div class="training-progress" id="progressDots"></div>
 
-    .btn-area {
-        margin-top: 25px;
-    }
-
-    .btn-area button {
-        min-width: 120px;
-    }
-</style>
-
-<div class="training-box">
-    <h2 class="step-title" id="stepTitle">Welcome to AgriLink 👋</h2>
-    <p class="step-desc" id="stepDesc">
-        This short training will guide you on how to use the platform.
-    </p>
-
-    <div class="btn-area">
-        <button class="btn btn-secondary" id="backBtn" onclick="prevStep()" disabled>Back</button>
-        <button class="btn btn-success" id="nextBtn" onclick="nextStep()">Next</button>
+        <div class="btn-group">
+            <button class="btn btn-training btn-training-back" id="backBtn" onclick="prevStep()" disabled>
+                Previous
+            </button>
+            <button class="btn btn-training btn-training-next" id="nextBtn" onclick="nextStep()">
+                Next
+            </button>
+        </div>
     </div>
 </div>
 
 <script>
-    const steps = [
-        // ... (Your 9 steps array is here, including the last step: "Training Complete 🎉")
-        {
-            title: "Welcome to AgriLink 👋",
-            desc: "This short training will help you understand how to use the platform easily."
-        },
-        {
-            title: "Farmer Dashboard",
-            desc: "Farmers can add products, update details, check orders and respond to retailers."
-        },
-        {
-            title: "Add Product",
-            desc: "Farmers can upload product name, image, quantity, description and price."
-        },
-        {
-            title: "Browse Products",
-            desc: "Retailers can browse all farmer products and use Search + Filter options."
-        },
-        {
-            title: "Order & Payment",
-            desc: "Retailers place orders and pay securely using Razorpay."
-        },
-        {
-            title: "Order Tracking 🚚",
-            desc: "Farmers update delivery location and retailer can track live."
-        },
-        {
-            title: "Chat Feature 💬",
-            desc: "Farmers and Retailers can communicate directly for any questions."
-        },
-        {
-            title: "Notifications 🔔",
-            desc: "Both users receive updates for orders, status changes and messages."
-        },
-        {
-            title: "Training Complete 🎉",
-            desc: "You are now ready to use AgriLink! Click Finish to continue."
-        }
-    ];
+const steps = [
+    { icon: "👋", title: "Welcome to AgriLink", desc: "This quick tour will help you understand how to use the platform effectively." },
+    { icon: "📊", title: "Dashboard Overview", desc: "View your products, orders, and earnings all in one place." },
+    { icon: "➕", title: "Add Products", desc: "Upload product details, images, quantities and set your own prices." },
+    { icon: "🔍", title: "Browse & Search", desc: "Retailers can browse all products with advanced search and filters." },
+    { icon: "🛒", title: "Place Orders", desc: "Retailers can order products and pay securely through Razorpay." },
+    { icon: "🚚", title: "Live Tracking", desc: "Track deliveries in real-time from farm to store." },
+    { icon: "💬", title: "Direct Chat", desc: "Communicate directly with buyers or sellers for any queries." },
+    { icon: "🔔", title: "Notifications", desc: "Get instant updates on orders, payments and delivery status." },
+    { icon: "🎉", title: "You're All Set!", desc: "You're now ready to use AgriLink. Let's get started!" }
+];
 
-    let current = 0;
+let currentStep = 0;
 
-    function updateUI() {
-        document.getElementById("stepTitle").innerText = steps[current].title;
-        document.getElementById("stepDesc").innerText = steps[current].desc;
+function updateUI() {
+    document.getElementById('stepIcon').textContent = steps[currentStep].icon;
+    document.getElementById('stepTitle').textContent = steps[currentStep].title;
+    document.getElementById('stepDesc').textContent = steps[currentStep].desc;
 
-        document.getElementById("backBtn").disabled = current === 0;
+    document.getElementById('backBtn').disabled = currentStep === 0;
+    document.getElementById('nextBtn').textContent = currentStep === steps.length - 1 ? 'Finish Training' : 'Next';
 
-        // Correctly label the last button
-        document.getElementById("nextBtn").innerText = current === steps.length - 1 ? "Finish Training" : "Next";
+    // Update progress dots
+    const dotsContainer = document.getElementById('progressDots');
+    dotsContainer.innerHTML = '';
+    steps.forEach((_, index) => {
+        const dot = document.createElement('div');
+        dot.className = 'progress-dot' + (index === currentStep ? ' active' : '');
+        dotsContainer.appendChild(dot);
+    });
+}
+
+function nextStep() {
+    if (currentStep < steps.length - 1) {
+        currentStep++;
+        updateUI();
+    } else {
+        window.location.href = "/training_complete/";
     }
+}
 
-    function nextStep() {
-        if (current < steps.length - 1) {
-            current++;
-            updateUI();
-        } else {
-            // ⭐ CRITICAL: Redirect to the view that updates the database (training_complete) ⭐
-            window.location.href = "/training_complete/";
-        }
+function prevStep() {
+    if (currentStep > 0) {
+        currentStep--;
+        updateUI();
     }
+}
 
-    function prevStep() {
-        if (current > 0) {
-            current--;
-            updateUI();
-        }
-    }
-
-    updateUI();
+updateUI();
 </script>
 
 {% endblock %}

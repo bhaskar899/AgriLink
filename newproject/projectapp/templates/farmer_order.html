@@ -1,107 +1,187 @@
 {% extends 'master.html' %}
 {% load custom_filters %}
-{% block title %}Farmer Orders{% endblock %}
+{% block title %}Manage Orders | AgriLink{% endblock %}
 {% block body %}
 
-<!-- BACK BUTTON -->
-<div class="back-btn-wrapper">
-    <button class="back-btn" onclick="goBack()">⬅ Back</button>
-</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-.back-btn-wrapper{
-    margin-top: 89px; /* adjust this according to your navbar height */
-    margin-bottom: 15px;
-    margin-left:20px;
-}
-.back-btn{
-    border: none;
-    padding: 12px 26px;
-    border-radius: 35px;
-    background: linear-gradient(135deg,#198754,#2ecc71);
-    color: #fff;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    transition: .3s;
-}
-.back-btn:hover{
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(0,0,0,.35);
-}
-.back-btn:active{
-    transform: scale(.95);
-}
+    :root {
+        --primary-green: #198754;
+        --dark-green: #16423C;
+        --soft-bg: #f2faf5;
+        --glass-white: rgba(255, 255, 255, 0.9);
+    }
+
+    body {
+        background: linear-gradient(135deg, #f0f9f4 0%, #e6f0eb 100%);
+        background-attachment: fixed;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .main-content { margin-top: 110px; padding-bottom: 100px; }
+
+    /* Modern Back Button */
+    .btn-back-nav {
+        border: none; padding: 10px 22px; border-radius: 50px;
+        background: white; color: var(--primary-green);
+        font-weight: 700; text-decoration: none; display: inline-flex;
+        align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        transition: 0.3s; border: 1px solid #d1e7dd;
+    }
+    .btn-back-nav:hover { transform: translateX(-5px); background: var(--primary-green); color: white; }
+
+    /* Order Header */
+    .order-header-card {
+        background: var(--glass-white); backdrop-filter: blur(10px);
+        border-radius: 20px; padding: 25px; border: 1px solid rgba(255,255,255,0.6);
+        margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;
+    }
+
+    /* Table Container */
+    .table-card {
+        background: white; border-radius: 25px; border: none;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.04); overflow: hidden;
+    }
+
+    .table thead { background: var(--dark-green); color: white; }
+    .table thead th { padding: 18px; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; border: none; }
+
+    .table tbody tr { transition: 0.3s; border-bottom: 1px solid #f2f2f2; }
+    .table tbody tr:hover { background-color: #f9fdfb; }
+    .table td { padding: 20px 15px; font-size: 0.95rem; vertical-align: middle; color: #444; }
+
+    /* Order Status Badges */
+    .badge-status {
+        padding: 6px 14px; border-radius: 10px; font-weight: 700; font-size: 0.75rem;
+    }
+    .bg-pending { background: #eee; color: #666; }
+    .bg-accepted { background: #e3f2fd; color: #0d6efd; }
+    .bg-packed { background: #e0f7fa; color: #00acc1; }
+    .bg-dispatched { background: #fff3e0; color: #fb8c00; }
+
+    /* Action Buttons */
+    .action-btn {
+        width: 38px; height: 38px; border-radius: 12px; display: inline-flex;
+        align-items: center; justify-content: center; text-decoration: none;
+        transition: 0.3s; border: 1px solid transparent;
+    }
+    .btn-update { background: #e8f5e9; color: #198754; }
+    .btn-update:hover { background: #198754; color: white; }
+
+    .btn-chat { background: #e3f2fd; color: #0d6efd; }
+    .btn-chat:hover { background: #0d6efd; color: white; }
+
+    /* Mobile View Responsive Table */
+    @media (max-width: 768px) {
+        .order-header-card { flex-direction: column; text-align: center; gap: 15px; }
+        .table thead { display: none; }
+        .table tbody tr { display: block; margin-bottom: 20px; border: 1px solid #eee; border-radius: 20px; padding: 10px; }
+        .table td { display: flex; justify-content: space-between; align-items: center; text-align: right; border: none; padding: 10px 15px; }
+        .table td::before { content: attr(data-label); font-weight: 800; color: var(--dark-green); font-size: 0.8rem; text-transform: uppercase; }
+    }
 </style>
 
-<script>
-function goBack(){
-    window.history.back();
-}
-</script>
-<div class="container mt-4">
-<div class="card shadow-lg p-4">
+<div class="container main-content">
 
-<h2 class="text-center mb-3">🚜 Farmer – Orders from Retailers</h2>
+    <div class="order-header-card shadow-sm">
+        <div>
+            <a href="javascript:history.back()" class="btn-back-nav mb-2">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+            <h2 class="fw-800 mb-0 mt-2" style="color: var(--dark-green);">🚜 Retailer Orders</h2>
+        </div>
+        <div class="text-md-end">
+            <span class="badge bg-success bg-opacity-10 text-success p-2 px-3 rounded-pill border border-success border-opacity-25">
+               <i class="fas fa-sync-alt fa-spin me-2"></i> Live Updates
+            </span>
+        </div>
+    </div>
 
-<div class="table-responsive">
-<table class="table table-hover text-center align-middle">
+    <div class="card table-card">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Product Details</th>
+                        <th>Retailer Info</th>
+                        <th>Status</th>
+                        <th>Driver Assigned</th>
+                        <th>Manage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    {% if order.status != "Delivered" %}
+                    <tr>
+                        <td data-label="Order ID">
+                            <span class="fw-800 text-muted">#{{ order.id }}</span>
+                        </td>
 
-<thead class="table-success">
-<tr>
-    <th>ID</th>
-    <th>Product</th>
-    <th>Qty</th>
-    <th>Retailer</th>
-    <th>Status</th>
-    <th>Driver</th>
-    <th>Action</th>
-</tr>
-</thead>
+                        <td data-label="Product Details">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="bg-light rounded-3 p-2 text-success">
+                                    <i class="fas fa-leaf"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-0 fw-800 text-dark">{{ order.product.product }}</p>
+                                    <small class="text-muted fw-600">{{ order.quantity }} kg ordered</small>
+                                </div>
+                            </div>
+                        </td>
 
-<tbody>
-{% for order in orders %}
-{% if order.status != "Delivered" %}
-<tr>
-    <td>#{{ order.id }}</td>
-    <td>{{ order.product.product }}</td>
-    <td>{{ order.quantity }} kg</td>
-    <td>{{ order.retailer.name }}</td>
+                        <td data-label="Retailer Info">
+                            <p class="mb-0 fw-700"><i class="far fa-user-circle me-1"></i> {{ order.retailer.name }}</p>
+                        </td>
 
-    <td>
-        <span class="badge bg-{% if order.status == 'Pending' %}secondary
-        {% elif order.status == 'Accepted' %}primary
-        {% elif order.status == 'Packed' %}info
-        {% elif order.status == 'Dispatched' %}warning text-dark
-        {% elif order.status == 'Delivered' %}success{% endif %}">
-        {{ order.status }}
-        </span>
-    </td>
+                        <td data-label="Status">
+                            <span class="badge-status
+                            {% if order.status == 'Pending' %}bg-pending
+                            {% elif order.status == 'Accepted' %}bg-accepted
+                            {% elif order.status == 'Packed' %}bg-packed
+                            {% elif order.status == 'Dispatched' %}bg-dispatched
+                            {% endif %}">
+                                <i class="fas fa-circle me-1" style="font-size: 0.5rem;"></i> {{ order.status }}
+                            </span>
+                        </td>
 
-    <td>
-        {% if order.driver %}
-            🚚 {{ order.driver.name }}
-        {% else %}
-            <span class="text-muted">Not Assigned</span>
-        {% endif %}
-    </td>
+                        <td data-label="Driver Assigned">
+                            {% if order.driver %}
+                                <div class="d-flex align-items-center gap-2 justify-content-md-start justify-content-end">
+                                    <img src="https://ui-avatars.com/api/?name={{ order.driver.name }}&background=e8f5e9&color=198754" class="rounded-circle" width="30">
+                                    <span class="fw-600">{{ order.driver.name }}</span>
+                                </div>
+                            {% else %}
+                                <span class="text-muted small italic">Not Assigned</span>
+                            {% endif %}
+                        </td>
 
-    <td>
-        <a href="{% url 'update_status' order.id %}" class="btn btn-outline-success btn-sm">Update</a>
-        <a href="{% url 'chat' order.id %}" class="btn btn-outline-primary btn-sm">Chat</a>
-    </td>
-</tr>
-{% endif %}
-{% empty %}
-<tr>
-    <td colspan="7" class="text-center text-muted">No orders found.</td>
-</tr>
-{% endfor %}
-</tbody>
-
-</table>
-</div>
-</div>
+                        <td data-label="Manage">
+                            <div class="d-flex gap-2 justify-content-md-start justify-content-end">
+                                <a href="{% url 'update_status' order.id %}" class="action-btn btn-update" title="Update Status">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'chat' order.id %}" class="action-btn btn-chat" title="Chat with Retailer">
+                                    <i class="fas fa-comment-dots"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted opacity-25 mb-3"></i>
+                            <p class="fw-700 text-muted">No active orders right now.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 {% endblock %}

@@ -1,99 +1,174 @@
 {% extends "master.html" %}
-{% block title %}Update Driver Profile{% endblock %}
+{% block title %}AgriLink Pro | Update Profile{% endblock %}
 
 {% block body %}
-<!-- BACK BUTTON -->
-<div class="back-btn-wrapper">
-    <button class="back-btn" onclick="goBack()">⬅ Back</button>
-</div>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-.back-btn-wrapper{
-    margin-top: 89px; /* adjust this according to your navbar height */
-    margin-bottom: 15px;
-    margin-left:20px;
+:root {
+    --driver-green: #10b981;
+    --driver-dark: #0f172a;
 }
-.back-btn{
+body {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.update-container { margin-top: 110px; padding-bottom: 60px; }
+
+.custom-card {
+    background: white;
+    border-radius: 30px;
     border: none;
-    padding: 12px 26px;
-    border-radius: 35px;
-    background: linear-gradient(135deg,#198754,#2ecc71);
-    color: #fff;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    transition: .3s;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
 }
-.back-btn:hover{
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(0,0,0,.35);
+
+.form-label { font-weight: 700; font-size: 0.85rem; color: var(--driver-dark); margin-bottom: 8px; }
+
+.form-control, .form-select {
+    border-radius: 12px;
+    padding: 12px 15px;
+    border: 1px solid #e2e8f0;
+    transition: 0.3s;
 }
-.back-btn:active{
-    transform: scale(.95);
+.form-control:focus {
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+    border-color: var(--driver-green);
 }
+
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--driver-green);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+.section-title i { margin-right: 10px; }
+
+.btn-save {
+    background: var(--driver-dark);
+    color: white;
+    border-radius: 15px;
+    padding: 15px;
+    font-weight: 700;
+    border: none;
+    transition: 0.3s;
+}
+.btn-save:hover { background: #1e293b; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); color: white; }
+
+.back-link { text-decoration: none; color: #64748b; font-weight: 600; transition: 0.3s; }
+.back-link:hover { color: var(--driver-dark); }
 </style>
 
-<script>
-function goBack(){
-    window.history.back();
-}
-</script>
-<div class="container mt-5">
-  <div class="card p-4 mx-auto shadow-lg rounded-4" style="max-width:650px;">
-    <h3 class="text-center mb-4">Update Profile</h3>
-    <form method="POST" enctype="multipart/form-data">
-      {% csrf_token %}
+<div class="container update-container">
+    <div class="mb-4">
+        <a href="javascript:history.back()" class="back-link"><i class="fas fa-arrow-left me-2"></i> Back to Profile</a>
+    </div>
 
-      <!-- Driver fields -->
-      <label class="fw-bold">Name</label>
-      <input type="text" name="name" class="form-control mb-3 rounded-3" value="{{ driver.name }}" required>
+    <div class="custom-card p-4 p-md-5 mx-auto" style="max-width: 850px;">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Update Fleet Profile</h2>
+            <p class="text-muted">Maintain your information for better shipment assignments</p>
+        </div>
 
-      <label class="fw-bold">Email</label>
-      <input type="email" name="email" class="form-control mb-3 rounded-3" value="{{ driver.email }}" disabled>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
 
-      <label class="fw-bold">Phone</label>
-      <input type="text" name="phone" class="form-control mb-3 rounded-3" value="{{ driver.phone }}">
-      {% if profile.phone_verified %}
-        <span class="badge bg-success">Verified</span>
-      {% endif %}
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="section-title"><i class="fas fa-user-circle"></i> Personal Details</div>
 
-      <label class="fw-bold">Location</label>
-      <input type="text" name="location" class="form-control mb-3 rounded-3" value="{{ driver.location }}">
+                    <div class="mb-3">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" name="name" class="form-control" value="{{ driver.name }}" required>
+                    </div>
 
-      <label class="fw-bold">Vehicle Type</label>
-      <select name="vehicle_type" class="form-control mb-3 rounded-3">
-        {% for v, display in driver.VEHICLE_CHOICES %}
-          <option value="{{ v }}" {% if driver.vehicle_type == v %}selected{% endif %}>{{ display }}</option>
-        {% endfor %}
-      </select>
+                    <div class="mb-3">
+                        <label class="form-label">Email Address (Primary)</label>
+                        <input type="email" class="form-control bg-light" value="{{ driver.email }}" disabled>
+                    </div>
 
-      <label class="fw-bold">Vehicle Number</label>
-      <input type="text" name="vehicle_number" class="form-control mb-3 rounded-3" value="{{ driver.vehicle_number }}">
+                    <div class="mb-3">
+                        <label class="form-label">Phone Number</label>
+                        <div class="input-group">
+                            <input type="text" name="phone" class="form-control" value="{{ driver.phone }}">
+                            {% if profile.phone_verified %}
+                                <span class="input-group-text bg-success-subtle text-success small"><i class="fas fa-check-circle"></i></span>
+                            {% endif %}
+                        </div>
+                    </div>
 
-      <label class="fw-bold">Capacity (kg)</label>
-      <input type="number" name="capacity" class="form-control mb-3 rounded-3" value="{{ driver.capacity_kg }}">
+                    <div class="mb-3">
+                        <label class="form-label">Current Location</label>
+                        <input type="text" name="location" class="form-control" value="{{ driver.location }}">
+                    </div>
+                </div>
 
-      <label class="fw-bold">Rate per km</label>
-      <input type="number" step="0.01" name="rate_per_km" class="form-control mb-3 rounded-3" value="{{ driver.rate_per_km }}">
+                <div class="col-md-6">
+                    <div class="section-title"><i class="fas fa-truck"></i> Logistics & License</div>
 
-      <!-- Profile fields -->
-      <label class="fw-bold">License Issue Date</label>
-      <input type="date" name="license_issue_date" class="form-control mb-3 rounded-3" value="{{ profile.license_issue_date }}">
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Vehicle Type</label>
+                            <select name="vehicle_type" class="form-select">
+                                {% for v, display in driver.VEHICLE_CHOICES %}
+                                    <option value="{{ v }}" {% if driver.vehicle_type == v %}selected{% endif %}>{{ display }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Vehicle Number</label>
+                            <input type="text" name="vehicle_number" class="form-control" value="{{ driver.vehicle_number }}">
+                        </div>
+                    </div>
 
-      <label class="fw-bold">License Expiry Date</label>
-      <input type="date" name="license_expiry_date" class="form-control mb-3 rounded-3" value="{{ profile.license_expiry_date }}">
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Capacity (kg)</label>
+                            <input type="number" name="capacity" class="form-control" value="{{ driver.capacity_kg }}">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Rate per km (₹)</label>
+                            <input type="number" step="0.01" name="rate_per_km" class="form-control" value="{{ driver.rate_per_km }}">
+                        </div>
+                    </div>
 
-      <label class="fw-bold">Driver Photo</label>
-      <input type="file" name="driver_photo" class="form-control mb-3 rounded-3">
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label">License Expiry</label>
+                            <input type="date" name="license_expiry_date" class="form-control" value="{{ profile.license_expiry_date|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Profile Image</label>
+                            <input type="file" name="driver_photo" class="form-control">
+                        </div>
+                    </div>
+                </div>
 
-      <label class="fw-bold">License Document</label>
-      <input type="file" name="license_doc" class="form-control mb-3 rounded-3">
+                <div class="col-12 mt-4">
+                    <div class="p-4 rounded-4" style="background: #f1f5f9; border: 1px dashed #cbd5e1;">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label"><i class="fas fa-id-card me-2"></i>Update License Document</label>
+                                <input type="file" name="license_doc" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label"><i class="fas fa-camera me-2"></i>Update Vehicle Photo</label>
+                                <input type="file" name="vehicle_photo" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-      <label class="fw-bold">Vehicle Photo</label>
-      <input type="file" name="vehicle_photo" class="form-control mb-4 rounded-3">
-
-      <button class="btn btn-success w-100 py-2 rounded-3">Save Changes</button>
-    </form>
-  </div>
+                <div class="col-12 mt-5">
+                    <button type="submit" class="btn btn-save w-100 shadow">Update My Fleet Profile</button>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'driver_profile_delete' %}" class="text-danger small fw-bold text-decoration-none">Delete My Account?</a>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}

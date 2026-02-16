@@ -1,200 +1,172 @@
 {% extends "master.html" %}
 {% load static %}
-{% block title %}Notifications{% endblock %}
+{% block title %}Notifications | AgriLink{% endblock %}
 
 {% block body %}
-<!-- BACK BUTTON -->
-<div class="back-btn-wrapper">
-    <button class="back-btn" onclick="goBack()">⬅ Back</button>
-</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-.back-btn-wrapper{
-    margin-top: 89px; /* adjust this according to your navbar height */
-    margin-bottom: 15px;
-    margin-left:20px;
-}
-.back-btn{
-    border: none;
-    padding: 12px 26px;
-    border-radius: 35px;
-    background: linear-gradient(135deg,#198754,#2ecc71);
-    color: #fff;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    transition: .3s;
-}
-.back-btn:hover{
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(0,0,0,.35);
-}
-.back-btn:active{
-    transform: scale(.95);
-}
-</style>
-
-<script>
-function goBack(){
-    window.history.back();
-}
-</script>
-
-<style>
-/* ===== Page Background ===== */
-.notification-page {
-    min-height: 100vh;
-    background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
-    padding: 40px 0;
-}
-
-/* ===== Header ===== */
-.notify-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-}
-
-.notify-header h3 {
-    font-weight: 700;
-    color: #2e7d32;
-}
-
-/* ===== Notification Card ===== */
-.notify-card {
-    background: #fff;
-    border-radius: 14px;
-    padding: 16px 18px;
-    margin-bottom: 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 8px 18px rgba(0,0,0,0.08);
-    transition: all 0.25s ease;
-    border-left: 6px solid transparent;
-}
-
-.notify-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
-}
-
-/* ===== Unread Highlight ===== */
-.notify-unread {
-    background: #f1f8e9;
-    border-left: 6px solid #43a047;
-}
-
-.notify-message {
-    cursor: pointer;
-    width: 85%;
-}
-
-.notify-message strong {
-    color: #1b5e20;
-}
-
-.notify-time {
-    font-size: 12px;
-    color: #777;
-}
-
-/* ===== Badge NEW ===== */
-.new-badge {
-    background: #43a047;
-    color: #fff;
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 12px;
-    margin-left: 8px;
-}
-
-/* ===== Delete Button ===== */
-.notify-delete {
-    background: #e53935;
-    color: #fff;
-    border-radius: 50%;
-    width: 34px;
-    height: 34px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    text-decoration: none;
-    transition: 0.2s;
-}
-
-.notify-delete:hover {
-    background: #b71c1c;
-    transform: scale(1.1);
-}
-
-/* ===== Empty State ===== */
-.empty-box {
-    background: #fff;
-    padding: 40px;
-    border-radius: 14px;
-    text-align: center;
-    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-    color: #777;
-}
-
-/* ===== Mobile ===== */
-@media (max-width: 768px) {
-    .notify-message {
-        width: 75%;
+    :root {
+        --primary-green: #198754;
+        --dark-green: #16423C;
+        --glass-bg: rgba(255, 255, 255, 0.9);
     }
-}
+
+    body {
+        background: linear-gradient(135deg, #f0f9f4 0%, #e6f0eb 100%);
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .main-wrapper { margin-top: 110px; padding-bottom: 80px; }
+
+    /* Modern Back Button */
+    .btn-back-nav {
+        border: none; padding: 12px 24px; border-radius: 50px;
+        background: white; color: var(--primary-green);
+        font-weight: 700; text-decoration: none; display: inline-flex;
+        align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        transition: 0.3s; border: 1px solid #d1e7dd;
+    }
+    .btn-back-nav:hover { transform: translateX(-5px); background: var(--primary-green); color: white; }
+
+    /* Header Section */
+    .notify-header {
+        background: var(--glass-bg); backdrop-filter: blur(10px);
+        border-radius: 20px; padding: 25px; border: 1px solid rgba(255,255,255,0.6);
+        margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;
+    }
+
+    /* Modern Notification Card */
+    .notify-card {
+        background: white;
+        border-radius: 20px;
+        padding: 20px;
+        margin-bottom: 15px;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.03);
+        transition: 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: 1px solid transparent;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .notify-card:hover {
+        transform: scale(1.01);
+        box-shadow: 0 12px 30px rgba(25, 135, 84, 0.1);
+        border-color: var(--primary-green);
+    }
+
+    /* Unread Glow Effect */
+    .unread-glow {
+        background: #f8faf9;
+        border-left: 5px solid var(--primary-green);
+    }
+
+    /* Icon Container */
+    .icon-box {
+        width: 50px; height: 50px; border-radius: 15px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.2rem; flex-shrink: 0;
+    }
+    .icon-unread { background: #e8f5e9; color: var(--primary-green); }
+    .icon-read { background: #f5f5f5; color: #aaa; }
+
+    .content-box { flex-grow: 1; }
+
+    .msg-text {
+        font-weight: 600; color: var(--dark-green);
+        margin-bottom: 4px; display: block; line-height: 1.4;
+    }
+
+    .time-text { font-size: 0.75rem; color: #8ba696; font-weight: 600; }
+
+    /* NEW Badge */
+    .badge-new {
+        background: var(--primary-green); color: white;
+        font-size: 0.6rem; padding: 3px 8px; border-radius: 6px;
+        font-weight: 900; margin-left: 8px; vertical-align: middle;
+    }
+
+    /* Action Buttons */
+    .delete-btn {
+        color: #ffcdd2; transition: 0.3s; padding: 8px;
+    }
+    .delete-btn:hover { color: #e53935; background: #ffebee; border-radius: 10px; }
+
+    /* Empty State Animation */
+    .empty-state {
+        text-align: center; padding: 60px; background: white;
+        border-radius: 30px; border: 2px dashed #d1e7dd;
+    }
+
 </style>
-<br><br>
-<div class="notification-page">
-    <div class="container">
 
-        <!-- Header -->
-        <div class="notify-header">
-            <h3>🔔 Notifications</h3>
+<div class="container main-wrapper">
 
-            <a href="{% url 'delete_all_notification' %}"
-               class="btn btn-danger btn-sm"
-               onclick="return confirm('Delete ALL notifications?')">
-                🗑 Delete All
+    <div class="notify-header shadow-sm">
+        <div>
+            <a href="javascript:history.back()" class="btn-back-nav mb-2">
+                <i class="fas fa-arrow-left"></i> Back
             </a>
+            <h2 class="fw-800 mb-0 mt-2" style="color: var(--dark-green);">🔔 Notifications</h2>
         </div>
+        <a href="{% url 'delete_all_notification' %}"
+           class="btn btn-outline-danger rounded-pill px-4 fw-bold"
+           onclick="return confirm('Clear all notifications?')">
+            <i class="fas fa-trash-alt me-2"></i> Clear All
+        </a>
+    </div>
 
-        <!-- Notification List -->
-        {% for n in notifications %}
-        <div class="notify-card {% if not n.is_read %}notify-unread{% endif %}"
-             onclick="openNotification('{{ n.id }}')">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            {% for n in notifications %}
+            <div class="notify-card {% if not n.is_read %}unread-glow{% endif %}"
+                 onclick="openNotification('{{ n.id }}')">
 
-            <div class="notify-message">
-                <strong>{{ n.message }}</strong>
-                {% if not n.is_read %}
-                    <span class="new-badge">NEW</span>
-                {% endif %}
-                <div class="notify-time">
-                    {{ n.timestamp|date:"d M Y, h:i A" }}
+                <div class="icon-box {% if not n.is_read %}icon-unread{% else %}icon-read{% endif %}">
+                    {% if "order" in n.message|lower %}
+                        <i class="fas fa-shopping-bag"></i>
+                    {% elif "approve" in n.message|lower %}
+                        <i class="fas fa-check-double"></i>
+                    {% else %}
+                        <i class="fas fa-bell"></i>
+                    {% endif %}
                 </div>
+
+                <div class="content-box">
+                    <span class="msg-text">
+                        {{ n.message }}
+                        {% if not n.is_read %}<span class="badge-new">NEW</span>{% endif %}
+                    </span>
+                    <span class="time-text">
+                        <i class="far fa-clock me-1"></i> {{ n.timestamp|date:"d M, h:i A" }}
+                    </span>
+                </div>
+
+                <a href="{% url 'delete_notification' n.id %}"
+                   class="delete-btn"
+                   onclick="event.stopPropagation(); return confirm('Delete?')">
+                    <i class="fas fa-times"></i>
+                </a>
             </div>
-
-            <a href="{% url 'delete_notification' n.id %}"
-               class="notify-delete"
-               onclick="event.stopPropagation(); return confirm('Delete this notification?')">
-                ✕
-            </a>
-
+            {% empty %}
+            <div class="empty-state">
+                <div class="mb-3">
+                    <i class="fas fa-bell-slash fa-4x" style="color: #d1e7dd;"></i>
+                </div>
+                <h4 class="fw-bold text-muted">All Caught Up!</h4>
+                <p class="text-muted">You have no new notifications at the moment.</p>
+            </div>
+            {% endfor %}
         </div>
-        {% empty %}
-        <div class="empty-box">
-            🔕 No notifications available
-        </div>
-        {% endfor %}
-
     </div>
 </div>
 
 <script>
 function openNotification(id) {
+    // Add a small fade out effect before redirecting
     window.location.href = "/notifications/read/" + id + "/";
 }
 </script>

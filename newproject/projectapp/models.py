@@ -15,6 +15,8 @@ from django.db import models
 
 from django.db import models
 from PIL import Image
+from django.utils import timezone
+from datetime import timedelta  # Iski bhi zaroorat padegi 'is_fresh' ke liye
 
 class Farmer(models.Model):
     name = models.CharField(max_length=100)
@@ -26,7 +28,7 @@ class Farmer(models.Model):
     first_login = models.BooleanField(default=True)
     profile_image = models.ImageField(upload_to='profiles/', default='profiles/default.jpg')
 
-    def str(self):
+    def __str__(self):
         return self.name
 
 class Retailer(models.Model):
@@ -52,7 +54,7 @@ class Retailer(models.Model):
     email_otp = models.CharField(max_length=6, blank=True, null=True)
 
 
-def str(self):
+def __str__(self):
         return self.name
 
 
@@ -61,13 +63,20 @@ def str(self):
 class Product(models.Model):
     product = models.CharField(max_length=100)
     description = models.TextField()
+    created_at = models.DateTimeField(default=timezone.now)
     price = models.FloatField()
     quantity = models.IntegerField()
     location = models.CharField(max_length=50)
     image = models.ImageField(upload_to='product_images/', blank=True, null=True)
     farmer = models.ForeignKey('Farmer', on_delete=models.CASCADE, related_name='products')
 
-    def str(self):
+    @property
+    def is_fresh(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        return self.created_at >= timezone.now() - timedelta(days=3)
+
+    def __str__(self):
         return self.product
 
     def save(self, *args, **kwargs):
@@ -124,7 +133,7 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False)
     timestamp = models.DateTimeField(default=timezone.now)
 
-    def str(self):
+    def __str__(self):
         return f"{self.message[:30]}..."
 
 # Order model (unchanged)
@@ -157,7 +166,7 @@ class ChatMessage(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     seen = models.BooleanField(default=False)
 
-    def str(self):
+    def __str__(self):
         if self.sender_farmer:
             return f"{self.sender_farmer.name}: {self.message}"
         if self.sender_retailer:
@@ -171,7 +180,7 @@ class ContactMessage(models.Model):
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
 
-    def str(self):
+    def __str__(self):
         return f"Message from {self.name} ({self.email})"
 
 
@@ -183,6 +192,11 @@ from django.utils import timezone
 
 # models.py में नया, मर्ज किया गया Driver मॉडल
 
+from django.db import models
+from django.contrib.auth.hashers import make_password
+from django.utils import timezone
+
+
 class Driver(models.Model):
     VEHICLE_CHOICES = [
         ('bike', 'Bike'),
@@ -192,28 +206,60 @@ class Driver(models.Model):
         ('truck', 'Truck'),
     ]
 
-    # --- Driver Model के Original Fields ---
+    # --- Basic Fields ---
     name = models.CharField(max_length=120)
     email = models.EmailField(unique=True)
+    otp = models.CharField(max_length=6, blank=True, null=True)
+    otp_created_at = models.DateTimeField(blank=True, null=True)
+    email_verified = models.BooleanField(default=False)
+
     phone = models.CharField(max_length=20, blank=True, null=True)
     password = models.CharField(max_length=128)
-    vehicle_type = models.CharField(max_length=20, choices=VEHICLE_CHOICES, default='tempo')
+
+    vehicle_type = models.CharField(
+        max_length=20,
+        choices=VEHICLE_CHOICES,
+        default='tempo'
+    )
+
     vehicle_number = models.CharField(max_length=50, blank=True, null=True)
     capacity_kg = models.IntegerField(default=1000)
     rate_per_km = models.FloatField(default=12.0)
     is_available = models.BooleanField(default=False)
     location = models.CharField(max_length=150, blank=True, null=True)
-    driver_photo = models.ImageField(upload_to='drivers/', blank=True, null=True)
-    license_doc = models.FileField(upload_to='drivers/docs/', blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
-    # --- DriverProfile Model से मर्ज किए गए Fields ---
+    driver_photo = models.ImageField(
+        upload_to='drivers/',
+        blank=True,
+        null=True
+    )
+
+    license_doc = models.FileField(
+        upload_to='drivers/docs/',
+        blank=True,
+        null=True
+    )
+
+    vehicle_photo = models.ImageField(
+        upload_to='drivers/vehicle_photos/',
+        blank=True,
+        null=True
+    )
+
     phone_verified = models.BooleanField(default=False)
     license_issue_date = models.DateField(blank=True, null=True)
     license_expiry_date = models.DateField(blank=True, null=True)
-    vehicle_photo = models.ImageField(upload_to='drivers/vehicle_photos/', blank=True, null=True)
 
-    def _str_(self):
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    # 🔐 AUTO PASSWORD HASHING
+    def save(self, *args, **kwargs):
+        # If password is not already hashed
+        if self.password and not self.password.startswith('pbkdf2_'):
+            self.password = make_password(self.password)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
         return f"{self.name} ({self.vehicle_type})"
 
 
@@ -234,7 +280,7 @@ class Delivery(models.Model):
         ('canceled', 'Canceled'),
     ]
 
-    order = models.ForeignKey('Order', on_delete=models.CASCADE, related_name='deliveries')
+    order = models.ForeignKey('Order', on_delete=models.PROTECT, related_name='deliveries')
     driver = models.ForeignKey('Driver', on_delete=models.SET_NULL, null=True, blank=True, related_name='deliveries')
 
     distance_km = models.FloatField(default=0.0)
@@ -277,7 +323,7 @@ class SampleRequest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     delivered_at = models.DateTimeField(null=True, blank=True)
 
-    def _str_(self):
+    def __str__(self):
         return f"Sample #{self.id} - {self.product.product}"
 
 from django.db import models
@@ -295,7 +341,7 @@ class RetailerSampleReview(models.Model):
     class Meta:
         unique_together = ('sample', 'retailer')  # prevents multiple reviews for same sample
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.retailer.name} - {self.sample.product.product} - {self.rating}"
 # models.py
 from django.db import models
@@ -314,13 +360,14 @@ class DriverNotification(models.Model):
 from django.db import models
 
 class Order(models.Model):
+
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
         ('Accepted', 'Accepted'),
         ('Packed', 'Packed'),
         ('Dispatched', 'Dispatched'),
         ('Delivered', 'Delivered'),
-        ('Paid', 'Paid'),  # Added Paid for payment success
+        ('Paid', 'Paid'),
     ]
 
     product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='orders')
@@ -335,7 +382,9 @@ class Order(models.Model):
     current_lng = models.FloatField(null=True, blank=True)
     driver = models.ForeignKey('Driver', on_delete=models.SET_NULL, null=True, blank=True)
 
-    total_amount = models.FloatField(default=0.0)  # exact amount paid by retailer
+    total_amount = models.FloatField(default=0.0)
+
+    farmer_paid = models.BooleanField(default=False)  # ✅ ADD THIS
 
     def __str__(self):
         return f"Order#{self.id} - {self.product.product} ({self.retailer.name})"
@@ -351,7 +400,26 @@ class Sale(models.Model):
     quantity = models.FloatField(default=1)
     status = models.CharField(max_length=50, default='Pending')
 
-    def str(self):
+    def __str__(self):
         # note: Product model field that stores title is called product (string)
         product_title = getattr(self.product, "product", "Unknown product")
         return f"{product_title} - {self.amount}"
+
+
+# models.py
+class Bid(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Accepted', 'Accepted'),
+        ('Rejected', 'Rejected'),
+    ]
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    retailer = models.ForeignKey(Retailer, on_delete=models.CASCADE) # Aapke model ke hisaab se use karein
+    farmer = models.ForeignKey(Farmer, on_delete=models.CASCADE)
+    proposed_price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.IntegerField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Bid by {self.retailer.name} for {self.product.product}"

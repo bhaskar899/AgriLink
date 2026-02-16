@@ -1,66 +1,154 @@
 {% extends 'master.html' %}
-{% block title %}Payment Successful{% endblock %}
+{% block title %}Payment Successful | AgriLink{% endblock %}
 {% block body %}
-<!-- BACK BUTTON -->
-<div class="back-btn-wrapper">
-    <button class="back-btn" onclick="goBack()">⬅ Back</button>
-</div>
 
 <style>
-.back-btn-wrapper{
-    margin-top: 89px; /* adjust this according to your navbar height */
-    margin-bottom: 15px;
-    margin-left:20px;
-}
-.back-btn{
-    border: none;
-    padding: 12px 26px;
-    border-radius: 35px;
-    background: linear-gradient(135deg,#198754,#2ecc71);
-    color: #fff;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    transition: .3s;
-}
-.back-btn:hover{
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(0,0,0,.35);
-}
-.back-btn:active{
-    transform: scale(.95);
-}
+    /* Global Background */
+    body { background: #f4f7f6; }
+
+    /* Back Button */
+    .back-btn-wrapper { margin-top: 100px; margin-left: 20px; }
+    .back-btn {
+        border: none; padding: 10px 22px; border-radius: 50px;
+        background: #fff; color: #198754; font-weight: 600;
+        cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: .3s; border: 1px solid #198754;
+    }
+    .back-btn:hover { background: #198754; color: #fff; }
+
+    /* Success Card */
+    .success-card {
+        border-radius: 25px; border: none; overflow: hidden;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.1) !important;
+        background: #fff; animation: fadeInUp 0.6s ease-out;
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .success-icon-wrapper {
+        background: #e8f5e9; width: 100px; height: 100px;
+        border-radius: 50%; display: flex; align-items: center;
+        justify-content: center; margin: 0 auto 20px;
+        border: 5px solid #fff; box-shadow: 0 10px 20px rgba(25,135,84,0.15);
+    }
+
+    /* Receipt Box */
+    .receipt-box {
+        background: #f8fbf9; border-radius: 15px; padding: 25px;
+        border: 1px solid #d4edda; margin: 30px 0;
+    }
+    .receipt-row {
+        display: flex; justify-content: space-between;
+        margin-bottom: 12px; border-bottom: 1px dashed #ced4da;
+        padding-bottom: 8px;
+    }
+    .receipt-row:last-child { border-bottom: none; }
+
+    .status-badge {
+        background: #28a745; color: #fff; padding: 5px 15px;
+        border-radius: 50px; font-size: 0.9rem; font-weight: 600;
+    }
+
+    /* Buttons */
+    .btn-main {
+        border-radius: 12px; padding: 12px 25px; font-weight: 700;
+        transition: 0.3s; text-decoration: none; display: inline-block;
+    }
+    .btn-receipt { border: 2px solid #198754; color: #198754; }
+    .btn-receipt:hover { background: #198754; color: #fff; }
+
+    /* Progress Steps */
+    .order-steps { display: flex; justify-content: space-between; margin-bottom: 30px; }
+    .step { text-align: center; flex: 1; font-size: 0.85rem; font-weight: 600; color: #2ecc71; }
+    .step.active { color: #198754; font-weight: 800; }
+    .step-icon {
+        width: 30px; height: 30px; line-height: 30px; border-radius: 50%;
+        background: #2ecc71; color: #fff; display: block; margin: 0 auto 5px;
+    }
 </style>
 
+<div class="back-btn-wrapper">
+    <button class="back-btn" onclick="goBack()">⬅ Home</button>
+</div>
+
+<div class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7">
+
+            <div class="order-steps">
+                <div class="step"><span class="step-icon">✓</span>Details</div>
+                <div class="step"><span class="step-icon">✓</span>Payment</div>
+                <div class="step active"><span class="step-icon">✓</span>Success</div>
+            </div>
+
+            <div class="card success-card">
+                <div class="card-body p-4 p-md-5 text-center">
+
+                    <div class="success-icon-wrapper">
+                        <img src="https://cdn-icons-png.flaticon.com/512/845/845646.png" width="60" alt="Success">
+                    </div>
+
+                    <h2 class="fw-bold text-success">Payment Successful!</h2>
+                    <p class="text-muted">Thank you, <strong>{{ request.session.name }}</strong>! Your order is confirmed.</p>
+
+                    <div class="receipt-box text-start">
+                        <div class="receipt-row">
+                            <span class="text-muted">Order ID</span>
+                            <span class="fw-bold">#AGR-{{ order.id }}</span>
+                        </div>
+                        <div class="receipt-row">
+                            <span class="text-muted">Product</span>
+                            <span class="fw-bold">{{ order.product.product }}</span>
+                        </div>
+                        <div class="receipt-row">
+                            <span class="text-muted">Farmer</span>
+                            <span class="fw-bold">{{ order.farmer.name }}</span>
+                        </div>
+                        <div class="receipt-row">
+                            <span class="text-muted">Quantity</span>
+                            <span class="fw-bold">{{ order.quantity }} kg</span>
+                        </div>
+                        <div class="receipt-row">
+                            <span class="text-muted">Total Amount</span>
+                            <span class="fw-bold text-success">₹{{ order.total_amount }}</span>
+                        </div>
+                        <div class="receipt-row mt-2">
+                            <span class="text-muted">Status</span>
+                            <span class="status-badge">PAID ✅</span>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-block">
+                        <a href="{% url 'generate_receipt' order.id %}" class="btn btn-receipt btn-main me-md-2 mb-2 mb-md-0">
+                            🧾 Download Receipt
+                        </a>
+                        <a href="/retailer_products/" class="btn btn-success btn-main me-md-2 mb-2 mb-md-0 shadow-sm">
+                            📦 My Orders
+                        </a>
+                        <a href="/home/" class="btn btn-light btn-main border">
+                            🏠 Go Home
+                        </a>
+                    </div>
+
+                    <p class="mt-4 text-muted small">
+                        A notification has been sent to the farmer regarding your payment.
+                    </p>
+                </div>
+            </div>
+
+
+
+        </div>
+    </div>
+</div>
+
 <script>
-function goBack(){
-    window.history.back();
-}
+    function goBack() {
+        window.location.href = "/home/";
+    }
 </script>
 
-<div class="container text-center mt-5"><br><br>
-
-  <div class="card shadow-lg p-5 border-0">
-    <div class="card-body">
-      <img src="https://cdn-icons-png.flaticon.com/512/845/845646.png" width="120" alt="Success" class="mb-4">
-      <h2 class="text-success fw-bold">Payment Successful 🎉</h2>
-      <p class="lead mt-3">
-        Thank you, {{ request.session.name }}! Your payment for <strong>{{ order.product.product }}</strong> is complete.
-      </p>
-
-      <div class="alert alert-success mt-4 text-start">
-        <p><strong>Order ID:</strong> #{{ order.id }}</p>
-        <p><strong>Product:</strong> {{ order.product.product }}</p>
-        <p><strong>Farmer:</strong> {{ order.farmer.name }}</p>
-        <p><strong>Quantity:</strong> {{ order.quantity }} kg</p>
-        <p><strong>Total Paid:</strong> ₹{{ order.quantity|floatformat:0|add:0|floatformat:0|add:0|floatformat:0|default:"0" }} * {{ order.product.price }} = ₹{{ order.quantity|floatformat:0|add:0|floatformat:0|add:0|floatformat:0|default:"0" }}</p>
-        <p><strong>Status:</strong> Paid ✅</p>
-      </div>
-
-      <a href="{% url 'generate_receipt' order.id %}" class="btn btn-outline-success btn-lg mt-3">🧾 Generate Receipt</a>
-      <a href="/retailer_products/" class="btn btn-success btn-lg mt-3 ms-2">View My Orders</a>
-      <a href="/home/" class="btn btn-outline-secondary btn-lg mt-3 ms-2">Back to Home</a>
-    </div>
-  </div>
-</div>
 {% endblock %}

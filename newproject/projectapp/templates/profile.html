@@ -1,65 +1,157 @@
 {% extends "master.html" %}
-{% block title %}My Profile{% endblock %}
+{% block title %}AgriLink Pro | My Profile{% endblock %}
 
 {% block body %}
-<!-- BACK BUTTON -->
-<div class="back-btn-wrapper">
-    <button class="back-btn" onclick="goBack()">⬅ Back</button>
-</div>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-.back-btn-wrapper{
-    margin-top: 89px; /* adjust this according to your navbar height */
-    margin-bottom: 15px;
-    margin-left:20px;
+:root {
+    --farmer-green: #198754;
+    --farmer-dark: #0f172a;
+    --glass-bg: rgba(255, 255, 255, 0.95);
 }
-.back-btn{
+
+body {
+    background: linear-gradient(135deg, #f0fdf4 0%, #e2e8f0 100%);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.profile-wrapper { margin-top: 110px; padding-bottom: 60px; }
+
+.profile-header-strip {
+    background: linear-gradient(to right, #14532d, var(--farmer-green));
+    height: 120px;
+    width: 100%;
+    border-radius: 30px 30px 0 0;
+}
+
+.profile-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
     border: none;
-    padding: 12px 26px;
-    border-radius: 35px;
-    background: linear-gradient(135deg,#198754,#2ecc71);
-    color: #fff;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    transition: .3s;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+    overflow: hidden;
 }
-.back-btn:hover{
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(0,0,0,.35);
+
+.profile-img-container {
+    margin-top: -70px;
+    position: relative;
+    display: inline-block;
 }
-.back-btn:active{
-    transform: scale(.95);
+
+.main-avatar {
+    width: 140px; height: 140px;
+    object-fit: cover;
+    border: 5px solid white;
+    border-radius: 40px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.farmer-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 15px;
+    padding: 10px;
+}
+
+.farmer-info-item {
+    background: #f8fafc;
+    padding: 18px;
+    border-radius: 20px;
+    border: 1px solid #eef2f6;
+    transition: 0.3s;
+}
+
+.farmer-info-item i {
+    font-size: 1.2rem;
+    color: var(--farmer-green);
+    margin-bottom: 10px;
+}
+
+.btn-edit-pro {
+    background: var(--farmer-dark);
+    color: white;
+    border-radius: 18px;
+    padding: 15px;
+    font-weight: 700;
+    border: none;
+    transition: 0.3s;
+    width: 100%;
+}
+.btn-edit-pro:hover { background: #1e293b; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.15); color: white; }
+
+.back-btn-custom {
+    text-decoration: none;
+    color: var(--farmer-dark);
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: 20px;
 }
 </style>
 
-<script>
-function goBack(){
-    window.history.back();
-}
-</script>
-<div class="container mt-5">
-  <div class="card p-4 mx-auto" style="max-width:550px; border-radius:20px;">
-    <div class="text-center">
-      {% if user.profile_image %}
-        <img src="{{ user.profile_image.url }}" class="rounded-circle shadow" style="width:140px;height:140px;object-fit:cover;border:4px solid #198754;">
-      {% else %}
-        <img src="/static/images/no-image.jpg" class="rounded-circle shadow" style="width:140px;height:140px;object-fit:cover;border:4px solid #198754;">
-      {% endif %}
-      <h3 class="mt-3">{{ user.name }}</h3>
+<div class="container profile-wrapper">
+    <div class="mx-auto" style="max-width: 800px;">
+        <a href="/farmer_dashboard/" class="back-btn-custom">
+            <i class="fas fa-arrow-left me-2"></i> Dashboard
+        </a>
+
+        <div class="card profile-card">
+            <div class="profile-header-strip"></div>
+
+            <div class="card-body pt-0 px-4 pb-5">
+                <div class="text-center">
+                    <div class="profile-img-container">
+                        {% if user.profile_image %}
+                            <img src="{{ user.profile_image.url }}" class="main-avatar">
+                        {% else %}
+                            <img src="/static/images/no-image.jpg" class="main-avatar">
+                        {% endif %}
+                    </div>
+                    <h2 class="fw-bold mt-3 mb-1 text-dark">{{ user.name }}</h2>
+                    <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">
+                        <i class="fas fa-seedling me-1"></i> Verified AgriLink Farmer
+                    </span>
+                </div>
+
+                <hr class="my-4 opacity-25">
+
+                <div class="farmer-info-grid">
+                    <div class="farmer-info-item">
+                        <i class="fas fa-envelope-open-text"></i>
+                        <small class="d-block text-muted">Email Address</small>
+                        <span class="fw-bold">{{ user.email }}</span>
+                    </div>
+                    <div class="farmer-info-item">
+                        <i class="fas fa-phone-alt"></i>
+                        <small class="d-block text-muted">Contact Number</small>
+                        <span class="fw-bold">{{ user.contact }}</span>
+                    </div>
+                    <div class="farmer-info-item">
+                        <i class="fas fa-venus-mars"></i>
+                        <small class="d-block text-muted">Gender Identity</small>
+                        <span class="fw-bold">{{ user.gender }}</span>
+                    </div>
+                    <div class="farmer-info-item">
+                        <i class="fas fa-map-marked-alt"></i>
+                        <small class="d-block text-muted">Registered Address</small>
+                        <span class="fw-bold">{{ user.address }}</span>
+                    </div>
+                </div>
+
+                <div class="mt-5 text-center px-md-5">
+                    <a href="/profile_update/" class="btn btn-edit-pro text-decoration-none d-block">
+                        <i class="fas fa-user-edit me-2"></i> Update Profile Information
+                    </a>
+
+                    <a href="/profile_delete/" class="text-danger small d-block mt-4 text-decoration-none fw-bold opacity-75">
+                        <i class="fas fa-user-slash me-1"></i> Delete Account Permanently
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <hr>
-
-    <p><strong>Email:</strong> {{ user.email }}</p>
-    <p><strong>Contact:</strong> {{ user.contact }}</p>
-    <p><strong>Gender:</strong> {{ user.gender }}</p>
-    <p><strong>Address:</strong><br> {{ user.address }}</p>
-
-    <hr>
-
-    <a href="/profile_update/" class="btn btn-success w-100 py-2 rounded-3">Update Profile</a>
-
-  </div>
 </div>
 {% endblock %}

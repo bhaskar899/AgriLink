@@ -174,6 +174,14 @@ path('retailer/reviews/', views.all_sample_reviews, name='retailer_sample_review
     path("api/", sales_api, name="sales_api_short"),
 
 path('retailer/samples/', views.retailer_samples, name='retailer_samples'),
+
+path('place_bid/<int:product_id>/', views.place_bid, name='place_bid'),
+path('manage_bids/', views.manage_bids, name='manage_bids'),
+path('accept_bid/<int:bid_id>/', views.accept_bid, name='accept_bid'),
+path('reject_bid/<int:bid_id>/', views.reject_bid, name='reject_bid'),
+    # Iska view asaan hai, status 'Rejected' karna hai
+path("pay_bid/<int:bid_id>/", views.pay_bid, name="pay_bid"),
+
 ]
 
 # ---------------- MEDIA & STATIC ----------------

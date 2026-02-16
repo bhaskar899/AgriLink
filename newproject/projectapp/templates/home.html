@@ -5,49 +5,691 @@
 
 {% block body %}
 
+<style>
+  /* ===== EXISTING CAROUSEL KO ENHANCE KIYA ===== */
+  .carousel-item {
+    transition: transform 0.8s ease-in-out;
+  }
+
+  .hero-content {
+    animation: fadeInUp 1s ease;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .carousel-item .btn {
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  }
+
+  .carousel-item .btn:hover {
+    transform: translateY(-5px) scale(1.08);
+    box-shadow: 0 8px 25px rgba(255,193,7,0.6);
+  }
+
+  .btn-outline-light:hover {
+    background: white !important;
+    color: #198754 !important;
+  }
+
+  /* ===== ABOUT SECTION KO BETTER BANAYA ===== */
+  .about-img {
+    transition: all 0.4s ease;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  }
+
+  .about-img:hover {
+    transform: scale(1.06);
+    box-shadow: 0 15px 40px rgba(25,135,84,0.5);
+    border-radius: 20px;
+  }
+
+  #about h3 {
+    color: #198754;
+    margin-bottom: 20px;
+  }
+
+  #about ul li {
+    font-size: 1.1rem;
+    padding: 8px 0;
+    transition: all 0.3s ease;
+  }
+
+  #about ul li:hover {
+    transform: translateX(10px);
+    color: #198754;
+  }
+
+  #about .lead {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: #555;
+  }
+
+  /* Driver Section Buttons */
+  #about .btn {
+    transition: all 0.3s ease;
+    font-size: 1.1rem;
+  }
+
+  #about .btn-success:hover {
+    background: #0f6c3e;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(25,135,84,0.4);
+  }
+
+  #about .btn-outline-success:hover {
+    background: #198754;
+    color: white;
+    transform: translateY(-3px);
+  }
+
+  /* ===== REVIEWS SECTION KO ZYADA ATTRACTIVE BANAYA ===== */
+  #reviews {
+    background: linear-gradient(135deg, #e8f5e9, #fff3e0);
+    padding: 60px 0;
+  }
+
+  .review-card {
+    min-width: 300px;
+    max-width: 320px;
+    min-height: 320px; /* Increased height for better spacing */
+    border-radius: 20px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    background: white;
+    border: 2px solid #e8e8e8; /* Light gray border by default */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .review-card .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 30px 20px; /* Increased top-bottom padding */
+  }
+
+  .review-card:hover {
+    transform: translateY(-15px) scale(1.05);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    border-color: #198754; /* Green border only on hover */
+  }
+  }
+
+  .review-card .avatar {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px; /* Increased bottom margin */
+    background: linear-gradient(135deg, #198754, #0f6c3e);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    box-shadow: 0 5px 15px rgba(25,135,84,0.3);
+    transition: all 0.3s ease;
+  }
+
+  .review-card:hover .avatar {
+    transform: rotate(360deg) scale(1.1);
+  }
+
+  .review-card .card-title {
+    font-size: 1.35rem;
+    color: #198754;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+
+  .review-card .card-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 18px;
+  }
+
+  .review-card .card-text {
+    font-size: 1.05rem;
+    color: #666;
+    line-height: 1.7;
+    flex: 1;
+    margin-bottom: 10px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* Show max 3 lines */
+    -webkit-box-orient: vertical;
+  }
+
+  .review-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    background: linear-gradient(135deg, #198754, #0f6c3e);
+    color: white;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    opacity: 0.9;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  }
+
+  .review-arrow:hover {
+    background: linear-gradient(135deg, #0f6c3e, #198754);
+    opacity: 1;
+    transform: translateY(-50%) scale(1.2);
+  }
+
+  .left-arrow { left: -25px; }
+  .right-arrow { right: -25px; }
+
+  #reviewsTrack {
+    scroll-behavior: smooth;
+    padding: 10px 0;
+  }
+
+  .overall-rating {
+    font-size: 1.3rem;
+    padding: 15px 20px;
+    background: white;
+    border-radius: 15px;
+    display: inline-block;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    margin-top: 20px;
+  }
+
+  /* Empty state enhancement */
+  .review-card.empty-state {
+    min-width: 100%;
+    padding: 60px 20px;
+    background: linear-gradient(135deg, #f5f5f5, #e0e0e0);
+  }
+
+  .empty-state-icon {
+    font-size: 5rem;
+    margin-bottom: 20px;
+    opacity: 0.5;
+  }
+
+  /* ===== CONTACT SECTION KO BETTER BANAYA ===== */
+  #contact {
+    background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  }
+
+  .contact-card {
+    transition: all 0.4s ease;
+    border: 3px solid transparent;
+  }
+
+  .contact-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 50px rgba(25,135,84,0.3) !important;
+    border-color: #198754;
+  }
+
+  .contact-input {
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s ease;
+    padding: 12px 15px;
+    font-size: 1.05rem;
+  }
+
+  .contact-input:focus {
+    border-color: #198754;
+    box-shadow: 0 0 20px rgba(25,135,84,0.3);
+    transform: scale(1.02);
+    outline: none;
+  }
+
+  .contact-input:hover {
+    border-color: #198754;
+    box-shadow: 0 0 10px rgba(25,135,84,0.2);
+  }
+
+  .contact-btn {
+    background: linear-gradient(135deg, #198754, #0f6c3e);
+    border: none;
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    font-size: 1.1rem;
+  }
+
+  .contact-btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  .contact-btn:hover::before {
+    width: 400px;
+    height: 400px;
+  }
+
+  .contact-btn:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(25,135,84,0.5);
+  }
+
+  /* Form labels enhancement */
+  .form-label {
+    font-size: 1.05rem;
+    color: #333;
+    margin-bottom: 8px;
+  }
+
+  /* ===== RESPONSIVE IMPROVEMENTS ===== */
+  @media (max-width: 768px) {
+    /* Hero Section Mobile */
+    .carousel-item .display-3 {
+      font-size: 1.8rem !important;
+      line-height: 1.3;
+      margin-bottom: 15px !important;
+    }
+
+    .carousel-item .lead {
+      font-size: 1rem !important;
+      margin-bottom: 20px !important;
+    }
+
+    .carousel-item .btn {
+      font-size: 0.95rem !important;
+      padding: 12px 25px !important;
+      margin: 5px !important;
+      display: block;
+      width: 90%;
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+
+    .hero-content {
+      padding: 0 15px;
+    }
+
+    /* About Section Mobile */
+    #about {
+      padding: 30px 0 !important;
+    }
+
+    #about h2 {
+      font-size: 1.8rem !important;
+      margin-bottom: 30px !important;
+    }
+
+    #about h3 {
+      font-size: 1.4rem !important;
+      margin-bottom: 15px !important;
+    }
+
+    #about .lead {
+      font-size: 1rem !important;
+    }
+
+    #about ul li {
+      font-size: 0.95rem;
+      padding: 6px 0;
+    }
+
+    #about .about-img {
+      width: 100% !important;
+      margin-bottom: 20px;
+    }
+
+    #about .btn {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 14px 20px !important;
+    }
+
+    #about .row {
+      margin-bottom: 30px !important;
+    }
+
+    /* Reviews Section Mobile */
+    #reviews {
+      padding: 40px 0 !important;
+    }
+
+    #reviews h2 {
+      font-size: 1.8rem !important;
+    }
+
+    .review-card {
+      min-width: 260px;
+      max-width: 280px;
+      min-height: 300px; /* Proper height for mobile */
+    }
+
+    .review-card .card-body {
+      padding: 25px 18px; /* Better padding for mobile */
+    }
+
+    .review-card .avatar {
+      width: 70px;
+      height: 70px;
+      margin-bottom: 15px;
+    }
+
+    .review-card .card-title {
+      font-size: 1.2rem;
+    }
+
+    .review-card .card-text {
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    .review-arrow {
+      width: 40px;
+      height: 40px;
+      font-size: 1.2rem;
+    }
+
+    .left-arrow {
+      left: 0px;
+      z-index: 100;
+    }
+
+    .right-arrow {
+      right: 0px;
+      z-index: 100;
+    }
+
+    .overall-rating {
+      font-size: 1.1rem;
+      padding: 12px 15px;
+      margin-top: 15px;
+    }
+
+    /* Floating Buttons Mobile - Proper Stacking */
+    .whatsapp-float {
+      width: 50px;
+      height: 50px;
+      font-size: 1.6rem;
+      bottom: 15px;
+      right: 15px;
+    }
+
+    #scrollTopBtn {
+      width: 50px;
+      height: 50px;
+      font-size: 1.2rem;
+      bottom: 75px;
+      right: 15px;
+    }
+
+    /* Contact Section Mobile */
+    #contact {
+      padding: 40px 0 !important;
+    }
+
+    #contact h2 {
+      font-size: 1.8rem !important;
+    }
+
+    .contact-card {
+      padding: 25px 20px !important;
+      margin: 0 10px !important;
+    }
+
+    .contact-input {
+      font-size: 1rem !important;
+      padding: 12px !important;
+    }
+
+    .contact-btn {
+      font-size: 1.05rem !important;
+      padding: 14px !important;
+    }
+
+    .form-label {
+      font-size: 1rem !important;
+    }
+
+    /* Section Spacing */
+    section {
+      padding: 40px 15px !important;
+    }
+
+    hr {
+      margin: 30px 0 !important;
+    }
+  }
+
+  /* ===== EXTRA SMALL DEVICES (< 576px) ===== */
+  @media (max-width: 576px) {
+    .carousel-item .display-3 {
+      font-size: 1.5rem !important;
+    }
+
+    .carousel-item .lead {
+      font-size: 0.9rem !important;
+    }
+
+    #about h2, #reviews h2, #contact h2 {
+      font-size: 1.5rem !important;
+    }
+
+    #about h3 {
+      font-size: 1.2rem !important;
+    }
+
+    .review-card {
+      min-width: 240px;
+      max-width: 260px;
+      padding: 15px !important;
+    }
+
+    .review-arrow {
+      width: 35px;
+      height: 35px;
+      font-size: 1rem;
+    }
+  }
+
+  /* ===== LANDSCAPE MODE MOBILE ===== */
+  @media (max-width: 768px) and (orientation: landscape) {
+    .carousel-item > div {
+      height: 70vh !important;
+    }
+
+    .carousel-item .display-3 {
+      font-size: 1.6rem !important;
+    }
+  }
+
+  /* ===== PREVENT ZOOM ON INPUT FOCUS (iOS) ===== */
+  @media (max-width: 768px) {
+    input[type="text"],
+    input[type="email"],
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+
+  /* ===== TOUCH DEVICE OPTIMIZATIONS ===== */
+  @media (hover: none) and (pointer: coarse) {
+    /* Better tap targets */
+    .btn {
+      min-height: 48px;
+      padding: 14px 24px !important;
+    }
+
+    .nav-link {
+      min-height: 44px;
+    }
+
+    /* Remove hover animations on touch */
+    .about-img:hover {
+      transform: none;
+    }
+
+    .review-card:hover {
+      transform: translateY(-5px);
+      /* Reduced animation for touch */
+    }
+  }
+
+  /* ===== SMOOTH SCROLL BEHAVIOR ===== */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Section headings enhancement */
+  section h2 {
+    position: relative;
+    display: inline-block;
+    padding-bottom: 15px;
+    background: linear-gradient(135deg, #198754, #0f6c3e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  section h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #198754, #0f6c3e);
+    border-radius: 2px;
+  }
+
+  /* ===== SCROLL TO TOP BUTTON ===== */
+  #scrollTopBtn {
+    position: fixed;
+    bottom: 90px; /* Stacked above WhatsApp */
+    right: 20px; /* Same as other buttons */
+    background: linear-gradient(135deg, #198754, #0f6c3e);
+    color: white;
+    width: 55px; /* Same width as WhatsApp */
+    height: 55px; /* Same height as WhatsApp */
+    border-radius: 50%;
+    border: none;
+    font-size: 1.4rem;
+    cursor: pointer;
+    box-shadow: 0 5px 20px rgba(25,135,84,0.4);
+    z-index: 9997;
+    display: none;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #scrollTopBtn:hover {
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 10px 30px rgba(25,135,84,0.6);
+  }
+
+  /* ===== FLOATING WHATSAPP ===== */
+  .whatsapp-float {
+    position: fixed;
+    bottom: 20px; /* Bottom position */
+    right: 20px; /* Same as other buttons */
+    background: #25D366;
+    color: white;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    font-size: 1.8rem;
+    box-shadow: 0 5px 20px rgba(37,211,102,0.5);
+    z-index: 9998;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    animation: whatsappPulse 2s ease-in-out infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  @keyframes whatsappPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  .whatsapp-float:hover {
+    transform: scale(1.15);
+    box-shadow: 0 8px 30px rgba(37,211,102,0.7);
+    color: white;
+  }
+</style>
+
 <!-- HOME CAROUSEL -->
 <section id="home" class="position-relative">
-  <div id="homeCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+
+<!-- 💬 FLOATING WHATSAPP BUTTON -->
+<a href="https://wa.me/918928958677?text=Hello%20AgriLink!" target="_blank" class="whatsapp-float" title="Chat on WhatsApp">
+  📱
+</a>
+
+<!-- ⬆️ SCROLL TO TOP BUTTON -->
+<button id="scrollTopBtn" title="Go to top">↑</button>
+
+  <div id="homeCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="4000">
     <div class="carousel-inner">
 
       <div class="carousel-item active">
         <div class="d-flex align-items-center justify-content-center text-center text-white"
-          style="background: linear-gradient(rgba(25,135,84,0.7), rgba(25,135,84,0.7)), url('{% static 'images/agri1.jpeg' %}') center/cover no-repeat; height: 100vh;">
-          <div>
-            <h1 class="display-3 fw-bold">Welcome to AgriLink 🌾</h1>
-            <p class="lead">Connecting Farmers & Retailers with Transparency.</p>
-            <a href="/farmer_register/" class="btn btn-warning btn-lg mt-3">Join as Farmer</a>
-            <a href="/retailer_register/" class="btn btn-outline-light btn-lg mt-3 ms-3">Join as Retailer</a>
+          style="background: linear-gradient(rgba(25,135,84,0.75), rgba(15,108,62,0.75)), url('{% static 'images/agri1.jpeg' %}') center/cover no-repeat; height: 100vh;">
+          <div class="hero-content">
+            <h1 class="display-3 fw-bold mb-3">Welcome to AgriLink 🌾</h1>
+            <p class="lead fs-4 mb-4">Connecting Farmers & Retailers with Transparency.</p>
+            <a href="/farmer_register/" class="btn btn-warning btn-lg mt-3 px-5 py-3 me-3">
+              <strong>Join as Farmer</strong>
+            </a>
+            <a href="/retailer_register/" class="btn btn-outline-light btn-lg mt-3 px-5 py-3">
+              <strong>Join as Retailer</strong>
+            </a>
           </div>
         </div>
       </div>
 
       <div class="carousel-item">
         <div class="d-flex align-items-center justify-content-center text-center text-white"
-          style="background: linear-gradient(rgba(25,135,84,0.7), rgba(25,135,84,0.7)), url('{% static 'images/agri2.jpeg' %}') center/cover no-repeat; height: 100vh;">
-          <div>
-            <h1 class="display-3 fw-bold">Empowering Farmers 👨‍🌾</h1>
-            <p class="lead">Upload products, set prices, track orders.</p>
+          style="background: linear-gradient(rgba(25,135,84,0.75), rgba(15,108,62,0.75)), url('{% static 'images/agri2.jpeg' %}') center/cover no-repeat; height: 100vh;">
+          <div class="hero-content">
+            <h1 class="display-3 fw-bold mb-3">Empowering Farmers 👨‍🌾</h1>
+            <p class="lead fs-4">Upload products, set prices, track orders.</p>
           </div>
         </div>
       </div>
 
       <div class="carousel-item">
         <div class="d-flex align-items-center justify-content-center text-center text-white"
-          style="background: linear-gradient(rgba(25,135,84,0.7), rgba(25,135,84,0.7)), url('{% static 'images/agri3.jpeg' %}') center/cover no-repeat; height: 100vh;">
-          <div>
-            <h1 class="display-3 fw-bold">Smart Retail Solutions 🏪</h1>
-            <p class="lead">Bulk ordering made simple.</p>
+          style="background: linear-gradient(rgba(25,135,84,0.75), rgba(15,108,62,0.75)), url('{% static 'images/agri3.jpeg' %}') center/cover no-repeat; height: 100vh;">
+          <div class="hero-content">
+            <h1 class="display-3 fw-bold mb-3">Smart Retail Solutions 🏪</h1>
+            <p class="lead fs-4">Bulk ordering made simple.</p>
           </div>
         </div>
       </div>
 
       <div class="carousel-item">
         <div class="d-flex align-items-center justify-content-center text-center text-white"
-          style="background: linear-gradient(rgba(25,135,84,0.7), rgba(25,135,84,0.7)), url('{% static 'images/agri4.jpeg' %}') center/cover no-repeat; height: 100vh;">
-          <div>
-            <h1 class="display-3 fw-bold">Live Tracking 📍</h1>
-            <p class="lead">Know exactly where your order is.</p>
+          style="background: linear-gradient(rgba(25,135,84,0.75), rgba(15,108,62,0.75)), url('{% static 'images/agri4.jpeg' %}') center/cover no-repeat; height: 100vh;">
+          <div class="hero-content">
+            <h1 class="display-3 fw-bold mb-3">Live Tracking 📍</h1>
+            <p class="lead fs-4">Know exactly where your order is.</p>
           </div>
         </div>
       </div>
@@ -65,29 +707,17 @@
 </section>
 
 <!-- ABOUT SECTION -->
-<style>
-  .about-img{
-    transition:0.4s ease;
-    border-radius:12px;
-  }
-  .about-img:hover{
-    transform:scale(1.05);
-    box-shadow:0 0 25px rgba(25,135,84,0.3);
-    border-radius:20px;
-  }
-</style>
-
-<section id="about" class="py-5">
+<section id="about" class="py-5 bg-white">
   <div class="container">
 
-    <h2 class="text-center fw-bold mb-4">About AgriLink</h2>
+    <h2 class="text-center fw-bold mb-5">About AgriLink</h2>
 
     <!-- STEP 1: Farmer -->
     <div class="row align-items-center mb-5">
-      <div class="col-md-6 text-center">
+      <div class="col-md-6 text-center mb-4 mb-md-0">
         <img src="{% static 'images/farmer2.jpg' %}" class="img-fluid rounded shadow w-75 about-img" alt="Farmer">
       </div>
-      <div class="col-md-6"><br>
+      <div class="col-md-6">
         <h3 class="fw-bold">👨‍🌾 How AgriLink Empowers Farmers</h3>
         <p class="lead">
           AgriLink helps farmers sell directly to retailers without middlemen, ensuring fair prices
@@ -103,11 +733,14 @@
       </div>
     </div>
 
-    <hr class="my-4">
+    <hr class="my-5">
 
     <!-- STEP 2: Driver Pickup -->
     <div class="row align-items-center mb-5">
-      <div class="col-md-6">
+      <div class="col-md-6 order-md-2 text-center mb-4 mb-md-0">
+        <img src="{% static 'images/driver_pickup2.jpg' %}" class="img-fluid rounded shadow w-75 about-img" alt="Pickup">
+      </div>
+      <div class="col-md-6 order-md-1">
         <h3 class="fw-bold">🚛 Driver Picks Up Orders</h3>
         <p class="lead">
           After a retailer places an order, a verified AgriLink driver collects products from the
@@ -121,19 +754,16 @@
           <li>📸 Can upload delivery proof images</li>
         </ul>
       </div>
-      <div class="col-md-6 text-center">
-        <img src="{% static 'images/driver_pickup2.jpg' %}" class="img-fluid rounded shadow w-75 about-img" alt="Pickup">
-      </div>
     </div>
 
-    <hr class="my-4">
+    <hr class="my-5">
 
     <!-- STEP 3: Driver Delivers to Retailer -->
-    <div class="row align-items-center">
-      <div class="col-md-6 text-center">
+    <div class="row align-items-center mb-5">
+      <div class="col-md-6 text-center mb-4 mb-md-0">
         <img src="{% static 'images/driver_pickup.jpg' %}" class="img-fluid rounded shadow w-75 about-img" alt="Delivery">
       </div>
-      <div class="col-md-6"><br>
+      <div class="col-md-6">
         <h3 class="fw-bold">🏪 Driver Delivers to Retailer</h3>
         <p class="lead">
           The driver safely delivers the product to the retailer with full monitoring, ensuring timely
@@ -150,185 +780,172 @@
     </div>
 
     <div class="text-center mt-4">
-      <a href="/driver/register/" class="btn btn-success px-4">Become a Driver</a>
-      <a href="/driver/login/" class="btn btn-outline-success px-4 ms-2">Driver Login</a>
+      <a href="/driver/register/" class="btn btn-success px-5 py-3 me-3">Become a Driver</a>
+      <a href="/driver/login/" class="btn btn-outline-success px-5 py-3">Driver Login</a>
     </div>
 
   </div>
 </section>
 
 <hr>
-
-<!-- CUSTOMER REVIEWS SECTION -->
-<section id="reviews" class="py-5 bg-light position-relative">
+<section id="reviews" class="py-5 position-relative">
   <div class="container">
-    <h2 class="text-center fw-bold mb-4">🌟 What Retailers Say</h2>
+    <div class="text-center mb-5">
+      <h6 class="text-success fw-bold text-uppercase" style="letter-spacing: 2px;">Testimonials</h6>
+      <h2 class="fw-bold display-5">🌟 What Retailers Say</h2>
+      <p class="text-muted mx-auto" style="max-width: 600px;">Real feedback from the retailers who are transforming the agricultural supply chain with us.</p>
+    </div>
 
-    <div class="position-relative">
-      <!-- LEFT ARROW -->
-      <button id="prevReview" class="review-arrow left-arrow">
-        &#10094;
-      </button>
+    <div class="position-relative px-4">
+      <button id="prevReview" class="review-arrow left-arrow" aria-label="Previous">❮</button>
 
-      <!-- REVIEW TRACK -->
-      <div class="d-flex overflow-hidden gap-3" id="reviewsTrack">
+      <div class="d-flex overflow-hidden gap-4 py-4" id="reviewsTrack" style="scroll-snap-type: x mandatory; scrollbar-width: none;">
         {% for r in reviews %}
-        <div class="card review-card p-3 flex-shrink-0">
-          <div class="card-body text-center">
-            <div class="avatar mb-2 fs-3">👤</div>
-            <h5 class="card-title fw-bold">{{ r.retailer.name }}</h5>
-            <h6 class="card-subtitle mb-2 text-warning">⭐ {{ r.rating }} / 5</h6>
-            <p class="card-text">{{ r.review }}</p>
+        <div class="card review-card border-0 shadow-sm p-4 flex-shrink-0" style="scroll-snap-align: start;">
+          <div class="card-body p-0">
+            <div class="text-success opacity-25 mb-3" style="font-size: 2.5rem; line-height: 1;">“</div>
+
+            <p class="card-text mb-4 text-secondary italic" style="font-size: 1.05rem; min-height: 80px;">
+              {{ r.review }}
+            </p>
+
+            <div class="d-flex align-items-center mt-auto border-top pt-3">
+              <div class="avatar m-0" style="width: 50px; height: 50px; font-size: 1.2rem;">
+                {{ r.retailer.name|slice:":1"|upper }}
+              </div>
+              <div class="ms-3 text-start">
+                <h6 class="mb-0 fw-bold text-dark">{{ r.retailer.name }}</h6>
+                <div class="text-warning small">
+                  {% for i in "12345" %}
+                    {% if forloop.counter <= r.rating %}★{% else %}☆{% endif %}
+                  {% endfor %}
+                  <span class="text-muted ms-1">({{ r.rating }}/5)</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         {% empty %}
-        <div class="text-center w-100 py-4 text-muted">No reviews yet</div>
+        <div class="card review-card empty-state mx-auto border-0 shadow-sm">
+          <div class="text-center p-5">
+            <div class="empty-state-icon" style="font-size: 4rem;">✍️</div>
+            <h5 class="text-dark fw-bold mt-3">Be the first to review!</h5>
+            <p class="text-muted">No feedback yet. Help others by sharing your experience.</p>
+          </div>
+        </div>
         {% endfor %}
       </div>
-       <div class="text-center mt-4">
-      <a href="{% url 'retailer_sample_reviews' %}" class="btn btn-outline-success px-4">
-        See All Reviews
-      </a>
+
+      <button id="nextReview" class="review-arrow right-arrow" aria-label="Next">❯</button>
     </div>
 
-
-      <!-- RIGHT ARROW -->
-      <button id="nextReview" class="review-arrow right-arrow">
-        &#10095;
-      </button>
+    <div class="text-center mt-5">
+      <div class="overall-rating m-0 border-0 shadow-sm px-4 py-2 bg-white rounded-pill d-inline-flex align-items-center">
+        <span class="fw-bold me-2">Average:</span>
+        <span class="text-warning fw-bold fs-5">⭐ {{ avg_rating|default:"0" }}</span>
+      </div>
+      <div class="mt-4">
+        <a href="{% url 'retailer_sample_reviews' %}" class="btn btn-success rounded-pill px-5 py-2 fw-bold shadow-sm transition-all">
+          Explore All Reviews
+        </a>
+      </div>
     </div>
-
-    <!-- OVERALL RATING -->
-    <div class="overall-rating mt-3 text-end">
-      <strong>Overall Rating:</strong> ⭐ {{ avg_rating }} / 5
-    </div>
-
   </div>
 </section>
-
-<style>
-/* REVIEW SECTION */
-#reviews {
-  background: linear-gradient(135deg,#e3f2fd,#fce4ec);
-}
-
-.review-card {
-  min-width: 280px;
-  max-width: 300px;
-  border-radius: 20px;
-  transition: transform 0.3s, box-shadow 0.3s;
-  background:white;
-}
-
-.review-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-}
-
-.review-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 10;
-  background-color: #198754;
-  color: white;
-  border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  font-size: 1.5rem;
-  cursor: pointer;
-  opacity: 0.8;
-  transition: 0.3s;
-}
-
-.review-arrow:hover {
-  background-color: #145c2b;
-  opacity: 1;
-}
-
-.left-arrow {
-  left: -20px;
-}
-
-.right-arrow {
-  right: -20px;
-}
-
-#reviewsTrack {
-  scroll-behavior: smooth;
-}
-</style>
-
-<script>
-const track = document.getElementById("reviewsTrack");
-const prevBtn = document.getElementById("prevReview");
-const nextBtn = document.getElementById("nextReview");
-
-const cardWidth = 320; // includes margin/gap
-
-prevBtn.addEventListener("click", () => {
-  track.scrollBy({ left: -cardWidth, behavior: "smooth" });
-});
-
-nextBtn.addEventListener("click", () => {
-  track.scrollBy({ left: cardWidth, behavior: "smooth" });
-});
-</script>
-
-
 <!-- CONTACT SECTION -->
-<style>
-  .contact-card {
-    transition: 0.3s ease;
-  }
-  .contact-card:hover {
-    transform: scale(1.02);
-    box-shadow: 0 0 25px rgba(25, 135, 84, 0.3);
-  }
-  .contact-input:hover {
-    border-color: #198754;
-    box-shadow: 0 0 8px rgba(25, 135, 84, 0.4);
-    transition: 0.3s;
-  }
-  .contact-btn {
-    transition: 0.3s ease;
-  }
-  .contact-btn:hover {
-    background-color: #0f6c3e !important;
-    transform: scale(1.03);
-  }
-</style>
-
-<section id="contact" class="py-5 bg-white">
+<section id="contact" class="py-5">
   <div class="container">
-    <h2 class="text-center mb-4">📩 Contact Us</h2>
+    <h2 class="text-center mb-2">📩 Contact Us</h2>
+    <p class="text-center text-muted mb-5">Have questions? We're here to help!</p>
 
     <form method="post" action="{% url 'contact_submit' %}"
-          class="shadow-lg p-4 bg-light rounded-4 contact-card"
+          class="shadow-lg p-5 bg-light rounded-4 contact-card"
           style="max-width: 700px; margin:auto;">
       {% csrf_token %}
 
-      <div class="mb-3">
+      <div class="mb-4">
         <label class="form-label fw-semibold">Full Name</label>
-        <input type="text" name="name" class="form-control rounded-3 contact-input" required>
+        <input type="text" name="name" class="form-control rounded-3 contact-input"
+               placeholder="Enter your name" required>
       </div>
 
-      <div class="mb-3">
+      <div class="mb-4">
         <label class="form-label fw-semibold">Email</label>
-        <input type="email" name="email" class="form-control rounded-3 contact-input" required>
+        <input type="email" name="email" class="form-control rounded-3 contact-input"
+               placeholder="your@email.com" required>
       </div>
 
-      <div class="mb-3">
+      <div class="mb-4">
         <label class="form-label fw-semibold">Message</label>
-        <textarea name="message" class="form-control rounded-3 contact-input" rows="4" required></textarea>
+        <textarea name="message" class="form-control rounded-3 contact-input" rows="4"
+                  placeholder="Tell us how we can help you..." required></textarea>
       </div>
 
-      <button type="submit" class="btn btn-success w-100 rounded-3 fw-bold py-2 contact-btn">
+      <button type="submit" class="btn btn-success w-100 rounded-3 fw-bold py-3 contact-btn">
         Send Message
       </button>
     </form>
   </div>
 </section>
+
+<script>
+// Enhanced Review Carousel
+const track = document.getElementById("reviewsTrack");
+const prevBtn = document.getElementById("prevReview");
+const nextBtn = document.getElementById("nextReview");
+
+if (track && prevBtn && nextBtn) {
+  const cardWidth = 320;
+
+  prevBtn.addEventListener("click", () => {
+    track.scrollBy({ left: -cardWidth, behavior: "smooth" });
+  });
+
+  nextBtn.addEventListener("click", () => {
+    track.scrollBy({ left: cardWidth, behavior: "smooth" });
+  });
+
+  // Auto-scroll reviews every 5 seconds (only if reviews exist)
+  const hasReviews = track.querySelector('.review-card:not(.empty-state)');
+  if (hasReviews) {
+    setInterval(() => {
+      if (track.scrollLeft >= track.scrollWidth - track.clientWidth - 10) {
+        track.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        track.scrollBy({ left: cardWidth, behavior: 'smooth' });
+      }
+    }, 5000);
+  }
+}
+
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function (e) {
+    const href = this.getAttribute('href');
+    if (href.length > 1) {
+      e.preventDefault();
+      const target = document.querySelector(href);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+  });
+});
+
+// Scroll to Top Button
+const scrollTopBtn = document.getElementById('scrollTopBtn');
+
+window.addEventListener('scroll', () => {
+  if (window.pageYOffset > 300) {
+    scrollTopBtn.style.display = 'block';
+  } else {
+    scrollTopBtn.style.display = 'none';
+  }
+});
+
+scrollTopBtn.addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+</script>
 
 {% endblock %}

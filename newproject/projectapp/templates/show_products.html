@@ -1,81 +1,173 @@
 {% extends 'master.html' %}
 {% load static %}
-{% block title %}My Products{% endblock %}
+{% block title %}My Inventory | AgriLink{% endblock %}
 {% block body %}
 
-<!-- BACK BUTTON -->
-<div class="back-btn-wrapper">
-    <button class="back-btn" onclick="goBack()">⬅ Back</button>
-</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-.back-btn-wrapper{
-    margin-top: 89px; /* adjust this according to your navbar height */
-    margin-bottom: 15px;
-    margin-left:20px;
-}
-.back-btn{
-    border: none;
-    padding: 12px 26px;
-    border-radius: 35px;
-    background: linear-gradient(135deg,#198754,#2ecc71);
-    color: #fff;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    transition: .3s;
-}
-.back-btn:hover{
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(0,0,0,.35);
-}
-.back-btn:active{
-    transform: scale(.95);
-}
+    :root {
+        --primary-green: #198754;
+        --dark-green: #16423C;
+        --glass: rgba(255, 255, 255, 0.95);
+    }
+
+    body {
+        background: linear-gradient(135deg, #f0f9f4 0%, #e6f0eb 100%);
+        background-attachment: fixed;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .main-wrapper { margin-top: 110px; padding-bottom: 100px; }
+
+    .inventory-nav {
+        background: var(--glass);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 20px 30px;
+        border: 1px solid rgba(255,255,255,0.6);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+    }
+
+    .product-card {
+        background: var(--glass);
+        border-radius: 25px;
+        border: 1px solid rgba(255,255,255,0.7);
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(25, 135, 84, 0.12);
+    }
+
+    .image-container { position: relative; height: 200px; overflow: hidden; }
+    .product-img { width: 100%; height: 100%; object-fit: cover; transition: 0.6s; }
+    .product-card:hover .product-img { transform: scale(1.08); }
+
+    .price-badge {
+        position: absolute; bottom: 12px; left: 12px;
+        background: rgba(22, 66, 60, 0.9);
+        color: white; padding: 5px 14px; border-radius: 10px;
+        font-weight: 700; font-size: 0.85rem;
+    }
+
+    .card-body-content { padding: 20px; flex-grow: 1; }
+
+    .btn-action-view {
+        background: var(--primary-green); color: white; border: none;
+        width: 100%; padding: 12px; border-radius: 12px;
+        font-weight: 700; transition: 0.3s;
+    }
+    .btn-action-view:hover { background: var(--dark-green); }
+
+    /* Modal Styling */
+    .modal-content { border-radius: 25px; border: none; }
+    .modal-header-custom { background: #16423C; color: white; padding: 18px 25px; border: none; }
+    .detail-row {
+        display: flex; justify-content: space-between;
+        padding: 12px 0; border-bottom: 1px solid #f0f0f0;
+    }
+    .detail-label { color: #666; font-weight: 600; }
+    .detail-value { color: #16423C; font-weight: 800; }
 </style>
 
-<script>
-function goBack(){
-    window.history.back();
-}
-</script>
-
-
-<div class="container mt-5">
-  <h2 class="text-center mb-4">📦 My Products</h2>
-
-  <div class="row g-4">
-    {% for p in products %}
-    <div class="col-md-4">
-      <div class="card h-100 shadow-sm product-card">
-        {% if p.image %}
-          <img src="{{ p.image.url }}" class="card-img-top" style="height:200px;object-fit:cover;">
-        {% else %}
-          <img src="{% static 'images/no-image.jpg' %}" class="card-img-top" style="height:200px;object-fit:cover;">
-        {% endif %}
-
-        <div class="card-body d-flex flex-column">
-          <h5 class="card-title fw-bold">{{ p.product }}</h5>
-          <p class="card-text">{{ p.description|truncatewords:20 }}</p>
-          <p class="mb-1">💰 ₹{{ p.price }}</p>
-          <p class="mb-1">📦 {{ p.quantity }} kg</p>
-          <p class="mb-1">📍 {{ p.location }}</p>
+<div class="container main-wrapper">
+    <div class="inventory-nav">
+        <div>
+            <h2 class="fw-800 mb-0" style="color: var(--dark-green);">📦 My Inventory</h2>
+            <p class="text-muted small mb-0">Manage your farm listings</p>
         </div>
-      </div>
+        <div class="d-flex gap-2">
+            <a href="javascript:history.back()" class="btn btn-light rounded-pill px-4 border shadow-sm fw-bold">Back</a>
+            <a href="/add_product/" class="btn btn-success rounded-pill px-4 shadow-sm fw-bold">Add New</a>
+        </div>
     </div>
-    {% endfor %}
-  </div>
-</div>
 
-<style>
-.product-card{
-    transition:.3s;
-    border-radius:15px;
-}
-.product-card:hover{
-    transform: translateY(-6px);
-    box-shadow:0 18px 40px rgba(0,0,0,.2);
-}
-</style>
+    <div class="row g-4">
+        {% for p in products %}
+        <div class="col-lg-4 col-md-6 col-12">
+            <div class="card product-card shadow-sm">
+                <div class="image-container">
+                    {% if p.image %}
+                        <img src="{{ p.image.url }}" class="product-img">
+                    {% else %}
+                        <img src="{% static 'images/no-image.jpg' %}" class="product-img">
+                    {% endif %}
+                    <div class="price-badge">₹{{ p.price }} / kg</div>
+                </div>
+
+                <div class="card-body-content">
+                    <h5 class="fw-bold mb-2" style="color: var(--dark-green);">{{ p.product }}</h5>
+                    <p class="text-muted small mb-3"><i class="fas fa-location-dot text-success me-1"></i> {{ p.location|truncatechars:40 }}</p>
+
+                    <button type="button" class="btn-action-view" data-bs-toggle="modal" data-bs-target="#productModal{{ p.id }}">
+                        View Details
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="productModal{{ p.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header modal-header-custom">
+                        <h5 class="modal-title d-flex align-items-center gap-2">
+                            <i class="fas fa-info-circle text-info"></i> Product Information
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4 text-center">
+                        <div class="mb-3">
+                            {% if p.image %}
+                                <img src="{{ p.image.url }}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 20px;" class="shadow-sm border">
+                            {% endif %}
+                            <h4 class="fw-800 mt-3 mb-1" style="color: var(--dark-green);">{{ p.product }}</h4>
+                        </div>
+
+                        <div class="text-start mt-4 px-2">
+                            <div class="detail-row">
+                                <span class="detail-label">Price per kg:</span>
+                                <span class="detail-value">₹{{ p.price }}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Available Stock:</span>
+                                <span class="detail-value text-dark">{{ p.quantity }} kg</span>
+                            </div>
+                            <div class="detail-row border-0">
+                                <span class="detail-label">Location:</span>
+                                <span class="detail-value text-success text-end" style="max-width: 60%;">{{ p.location }}</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-light p-3 rounded-4 mt-3 text-start border">
+                            <small class="detail-label d-block mb-1" style="font-size: 0.7rem;">DESCRIPTION:</small>
+                            <p class="small mb-0 text-dark">{{ p.description }}</p>
+                        </div>
+
+                        <button type="button" class="btn btn-success w-100 mt-4 py-2 fw-bold rounded-3" data-bs-dismiss="modal">Close Details</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <div class="bg-white p-5 rounded-5 shadow-sm">
+                <h4 class="fw-bold">No Products Yet</h4>
+                <a href="/add_product/" class="btn btn-success rounded-pill px-5 mt-2">Add My First Product</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 
 {% endblock %}

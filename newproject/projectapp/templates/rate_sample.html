@@ -1,46 +1,147 @@
 {% extends "master.html" %}
-{% block title %}Rate Sample{% endblock %}
+{% block title %}Rate Sample | AgriLink Pro{% endblock %}
 
 {% block body %}
-<br><br>
-<div class="container mt-5 d-flex justify-content-center">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <div class="card shadow-lg p-4 rounded-4" style="max-width:520px;width:100%; background: #f9f9f9;">
-        <h4 class="text-center mb-3 text-success">⭐ Rate Sample Product</h4>
-        <p class="text-center text-muted mb-2"><b>{{ sample.product.product }}</b></p>
-        <p class="text-center mb-3">From Farmer: <b>{{ sample.farmer.name }}</b></p>
-        <hr>
+<style>
+:root {
+    --star-gold: #ffc107;
+    --star-gray: #e2e8f0;
+}
 
-        <form method="post">
-            {% csrf_token %}
+body {
+    background: #f4f7f6;
+    min-height: 100vh;
+}
 
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Rating</label>
-                <select name="rating" class="form-select" required>
-                    <option value="">-- Select Rating --</option>
-                    <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
-                    <option value="4">⭐⭐⭐⭐ Very Good</option>
-                    <option value="3">⭐⭐⭐ Good</option>
-                    <option value="2">⭐⭐ Fair</option>
-                    <option value="1">⭐ Poor</option>
-                </select>
-            </div>
+.rating-container {
+    margin-top: 120px;
+    padding-bottom: 50px;
+}
 
-            <div class="mb-3">
-                <label class="form-label fw-semibold">Review</label>
-                <textarea name="review" class="form-control" rows="4"
-                          placeholder="Write your feedback..." required></textarea>
-            </div>
+.feedback-card {
+    background: white;
+    border-radius: 25px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    border: none;
+}
 
-            <button class="btn btn-success w-100 fw-bold">✅ Submit Review</button>
-        </form>
+/* ⭐ STAR SYSTEM FIX */
+.star-rating-wrapper {
+    display: flex;
+    flex-direction: row-reverse; /* For CSS sibling selector logic */
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.star-rating-wrapper input {
+    display: none; /* Hide real radios */
+}
+
+.star-rating-wrapper label {
+    font-size: 3rem;
+    color: var(--star-gray);
+    cursor: pointer;
+    padding: 0 5px;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Highlight stars on hover and when checked */
+.star-rating-wrapper label:hover,
+.star-rating-wrapper label:hover ~ label,
+.star-rating-wrapper input:checked ~ label {
+    color: var(--star-gold);
+    transform: scale(1.1);
+}
+
+.feedback-header {
+    background: #112240;
+    color: white;
+    border-radius: 25px 25px 0 0;
+    padding: 30px;
+}
+
+.btn-submit {
+    background: #0d6efd;
+    border: none;
+    border-radius: 12px;
+    padding: 14px;
+    font-weight: 700;
+}
+</style>
+
+<div class="container rating-container d-flex justify-content-center">
+    <div class="feedback-card" style="max-width: 500px; width: 100%;">
+
+        <div class="feedback-header text-center">
+            <h4 class="mb-1">Rate Sample Quality</h4>
+            <p class="small opacity-75 mb-0">{{ sample.product.product }} | Farmer: {{ sample.farmer.name }}</p>
+        </div>
+
+        <div class="p-4">
+            <form method="post" action="{% url 'rate_sample' sample.id %}">
+                {% csrf_token %}
+
+                <div class="text-center mb-4">
+                    <label class="fw-bold text-dark d-block mb-2">How was the product quality?</label>
+
+                    <div class="star-rating-wrapper">
+                        <input type="radio" name="rating" id="st5" value="5" required />
+                        <label for="st5"><i class="fas fa-star"></i></label>
+
+                        <input type="radio" name="rating" id="st4" value="4" />
+                        <label for="st4"><i class="fas fa-star"></i></label>
+
+                        <input type="radio" name="rating" id="st3" value="3" />
+                        <label for="st3"><i class="fas fa-star"></i></label>
+
+                        <input type="radio" name="rating" id="st2" value="2" />
+                        <label for="st2"><i class="fas fa-star"></i></label>
+
+                        <input type="radio" name="rating" id="st1" value="1" />
+                        <label for="st1"><i class="fas fa-star"></i></label>
+                    </div>
+                    <div id="rating-desc" class="fw-bold text-primary" style="height: 20px;"></div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="fw-bold small text-muted text-uppercase">Detailed Review</label>
+                    <textarea name="review" class="form-control rounded-4" rows="4" placeholder="Share your experience..." required></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-submit btn-primary w-100 shadow">
+                    Submit Feedback
+                </button>
+
+                <div class="text-center mt-3">
+                    <a href="{% url 'retailer_samples' %}" class="text-muted small text-decoration-none">
+                        Cancel and Go Back
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
-<style>
-.card:hover {
-    transform: scale(1.02);
-    transition: 0.3s;
-}
-</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const radios = document.querySelectorAll('input[name="rating"]');
+    const desc = document.getElementById('rating-desc');
+
+    const messages = {
+        '1': 'Poor Quality 😟',
+        '2': 'Below Average 😐',
+        '3': 'Good / Standard 🙂',
+        '4': 'Very Good Produce 😊',
+        '5': 'Excellent Quality! 🤩'
+    };
+
+    radios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            desc.innerText = messages[this.value];
+        });
+    });
+});
+</script>
 {% endblock %}

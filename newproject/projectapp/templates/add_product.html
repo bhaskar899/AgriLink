@@ -1,172 +1,238 @@
 {% extends 'master.html' %}
-{% block title %}Add Product{% endblock %}
+{% block title %}AgriLink | Add Product{% endblock %}
 {% block body %}
-<!-- BACK BUTTON -->
-<div class="back-btn-wrapper">
-    <button class="back-btn" onclick="goBack()">⬅ Back</button>
-</div>
 
 <style>
-.back-btn-wrapper{
-    margin-top: 89px; /* adjust this according to your navbar height */
-    margin-bottom: 15px;
-    margin-left:20px;
-}
-.back-btn{
-    border: none;
-    padding: 12px 26px;
-    border-radius: 35px;
-    background: linear-gradient(135deg,#198754,#2ecc71);
-    color: #fff;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    transition: .3s;
-}
-.back-btn:hover{
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(0,0,0,.35);
-}
-.back-btn:active{
-    transform: scale(.95);
-}
+    /* Background Matching Profile */
+    body {
+        background-color: #e8f5e9; /* Pastel Green Background */
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .main-content { margin-top: 100px; padding-bottom: 60px; }
+
+    /* Premium Back Button */
+    .back-btn-wrapper { margin-bottom: 20px; }
+    .btn-back-custom {
+        border: none;
+        padding: 10px 24px;
+        border-radius: 50px;
+        background: #ffffff;
+        color: #198754;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        transition: 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid #d1e7dd;
+    }
+    .btn-back-custom:hover {
+        background: #198754;
+        color: #fff;
+        transform: translateX(-5px);
+    }
+
+    /* Product Form Card */
+    .product-card {
+        background: #ffffff;
+        border-radius: 30px;
+        border: none;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.03);
+        overflow: hidden;
+    }
+    .form-header {
+        background: #198754;
+        padding: 25px;
+        color: white;
+        text-align: center;
+    }
+
+    /* Input Styling */
+    .form-label { font-weight: 700; color: #16423C; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 8px; }
+    .form-control {
+        border-radius: 12px;
+        padding: 12px;
+        border: 1px solid #e1f0e7;
+        background: #fcfdfc;
+        transition: 0.3s;
+    }
+    .form-control:focus {
+        border-color: #198754;
+        box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.1);
+        background: #fff;
+    }
+
+    /* Image Capture Button */
+    .btn-capture {
+        background: #e8f5e9;
+        color: #198754;
+        border: 2px dashed #198754;
+        border-radius: 12px;
+        padding: 15px;
+        font-weight: 700;
+        transition: 0.3s;
+    }
+    .btn-capture:hover { background: #d1e7dd; }
+
+    /* Submit Button - Matching Header Green */
+    .btn-submit {
+        background: #198754;
+        color: white;
+        border: none;
+        border-radius: 15px;
+        padding: 16px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        transition: 0.3s;
+        box-shadow: 0 10px 20px rgba(25, 135, 84, 0.2);
+    }
+    .btn-submit:hover { background: #146c43; transform: translateY(-2px); }
+
+    /* Validation Styles */
+    .error-msg { color: #dc3545; font-size: 0.8rem; font-weight: 600; display: none; margin-top: 5px; }
+    .is-invalid { border-color: #dc3545 !important; }
 </style>
 
-<script>
-function goBack(){
-    window.history.back();
-}
-</script>
-<div class="container mt-5 d-flex justify-content-center">
-  <div class="card shadow-lg p-4" style="max-width:750px; width:100%; border-radius:15px;">
+<div class="container main-content">
+    <div class="mx-auto" style="max-width: 650px;">
 
-    <h2 class="text-center mb-4">Add Product</h2>
+        <div class="back-btn-wrapper">
+            <a href="javascript:history.back()" class="btn-back-custom">
+                <i class="fas fa-arrow-left"></i> Back to Products
+            </a>
+        </div>
 
-    <form method="post" enctype="multipart/form-data" action="" id="productForm" novalidate>
-      {% csrf_token %}
+        <div class="card product-card">
+            <div class="form-header">
+                <h3 class="mb-0 fw-bold">🌾 Sell New Product</h3>
+                <p class="small mb-0 opacity-75">Add details to reach more retailers</p>
+            </div>
 
-      <div class="mb-3">
-        <label class="form-label">Product Name</label>
-        <input type="text" class="form-control" name="product" required>
-        <div class="invalid-feedback">Product Name is required.</div>
-      </div>
+            <div class="card-body p-4 p-md-5">
+                <form method="post" enctype="multipart/form-data" id="productForm" novalidate>
+                    {% csrf_token %}
 
-      <div class="mb-3">
-        <label class="form-label">Description</label>
-        <textarea class="form-control" name="description" rows="3" required></textarea>
-        <div class="invalid-feedback">Description is required.</div>
-      </div>
+                    <div class="mb-4">
+                        <label class="form-label">Product Name</label>
+                        <input type="text" class="form-control" name="product" placeholder="e.g. Fresh Organic Wheat" required>
+                        <div class="error-msg">Please enter a valid product name.</div>
+                    </div>
 
-      <div class="mb-3">
-        <label class="form-label">Price (₹)</label>
-        <input type="number" class="form-control" name="price" min="0.01" step="0.01" required>
-        <div class="invalid-feedback">Price must be greater than 0.</div>
-      </div>
+                    <div class="mb-4">
+                        <label class="form-label">Product Description</label>
+                        <textarea class="form-control" name="description" rows="3" placeholder="Tell retailers about the quality..." required></textarea>
+                        <div class="error-msg">Please provide a short description.</div>
+                    </div>
 
-      <div class="mb-3">
-        <label class="form-label">Quantity (kg)</label>
-        <input type="number" class="form-control" name="quantity" min="0.1" step="0.1" required>
-        <div class="invalid-feedback">Quantity must be greater than 0.</div>
-      </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label">Price (₹ / kg)</label>
+                            <input type="number" class="form-control" name="price" min="1" placeholder="0.00" required>
+                            <div class="error-msg">Price must be ₹1 or more.</div>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <label class="form-label">Total Quantity (kg)</label>
+                            <input type="number" class="form-control" name="quantity" min="1" placeholder="0.0" required>
+                            <div class="error-msg">Quantity must be at least 1kg.</div>
+                        </div>
+                    </div>
 
-      <div class="mb-3">
-        <label class="form-label">Location (Auto Fill)</label>
-        <input type="text" class="form-control" id="locationInput" name="location" placeholder="Will fill after photo" required>
-        <div class="invalid-feedback">Address is required.</div>
-      </div>
+                    <div class="mb-4">
+                        <label class="form-label">Live Product Photo</label>
+                        <input type="file" class="d-none" name="image" id="imageInput" accept="image/*" capture="camera" required>
+                        <button type="button" class="btn btn-capture w-100" id="captureBtn">
+                            <i class="fas fa-camera me-2"></i> Open Camera & Capture
+                        </button>
+                        <div class="error-msg" id="imageError">Product photo is required for trust.</div>
+                        <img id="imagePreview" class="img-fluid mt-3" style="display:none; border-radius:15px; border: 2px solid #198754;">
+                    </div>
 
-      <div class="mb-3">
-        <label class="form-label">Live Product Photo</label>
-        <input type="file" class="d-none" name="image" id="imageInput" accept="image/*" capture="camera" required>
-        <div class="invalid-feedback" id="imageError">Image is required.</div>
-        <button type="button" class="btn btn-secondary w-100" id="captureBtn">Take Photo</button>
-        <img id="imagePreview" style="display:none;width:100%;margin-top:10px;border-radius:8px;">
-      </div>
+                    <div class="mb-4">
+                        <label class="form-label">Farm Location</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0" style="border-radius: 12px 0 0 12px;"><i class="fas fa-map-marker-alt text-success"></i></span>
+                            <input type="text" class="form-control border-start-0" id="locationInput" name="location" placeholder="Auto-fills after photo" readonly required style="border-radius: 0 12px 12px 0;">
+                        </div>
+                        <div class="error-msg">Location is required. Please allow GPS access.</div>
+                        <small class="text-muted mt-1 d-block"><i class="fas fa-info-circle"></i> We use GPS to show your product to nearby buyers.</small>
+                    </div>
 
-      <input type="hidden" id="latitudeInput" name="latitude">
-      <input type="hidden" id="longitudeInput" name="longitude">
+                    <input type="hidden" id="latitudeInput" name="latitude">
+                    <input type="hidden" id="longitudeInput" name="longitude">
 
-      <button type="submit" class="btn btn-success w-100">Add Product</button>
-    </form>
-
-  </div>
+                    <button type="submit" class="btn btn-submit w-100 mt-2">
+                        <i class="fas fa-plus-circle me-2"></i> List My Product
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-// Elements
 const form = document.getElementById("productForm");
 const captureBtn = document.getElementById("captureBtn");
 const fileInput = document.getElementById("imageInput");
 const imagePreview = document.getElementById("imagePreview");
-const imageError = document.getElementById("imageError");
 const locationInput = document.getElementById("locationInput");
-const latitudeInput = document.getElementById("latitudeInput");
-const longitudeInput = document.getElementById("longitudeInput");
 
-// Open camera
-captureBtn.addEventListener("click", () => {
-    fileInput.click();
-});
+captureBtn.addEventListener("click", () => fileInput.click());
 
-// Show image preview and mark as valid
-fileInput.addEventListener("change", async e => {
+fileInput.addEventListener("change", e => {
     const file = e.target.files[0];
-    if (!file) {
-        imageError.style.display = "block";
-        return;
-    }
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = ev => {
+            imagePreview.src = ev.target.result;
+            imagePreview.style.display = "block";
+            captureBtn.innerHTML = '<i class="fas fa-check-circle me-2"></i> Photo Captured';
+            captureBtn.style.borderStyle = 'solid';
+        }
+        reader.readAsDataURL(file);
 
-    imageError.style.display = "none";
-    const reader = new FileReader();
-    reader.onload = ev => {
-        imagePreview.src = ev.target.result;
-        imagePreview.style.display = "block";
-    }
-    reader.readAsDataURL(file);
-
-    // Get location after photo
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(async pos => {
-            latitudeInput.value = pos.coords.latitude;
-            longitudeInput.value = pos.coords.longitude;
-
-            try {
-                const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
-                const data = await res.json();
-                locationInput.value = data.display_name || "";
-            } catch {
-                locationInput.value = "";
-            }
-        });
+        // Fetch Location
+        if (navigator.geolocation) {
+            locationInput.value = "Fetching location...";
+            navigator.geolocation.getCurrentPosition(async pos => {
+                document.getElementById("latitudeInput").value = pos.coords.latitude;
+                document.getElementById("longitudeInput").value = pos.coords.longitude;
+                try {
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
+                    const data = await res.json();
+                    locationInput.value = data.display_name;
+                } catch { locationInput.value = "Location found (Coordinates saved)"; }
+            }, () => {
+                locationInput.value = "GPS Access Denied";
+            });
+        }
     }
 });
 
-// Simple validation on submit
 form.addEventListener("submit", e => {
-    let valid = true;
+    let isValid = true;
+    const inputs = form.querySelectorAll('input[required], textarea[required]');
 
-    // Check image
+    inputs.forEach(input => {
+        const error = input.parentElement.querySelector('.error-msg');
+        if (!input.value || (input.type === 'number' && input.value <= 0)) {
+            input.classList.add('is-invalid');
+            if(error) error.style.display = 'block';
+            isValid = false;
+        } else {
+            input.classList.remove('is-invalid');
+            if(error) error.style.display = 'none';
+        }
+    });
+
     if (!fileInput.files.length) {
-        imageError.style.display = "block";
-        valid = false;
-    } else {
-        imageError.style.display = "none";
+        document.getElementById('imageError').style.display = 'block';
+        isValid = false;
     }
 
-    // Check address
-    if (locationInput.value.trim() === "") {
-        locationInput.classList.add("is-invalid");
-        valid = false;
-    } else {
-        locationInput.classList.remove("is-invalid");
-    }
-
-    // Other inputs use default HTML5 required validation
-    if (!form.checkValidity()) {
-        valid = false;
-    }
-
-    if (!valid) e.preventDefault();
+    if (!isValid) e.preventDefault();
 });
 </script>
 {% endblock %}

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <style>
+        @page {
+            size: a4;
+            margin: 1.5cm;
+        }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            color: #333;
+            line-height: 1.4;
+        }
+        .header-table {
+            width: 100%;
+            border-bottom: 2px solid #198754;
+            padding-bottom: 15px;
+        }
+        .brand-name {
+            font-size: 28px;
+            color: #198754;
+            font-weight: bold;
+            margin: 0;
+        }
+        .tagline {
+            font-size: 11px;
+            color: #777;
+            margin-top: 3px;
+        }
+        .receipt-label {
+            text-align: right;
+            font-size: 22px;
+            color: #999;
+            text-transform: uppercase;
+        }
+        .details-section {
+            width: 100%;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        .details-section td {
+            vertical-align: top;
+            font-size: 12px;
+        }
+        .item-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .item-table th {
+            background-color: #198754;
+            color: #ffffff;
+            padding: 12px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: bold;
+        }
+        .item-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eeeeee;
+            font-size: 12px;
+        }
+        .total-wrapper {
+            text-align: right;
+            margin-top: 40px;
+        }
+        .total-box {
+            font-size: 20px;
+            font-weight: bold;
+            color: #198754;
+        }
+        .paid-stamp {
+            color: #28a745;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+            text-align: right;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 10px;
+            color: #999;
+            padding-bottom: 10px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <table class="header-table">
+        <tr>
+            <td>
+                <div class="brand-name">AgriLink</div>
+                <div class="tagline">Direct from Farm to Table</div>
+            </td>
+            <td class="receipt-label">Payment Receipt</td>
+        </tr>
+    </table>
+
+    <table class="details-section">
+        <tr>
+            <td width="50%">
+                <strong style="color: #198754;">Billed To:</strong><br>
+                <span style="font-size: 14px; font-weight: bold;">{{ order.retailer.name }}</span><br>
+                Phone: {{ order.contact }}<br>
+                Address: {{ order.address }}
+            </td>
+            <td width="50%" style="text-align: right;">
+                <strong style="color: #198754;">Order Information:</strong><br>
+                Order ID: <strong>#AGR-{{ order.id }}</strong><br>
+                Payment Date: {{ order.timestamp|date:"F d, Y" }}<br>
+                Status: <strong>PAID</strong>
+            </td>
+        </tr>
+    </table>
+
+    <table class="item-table">
+        <thead>
+            <tr>
+                <th width="45%">Product Description</th>
+                <th width="20%">Price per kg</th>
+                <th width="15%">Quantity</th>
+                <th width="20%">Total Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <strong>{{ order.product.product }}</strong><br>
+                    <small style="color: #666;">Source: Farmer {{ order.farmer.name }}</small>
+                </td>
+                <td>INR {{ order.product.price }}</td>
+                <td>{{ order.quantity }} kg</td>
+                <td>INR {{ order.total_amount }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="total-wrapper">
+        <div class="total-box">Grand Total: INR {{ order.total_amount }}</div>
+        <div class="paid-stamp">PAYMENT RECEIVED ✓</div>
+    </div>
+
+    <div class="footer">
+        This is an official computer-generated receipt from AgriLink.<br>
+        For support, please email <strong>support@agrilink.com</strong> or call <strong>+91 8928958677</strong>
+    </div>
+
+</body>
+</html>

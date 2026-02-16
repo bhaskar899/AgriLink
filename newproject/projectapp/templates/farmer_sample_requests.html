@@ -1,80 +1,177 @@
 {% extends "master.html" %}
-{% block title %}Sample Requests{% endblock %}
+{% block title %}AgriLink | Sample Requests{% endblock %}
 
 {% block body %}
-<br><br>
-<div class="container">
-    <br><br>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <h3 class="text-center mb-4 text-success">🌾 Sample Requests</h3>
-    <div class="table-responsive">
-        <table class="table table-bordered align-middle text-center table-hover">
-            <thead class="table-success">
-                <tr>
-                    <th>ID</th>
-                    <th>Product</th>
-                    <th>Retailer</th>
-                    <th>Qty</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for s in samples %}
-                <tr>
-                    <td>#{{ s.id }}</td>
-                    <td>{{ s.product.product }}</td>
-                    <td>🛒 {{ s.retailer.name }}</td>
-                    <td>{{ s.quantity }} kg</td>
-                    <td>
-                        <span class="badge
-                            {% if s.status == 'pending' %}bg-secondary
-                            {% elif s.status == 'approved' %}bg-primary
-                            {% elif s.status == 'rejected' %}bg-danger
-                            {% elif s.status == 'delivered' %}bg-success
-                            {% endif %}">{{ s.status|capfirst }}</span>
-                    </td>
-                    <td>
-                        {% if s.status == "pending" %}
-                            <a href="{% url 'approve_sample' s.id %}" class="btn btn-success btn-sm mb-1">Approve</a>
-                            <a href="{% url 'reject_sample' s.id %}" class="btn btn-danger btn-sm">Reject</a>
-                        {% elif s.status == "approved" %}
-                            {% if not s.driver %}
-                                <form method="post" action="{% url 'assign_sample_driver' s.id %}">
-                                    {% csrf_token %}
-                                    <select name="driver_id" class="form-select mb-2" required>
-                                        <option value="">-- Select Driver --</option>
-                                        {% for d in available_drivers %}
-                                            <option value="{{ d.id }}">{{ d.name }}</option>
-                                        {% endfor %}
-                                    </select>
-                                    <button class="btn btn-warning btn-sm w-100">Assign Driver</button>
-                                </form>
+<style>
+    :root {
+        --primary-green: #198754;
+        --dark-green: #16423C;
+        --glass-bg: rgba(255, 255, 255, 0.95);
+    }
+
+    body {
+        background: linear-gradient(135deg, #f0f9f4 0%, #e6f0eb 100%);
+        background-attachment: fixed;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .main-content { margin-top: 100px; padding-bottom: 80px; }
+
+    /* Dashboard Style Header */
+    .page-header {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 25px;
+        border: 1px solid rgba(255,255,255,0.6);
+        margin-bottom: 35px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+    }
+
+    /* Modern Table Card */
+    .request-card {
+        background: white;
+        border-radius: 25px;
+        border: none;
+        box-shadow: 0 15px 40px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .table thead { background: var(--dark-green); color: white; }
+    .table thead th { padding: 18px; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; border: none; }
+    .table td { vertical-align: middle; padding: 20px 15px; border-color: #f2f2f2; }
+
+    /* Action Buttons */
+    .btn-action { border-radius: 10px; font-weight: 700; font-size: 0.85rem; padding: 8px 16px; transition: 0.3s; }
+
+    .driver-select {
+        border-radius: 12px;
+        border: 1px solid #d1e7dd;
+        padding: 8px;
+        font-size: 0.9rem;
+        background-color: #f8faf9;
+    }
+
+    .badge-status {
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-weight: 800;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+    }
+
+    /* Status specific colors */
+    .status-pending { background: #fff3e0; color: #ef6c00; }
+    .status-approved { background: #e3f2fd; color: #0d6efd; }
+    .status-delivered { background: #e8f5e9; color: #198754; }
+    .status-rejected { background: #ffebee; color: #d32f2f; }
+
+    /* Mobile Responsive Card UI */
+    @media (max-width: 768px) {
+        .table thead { display: none; }
+        .table tbody tr { display: block; border: 1px solid #eee; border-radius: 20px; margin-bottom: 20px; padding: 15px; }
+        .table td { display: flex; justify-content: space-between; text-align: right; border: none; padding: 8px 0; }
+        .table td::before { content: attr(data-label); font-weight: 800; color: var(--dark-green); text-transform: uppercase; font-size: 0.75rem; }
+    }
+</style>
+
+<div class="container main-content">
+
+    <div class="page-header d-flex justify-content-between align-items-center shadow-sm">
+        <div>
+            <h2 class="fw-800 mb-0" style="color: var(--dark-green);">🌾 Sample Requests</h2>
+            <p class="text-muted small mb-0">Review and approve product samples for retailers</p>
+        </div>
+        <a href="javascript:history.back()" class="btn btn-light rounded-pill border fw-bold px-4 shadow-sm">
+            <i class="fas fa-arrow-left me-2"></i>Back
+        </a>
+    </div>
+
+    <div class="request-card">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Product & Qty</th>
+                        <th>Retailer</th>
+                        <th>Status</th>
+                        <th>Management Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for s in samples %}
+                    <tr>
+                        <td data-label="ID">
+                            <span class="fw-700 text-muted">#S{{ s.id }}</span>
+                        </td>
+
+                        <td data-label="Product">
+                            <div class="d-flex align-items-center gap-3 justify-content-md-start justify-content-end">
+                                <div class="bg-success bg-opacity-10 p-2 rounded-3">
+                                    <i class="fas fa-box-open text-success"></i>
+                                </div>
+                                <div class="text-start">
+                                    <p class="mb-0 fw-800">{{ s.product.product }}</p>
+                                    <small class="text-muted">{{ s.quantity }} kg</small>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td data-label="Retailer">
+                            <span class="fw-700"><i class="fas fa-store me-1 text-primary"></i> {{ s.retailer.name }}</span>
+                        </td>
+
+                        <td data-label="Status">
+                            <span class="badge-status status-{{ s.status }}">
+                                <i class="fas fa-circle me-1" style="font-size:0.5rem"></i> {{ s.status|capfirst }}
+                            </span>
+                        </td>
+
+                        <td data-label="Action">
+                            <div class="d-flex flex-column gap-2 justify-content-md-start justify-content-end align-items-md-start align-items-end">
+                            {% if s.status == "pending" %}
+                                <div class="btn-group">
+                                    <a href="{% url 'approve_sample' s.id %}" class="btn btn-success btn-sm btn-action me-2">Approve</a>
+                                    <a href="{% url 'reject_sample' s.id %}" class="btn btn-outline-danger btn-sm btn-action">Reject</a>
+                                </div>
+                            {% elif s.status == "approved" %}
+                                {% if not s.driver %}
+                                    <form method="post" action="{% url 'assign_sample_driver' s.id %}" class="w-100">
+                                        {% csrf_token %}
+                                        <div class="input-group">
+                                            <select name="driver_id" class="form-select driver-select" required>
+                                                <option value="">Select Driver</option>
+                                                {% for d in available_drivers %}
+                                                    <option value="{{ d.id }}">{{ d.name }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <button class="btn btn-warning btn-sm fw-bold px-3 ms-2" style="border-radius:10px">Assign</button>
+                                        </div>
+                                    </form>
+                                {% else %}
+                                    <span class="text-success fw-bold small"><i class="fas fa-truck-fast me-1"></i> With {{ s.driver.name }}</span>
+                                {% endif %}
                             {% else %}
-                                <span class="text-success">Assigned to {{ s.driver.name }}</span>
+                                <span class="text-muted italic small">Completed</span>
                             {% endif %}
-                        {% else %}
-                            <span class="text-muted">No Action</span>
-                        {% endif %}
-                    </td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="6" class="text-muted">No sample requests</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <i class="fas fa-clipboard-list fa-3x text-muted opacity-25 mb-3"></i>
+                            <h5 class="text-muted fw-700">No Sample Requests Yet</h5>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
-<style>
-.table-hover tbody tr:hover {
-    background: #e8f5e9;
-    transition: 0.2s;
-}
-select.form-select {
-    border-radius: 8px;
-}
-</style>
 {% endblock %}

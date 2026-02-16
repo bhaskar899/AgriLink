@@ -3,105 +3,189 @@
 
 {% block body %}
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 <style>
-/* Review Section */
 #all-reviews {
-  background: linear-gradient(135deg, #e3f2fd, #fce4ec);
-  padding: 60px 0;
+  background: #f8fafc; /* Clean light grey background */
+  padding: 80px 0;
+  min-height: 100vh;
 }
 
+.section-title {
+  font-size: 2.8rem;
+  color: #1a531b;
+  margin-bottom: 10px;
+}
+
+/* Review Card Design */
 .review-card {
-  border-radius: 20px;
-  transition: transform 0.3s, box-shadow 0.3s;
   background: white;
+  border-radius: 20px;
   border: none;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+  border-bottom: 5px solid #198754;
 }
 
 .review-card:hover {
-  transform: scale(1.05);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
 }
 
-.review-avatar {
-  font-size: 2rem;
-  margin-bottom: 10px;
-}
-
-.review-rating {
-  color: #fbc02d;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-.review-text {
-  font-size: 0.95rem;
-  color: #555;
-  min-height: 60px;
-}
-
-.card-body {
+/* Header with Profile Image */
+.card-top {
+  padding: 25px 25px 10px;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
+  gap: 15px;
 }
 
-/* Responsive grid spacing */
-.row.g-4 {
-  justify-content: center;
+.profile-img-container {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #e8f5e9;
+  flex-shrink: 0;
 }
 
-/* Header styling */
-#all-reviews h2 {
-  font-size: 2.5rem;
-  margin-bottom: 40px;
+.profile-img-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.retailer-info h5 {
+  margin: 0;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.review-date {
+  font-size: 0.8rem;
+  color: #718096;
+}
+
+/* Rating Stars */
+.star-rating {
+  color: #ffc107;
+  font-size: 0.9rem;
+  margin-top: 4px;
+}
+
+/* The Review Message Box */
+.review-box {
+  padding: 0 25px 25px;
+}
+
+.review-content {
+  background: #f1f8f4;
+  padding: 20px;
+  border-radius: 15px;
+  position: relative;
+  font-style: italic;
+  color: #4a5568;
+  line-height: 1.6;
+  border-left: 4px solid #198754;
+}
+
+/* Small triangle for the speech bubble effect */
+.review-content::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 20px;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 10px solid #f1f8f4;
+}
+
+.quote-icon {
   color: #198754;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+  opacity: 0.2;
+  font-size: 1.5rem;
+  margin-bottom: 5px;
 }
 
-/* No reviews text */
 .no-reviews {
   text-align: center;
-  font-style: italic;
-  color: #666;
-  width: 100%;
-  padding: 40px 0;
+  padding: 100px 20px;
 }
 </style>
-<br><br>
+
 <div id="all-reviews">
   <div class="container">
-    <h2 class="text-center fw-bold">🌟 All Retailer Reviews</h2>
+    <div class="text-center mb-5">
+      <h2 class="section-title fw-bold">🌟 Retailer Feedback</h2>
+      <p class="text-muted">Direct reviews from our verified retail partners</p>
+    </div>
 
-    <div class="row g-4">
+    <div class="row g-4 justify-content-center">
       {% for r in reviews %}
       <div class="col-md-6 col-lg-4">
-        <div class="card review-card shadow-sm p-4 h-100 text-center">
-          <div class="review-avatar">👤</div>
-          <h5 class="card-title fw-bold">{{ r.retailer.name }}</h5>
-          <div class="review-rating">⭐ {{ r.rating }} / 5</div>
-          <p class="review-text">{{ r.review }}</p>
+        <div class="card review-card shadow-sm h-100">
+
+          <div class="card-top">
+            <div class="profile-img-container">
+              {% if r.retailer.profile_image %}
+                <img src="{{ r.retailer.profile_image.url }}" alt="{{ r.retailer.name }}">
+              {% else %}
+                <img src="https://ui-avatars.com/api/?name={{ r.retailer.name }}&background=198754&color=fff" alt="Default">
+              {% endif %}
+            </div>
+            <div class="retailer-info">
+              <h5>{{ r.retailer.name }}</h5>
+              <div class="star-rating">
+                {% for i in "12345" %}
+                  {% if forloop.counter <= r.rating %}
+                    <i class="fas fa-star"></i>
+                  {% else %}
+                    <i class="far fa-star text-muted"></i>
+                  {% endif %}
+                {% endfor %}
+                <span class="text-dark ms-1">({{ r.rating }})</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="review-box">
+            <div class="quote-icon"><i class="fas fa-quote-left"></i></div>
+            <div class="review-content">
+              {{ r.review }}
+            </div>
+          </div>
+
+          <div class="card-footer bg-transparent border-0 px-4 pb-3">
+             <small class="text-muted"><i class="fas fa-check-circle text-success"></i> Verified Sample Review</small>
+          </div>
+
         </div>
       </div>
       {% empty %}
-      <div class="no-reviews">No reviews yet</div>
+      <div class="no-reviews">
+        <i class="fas fa-comment-dots fa-4x text-light mb-3"></i>
+        <h4 class="text-muted">No reviews have been posted yet.</h4>
+      </div>
       {% endfor %}
     </div>
   </div>
 </div>
 
-<!-- Optional JS for small animation -->
 <script>
-const reviewCards = document.querySelectorAll('.review-card');
-reviewCards.forEach(card => {
-  card.addEventListener('mouseenter', () => {
-    card.style.transform = 'scale(1.05)';
-    card.style.boxShadow = '0 20px 40px rgba(0,0,0,0.2)';
-  });
-  card.addEventListener('mouseleave', () => {
-    card.style.transform = 'scale(1)';
-    card.style.boxShadow = '0 15px 35px rgba(0,0,0,0.15)';
-  });
+// Small Fade-in effect on load
+document.addEventListener("DOMContentLoaded", function() {
+    const cards = document.querySelectorAll('.review-card');
+    cards.forEach((card, index) => {
+        card.style.opacity = "0";
+        card.style.transform = "translateY(20px)";
+        setTimeout(() => {
+            card.style.transition = "all 0.5s ease";
+            card.style.opacity = "1";
+            card.style.transform = "translateY(0)";
+        }, index * 150);
+    });
 });
 </script>
 

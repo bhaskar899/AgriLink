@@ -1,86 +1,224 @@
 {% extends 'master.html' %}
-{% block title %}Farmer Dashboard{% endblock %}
+{% block title %}AgriLink Pro | Farmer Console{% endblock %}
 
 {% block body %}
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
 <style>
-.farmer-bg{
-    background:linear-gradient(135deg,#e8f5e9,#f1f8e9);
-    padding:30px;
-    border-radius:20px;
+:root {
+    --agri-green: #00ab66;
+    --agri-dark: #16423C;
+    --bg-gradient: linear-gradient(135deg, #f0f9f4 0%, #e6f0eb 100%);
 }
-.stat-card{
-    border-radius:20px;
-    transition:.3s;
+
+body {
+    background: var(--bg-gradient);
+    background-attachment: fixed;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    min-height: 100vh;
 }
-.stat-card:hover{
-    transform:translateY(-8px);
-    box-shadow:0 20px 40px rgba(0,0,0,.15);
+
+.dashboard-container {
+    margin-top: 110px;
+    padding-bottom: 60px;
 }
-.sale-row:hover{
-    background:#f1fff5;
-    transform:scale(1.01);
-    transition:.2s;
+
+/* Header Section */
+.action-header {
+    background: linear-gradient(135deg, var(--agri-dark) 0%, #0d2b27 100%);
+    border-radius: 28px;
+    padding: 35px;
+    color: white;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    margin-bottom: 40px;
 }
+
+/* 3 Main Stat Cards */
+.stat-card-main {
+    border-radius: 24px;
+    padding: 30px;
+    border: none;
+    transition: 0.3s;
+    color: white;
+}
+.bg-sales { background: linear-gradient(45deg, #2d6a4f, #52b788); }
+.bg-products { background: linear-gradient(45deg, #1e6091, #1a759f); }
+.bg-profit { background: linear-gradient(45deg, #f3722c, #f9844a); }
+
+.stat-card-main:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+
+/* Table & Actions */
+.custom-table-card {
+    background: white;
+    border-radius: 28px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+}
+
+.action-icon-btn {
+    width: 38px; height: 38px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 12px; background: #f8fafc; color: #64748b;
+    border: 1px solid #e2e8f0; transition: 0.2s; cursor: pointer;
+}
+
+.action-icon-btn:hover { background: var(--agri-green); color: white; transform: scale(1.1); }
+.action-icon-btn.view:hover { background: #3b82f6; border-color: #3b82f6; }
+
+/* Modal Styling */
+.modal-content { border-radius: 25px; border: none; }
+.modal-header { background: var(--agri-dark); color: white; border-radius: 25px 25px 0 0; }
 </style>
 
-<br><br>
-<div class="container-fluid px-lg-5 farmer-bg">
+<div class="container dashboard-container">
 
-<h2 class="fw-bold text-success">🌾 Farmer Dashboard</h2>
-<p class="text-muted">Welcome back, <b>{{ farmer.name }}</b></p>
-
-<div class="row g-4 text-center mt-4">
-    <div class="col-md-4">
-        <div class="stat-card bg-success text-white p-4">
-            <h6>Total Sales</h6>
-            <h2>₹ {{ total_sales|floatformat:2 }}</h2>
+    <div class="action-header d-flex flex-wrap justify-content-between align-items-center">
+        <div>
+            <h6 class="text-uppercase ls-1 opacity-75 mb-2" id="liveDate" style="letter-spacing: 1px; font-size: 0.75rem;">Loading...</h6>
+            <h2 class="fw-bold mb-0">Farmer Workspace</h2>
+            <div class="mt-2 d-flex align-items-center gap-2">
+                <span class="badge bg-success rounded-pill px-3">Verified: {{ farmer.name }}</span>
+                <span class="text-white-50 small"><i class="fas fa-clock me-1"></i> <span id="liveClock">00:00</span></span>
+            </div>
+        </div>
+        <div class="mt-3 mt-md-0">
+            <a href="/add_product/" class="btn btn-light rounded-pill px-4 py-2 fw-bold text-success shadow-sm">
+                <i class="fas fa-plus-circle me-2"></i>List New Crop
+            </a>
         </div>
     </div>
 
-    <div class="col-md-4">
-        <div class="stat-card bg-primary text-white p-4">
-            <h6>Products Listed</h6>
-            <h2>{{ total_products }}</h2>
+    <div class="row g-4 mb-5 text-center">
+        <div class="col-md-4">
+            <div class="stat-card-main bg-sales">
+                <i class="fas fa-chart-line fa-2x mb-3"></i>
+                <h6 class="text-uppercase small">Total Sales Revenue</h6>
+                <h2 class="fw-bold">₹ {{ total_sales|floatformat:2 }}</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card-main bg-products">
+                <i class="fas fa-seedling fa-2x mb-3"></i>
+                <h6 class="text-uppercase small">Total Products Listed</h6>
+                <h2 class="fw-bold">{{ total_products }} Items</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card-main bg-profit">
+                <i class="fas fa-wallet fa-2x mb-3"></i>
+                <h6 class="text-uppercase small">Your Net Profit (95%)</h6>
+                <h2 class="fw-bold">₹ {{ total_profit|floatformat:2 }}</h2>
+            </div>
         </div>
     </div>
 
-    <div class="col-md-4">
-        <div class="stat-card bg-warning text-dark p-4">
-            <h6>Your Profit (95%)</h6>
-            <h2>₹ {{ total_profit|floatformat:2 }}</h2>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="custom-table-card">
+                <div class="p-4 border-bottom bg-white rounded-top-4 d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold mb-0"><i class="fas fa-list text-success me-2"></i>Recent Sales Activity</h6>
+                    <button onclick="exportToPDF()" class="btn btn-dark btn-sm rounded-pill px-3">
+                        <i class="fas fa-download me-2"></i>Export PDF
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="salesTable">
+                        <thead class="table-light">
+                            <tr class="small text-muted text-uppercase">
+                                <th class="ps-4">Crop Name</th>
+                                <th>Revenue</th>
+                                <th>Net Profit</th>
+                                <th>Sale Date</th>
+                                <th class="text-center">Manage Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sale in recent_sales %}
+                            <tr>
+                                <td class="ps-4 fw-bold">{{ sale.product.product }}</td>
+                                <td>₹ {{ sale.amount|floatformat:2 }}</td>
+                                <td class="text-success fw-bold">₹ {{ sale.profit|floatformat:2 }}</td>
+                                <td class="text-muted small">{{ sale.date|date:"d M, Y" }}</td>
+                                <td class="text-center">
+                                    <button class="action-icon-btn view" title="View Details"
+                                            onclick="showCropDetails('{{ sale.product.product }}', '{{ sale.amount }}', '{{ sale.date|date:'d M, Y' }}')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <button class="action-icon-btn" title="Download Receipt" onclick="exportToPDF()">
+                                        <i class="fas fa-file-invoice"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center py-5">No sales found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<br>
-
-<div class="card shadow-lg border-0">
-  <div class="card-header bg-success text-white fw-bold">
-    📦 Recent Sales Activity
+<div class="modal fade" id="cropModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold"><i class="fas fa-info-circle me-2"></i>Crop Sale Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        <div class="text-center mb-4">
+            <i class="fas fa-seedling fa-3x text-success"></i>
+            <h3 class="fw-bold mt-2" id="mCropName">--</h3>
+        </div>
+        <div class="d-flex justify-content-between border-bottom py-2">
+            <span>Transaction Amount:</span> <b id="mAmount">₹ 0.00</b>
+        </div>
+        <div class="d-flex justify-content-between border-bottom py-2">
+            <span>Commission (5%):</span> <b class="text-danger">Processing...</b>
+        </div>
+        <div class="d-flex justify-content-between py-2">
+            <span>Sale Date:</span> <b id="mDate">--</b>
+        </div>
+        <button class="btn btn-success w-100 mt-4 rounded-pill fw-bold" data-bs-dismiss="modal">Close Details</button>
+      </div>
+    </div>
   </div>
-  <table class="table table-hover align-middle mb-0">
-    <thead class="table-light">
-      <tr>
-        <th>Product</th>
-        <th>Amount</th>
-        <th>Profit</th>
-        <th>Time</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for sale in recent_sales %}
-      <tr class="sale-row">
-        <td>{{ sale.product.product }}</td>
-        <td>₹ {{ sale.amount|floatformat:2 }}</td>
-        <td class="text-success fw-bold">₹ {{ sale.profit|floatformat:2 }}</td>
-        <td>{{ sale.date|date:"d M Y, h:i A" }}</td>
-      </tr>
-      {% empty %}
-      <tr><td colspan="4" class="text-center text-muted py-4">No sales yet 🚜</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
 </div>
 
-</div>
+<script>
+// 1. Live Clock
+function updateClock() {
+    const now = new Date();
+    document.getElementById('liveClock').innerText = now.toLocaleTimeString('en-GB');
+    document.getElementById('liveDate').innerText = now.toLocaleDateString('en-US', {weekday:'long', year:'numeric', month:'long', day:'numeric'}).toUpperCase();
+}
+setInterval(updateClock, 1000); updateClock();
+
+// 2. EXECUTABLE: Show Details Modal
+function showCropDetails(name, amount, date) {
+    document.getElementById('mCropName').innerText = name;
+    document.getElementById('mAmount').innerText = "₹ " + parseFloat(amount).toFixed(2);
+    document.getElementById('mDate').innerText = date;
+    var myModal = new bootstrap.Modal(document.getElementById('cropModal'));
+    myModal.show();
+}
+
+// 3. EXECUTABLE: PDF Export
+function exportToPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(0, 171, 102);
+    doc.text("AgriLink Sales Statement", 14, 20);
+    doc.autoTable({ html: '#salesTable', startY: 30, theme: 'striped', headStyles: { fillColor: [0, 171, 102] } });
+    doc.save("AgriLink_Sales_Report.pdf");
+}
+</script>
+
 {% endblock %}

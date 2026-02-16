@@ -1,152 +1,249 @@
 {% extends 'master.html' %}
 {% load static %}
 
-{% block title %}Browse Products{% endblock %}
+{% block title %}Marketplace | AgriLink Pro{% endblock %}
 
 {% block body %}
-
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
 <style>
-.back-btn-wrapper{
-    margin-top: 89px; /* adjust this according to your navbar height */
-    margin-bottom: 15px;
-    margin-left:20px;
+:root {
+    --accent: #198754;
+    --card-bg: #ffffff;
+    --soft-gray: #f8f9fa;
+    --negotiate-btn: #0d6efd;
 }
-.back-btn{
-    border: none;
-    padding: 12px 26px;
-    border-radius: 35px;
-    background: linear-gradient(135deg,#198754,#2ecc71);
-    color: #fff;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    transition: .3s;
-}
-.back-btn:hover{
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(0,0,0,.35);
-}
-.back-btn:active{
-    transform: scale(.95);
-}
-</style>
 
-<script>
-function goBack(){
-    window.history.back();
-}
-</script>
-<style>
-/* 🔥 All cards equal height */
-.product-card {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+body { background-color: #f4f7f6; }
+
+/* 🔙 Back Button Modernized */
+.back-btn-wrapper { margin-top: 100px; margin-left: 30px; }
+.btn-glass-back {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    padding: 10px 24px;
     border-radius: 12px;
-    overflow: hidden;
+    font-weight: 600;
+    transition: 0.3s;
+}
+.btn-glass-back:hover { background: var(--accent); color: white; transform: translateX(-5px); }
+
+/* 🔍 Advanced Filter Bar */
+.filter-card {
+    background: white; border-radius: 20px; border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 25px; margin-bottom: 40px;
 }
 
-/* Image height fix (same for all) */
-.product-img {
-    height: 200px;
-    object-fit: cover;
-    width: 100%;
-    border-bottom: 1px solid #ddd;
+.form-control-custom {
+    border-radius: 12px; border: 1px solid #e0e0e0; padding: 12px; transition: 0.3s;
+}
+.form-control-custom:focus {
+    border-color: var(--accent); box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.1);
 }
 
-/* Description box fixed height */
-.product-desc {
-    height: 75px;
-    overflow: hidden;
+/* 📦 Product Cards Re-imagined */
+.product-grid-card {
+    background: white; border-radius: 22px; border: none; overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    height: 100%; display: flex; flex-direction: column;
 }
 
-/* Button at bottom align fix */
-.card-footer-stick {
-    margin-top: auto;
-    width: 100%;
+.product-grid-card:hover {
+    transform: translateY(-12px); box-shadow: 0 20px 40px rgba(0,0,0,0.12);
 }
+
+.img-container { position: relative; height: 220px; overflow: hidden; }
+.product-img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+.product-grid-card:hover .product-img { transform: scale(1.1); }
+
+.badge-location {
+    position: absolute; top: 15px; left: 15px; background: rgba(255, 255, 255, 0.9);
+    padding: 5px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; color: var(--accent);
+}
+
+.price-tag { font-size: 1.25rem; font-weight: 800; color: #2d3436; }
+
+/* Action Buttons Styling */
+.btn-grid-action {
+    border-radius: 12px; font-weight: 700; padding: 10px; border: none; transition: 0.3s; margin-bottom: 8px; font-size: 0.9rem;
+}
+
+.btn-buy { background: var(--accent); color: white; }
+.btn-buy:hover { background: #146c43; transform: scale(1.02); color: white; }
+
+.btn-negotiate { background: #e7f1ff; color: var(--negotiate-btn); border: 1px solid #cfe2ff; }
+.btn-negotiate:hover { background: var(--negotiate-btn); color: white; }
+
+.btn-sample { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; margin-bottom: 0; }
+.btn-sample:hover { background: #ffe69c; }
+
+/* Modal Styling */
+.modal-content { border-radius: 25px; border: none; }
+.modal-header { border-radius: 25px 25px 0 0; }
 </style>
 
-<!-- BACK BUTTON -->
-<div class="back-btn-wrapper">
-    <button class="back-btn" onclick="goBack()">⬅ Back</button>
+<div class="back-btn-wrapper animate__animated animate__fadeIn">
+    <button class="btn-glass-back" onclick="history.back()">
+        <i class="fas fa-arrow-left me-2"></i> Marketplace
+    </button>
 </div>
 
-<div class="container mt-5"><br>
+<div class="container mt-4 mb-5">
 
-    <h2 class="text-center mb-4">🌾 Available Products</h2><br>
+    <div class="text-center mb-5 animate__animated animate__fadeInDown">
+        <h1 class="fw-800">Available Fresh Produce</h1>
+        <p class="text-muted">Directly from the fields of Maharashtra</p>
+    </div>
 
-    <!-- 🔍 Search + Filters -->
-    <form method="get" action="/browse_products/" class="row g-3 mb-4">
+    <div class="filter-card animate__animated animate__fadeIn">
+        <form method="get" action="/browse_products/" class="row g-3">
+            <div class="col-lg-3 col-md-6">
+                <label class="small fw-bold text-muted mb-2">PRODUCT SEARCH</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" id="searchBox" name="q" value="{{ request.GET.q }}"
+                           class="form-control form-control-custom border-start-0" placeholder="e.g. Wheat, Tomato...">
+                </div>
+                <div id="suggestBox" class="list-group position-absolute w-100 shadow-lg mt-1" style="display:none; z-index:1000;"></div>
+            </div>
 
-        <div class="col-md-4 position-relative">
-            <label class="form-label">Search Product</label>
-            <input type="text" id="searchBox" name="q" value="{{ request.GET.q }}" class="form-control"
-                   placeholder="Enter product name">
-            <div id="suggestBox" class="list-group position-absolute w-100" style="display:none;z-index:999;"></div>
-        </div>
+            <div class="col-lg-3 col-md-6">
+                <label class="small fw-bold text-muted mb-2">LOCATION</label>
+                <select name="location" class="form-select form-control-custom">
+                    <option value="">All Locations</option>
+                    <option value="Pune" {% if request.GET.location == 'Pune' %}selected{% endif %}>Pune</option>
+                    <option value="Nashik" {% if request.GET.location == 'Nashik' %}selected{% endif %}>Nashik</option>
+                    <option value="Mumbai" {% if request.GET.location == 'Mumbai' %}selected{% endif %}>Mumbai</option>
+                </select>
+            </div>
 
-        <div class="col-md-4">
-            <label class="form-label">Location</label>
-            <input type="text" name="location" value="{{ request.GET.location }}" class="form-control"
-                   placeholder="Enter location">
-        </div>
+            <div class="col-lg-2 col-md-6">
+                <label class="small fw-bold text-muted mb-2">MIN PRICE (₹)</label>
+                <input type="number" name="min_price" value="{{ request.GET.min_price }}" class="form-control form-control-custom" placeholder="0">
+            </div>
 
-        <div class="col-md-2">
-            <label class="form-label">Min Price</label>
-            <input type="number" name="min_price" value="{{ request.GET.min_price }}" class="form-control" placeholder="0">
-        </div>
+            <div class="col-lg-2 col-md-6">
+                <label class="small fw-bold text-muted mb-2">MAX PRICE (₹)</label>
+                <input type="number" name="max_price" value="{{ request.GET.max_price }}" class="form-control form-control-custom" placeholder="10000">
+            </div>
 
-        <div class="col-md-2">
-            <label class="form-label">Max Price</label>
-            <input type="number" name="max_price" value="{{ request.GET.max_price }}" class="form-control" placeholder="10000">
-        </div>
+            <div class="col-lg-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-success w-100 rounded-3 shadow-sm py-2">
+                    <i class="fas fa-sliders-h me-2"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
 
-        <div class="col-12">
-            <button type="submit" class="btn btn-success w-100">Apply Filters</button>
-        </div>
-    </form>
-
-
-    <!-- 🌟 SAME SIZE RESPONSIVE GRID -->
-    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
-
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
         {% for p in products %}
-        <div class="col">
-            <div class="card shadow product-card">
+        <div class="col animate__animated animate__fadeInUp">
+            <div class="product-grid-card shadow-sm">
 
-                <img src="{{ p.image.url }}" class="product-img">
-
-                <div class="card-body">
-                    <h5 class="card-title">{{ p.product }}</h5>
-
-                    <p class="product-desc">
-                        {{ p.description|truncatewords:20 }}
-                    </p>
-
-                    <p>👨‍🌾 <b>{{ p.farmer.name }}</b></p>
-                    <p>💰 Price: <b>₹{{ p.price }}/kg</b></p>
-                    <p>📦 Stock: {{ p.quantity }} kg</p>
-                    <p>📍 {{ p.location }}</p>
+                <div class="img-container">
+                    <span class="badge-location"><i class="fas fa-map-marker-alt me-1"></i> {{ p.location }}</span>
+                    <img src="{{ p.image.url }}" class="product-img" alt="{{ p.product }}">
                 </div>
 
-                 <div class="mt-auto">
-                        <a href="{% url 'place_order' p.id %}" class="btn btn-primary w-100 mb-2">Buy Now</a>
-                        <a href="{% url 'request_sample' p.id %}" class="btn btn-outline-warning w-100">Request Sample</a>
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h5 class="fw-bold m-0">{{ p.product }}</h5>
+                        <div class="price-tag text-success">₹{{ p.price }}<small class="text-muted fs-6">/kg</small></div>
                     </div>
 
+                    <p class="text-muted small mb-3" style="height: 45px; overflow: hidden;">
+                        {{ p.description|truncatewords:15 }}
+                    </p>
 
+                    <div class="farmer-info d-flex align-items-center mb-3">
+                        <div class="bg-light p-2 rounded-circle me-2">
+                            <i class="fas fa-user-circle text-muted"></i>
+                        </div>
+                        <span class="small fw-bold">{{ p.farmer.name }}</span>
+                    </div>
+
+                    <div class="stock-info d-flex justify-content-between small text-muted border-top pt-3">
+                        <span><i class="fas fa-box me-1"></i> {{ p.quantity }}kg left</span>
+                        <span class="text-success"><i class="fas fa-check-circle me-1"></i> Fresh Stock</span>
+                    </div>
+                </div>
+
+                <div class="p-4 pt-0 mt-auto">
+                    <a href="{% url 'place_order' p.id %}" class="btn btn-grid-action btn-buy w-100">
+                        <i class="fas fa-shopping-cart me-2"></i> Buy Now
+                    </a>
+
+                    <button type="button" class="btn btn-grid-action btn-negotiate w-100" data-bs-toggle="modal" data-bs-target="#negotiateModal{{ p.id }}">
+                        <i class="fas fa-handshake me-2"></i> Negotiate Price
+                    </button>
+
+                    <a href="{% url 'request_sample' p.id %}" class="btn btn-grid-action btn-sample w-100">
+                        <i class="fas fa-flask me-2"></i> Sample Request
+                    </a>
+                </div>
             </div>
         </div>
-        {% endfor %}
 
+        <div class="modal fade" id="negotiateModal{{ p.id }}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content shadow-lg">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title fw-bold"><i class="fas fa-comments-dollar me-2"></i> Make an Offer</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="POST" action="{% url 'place_bid' p.id %}">
+                        {% csrf_token %}
+                        <div class="modal-body p-4">
+                            <div class="text-center mb-4">
+                                <h6 class="text-muted">Negotiating for</h6>
+                                <h4 class="fw-bold">{{ p.product }}</h4>
+                                <span class="badge bg-light text-dark border p-2 mt-1">Current Price: ₹{{ p.price }}/kg</span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-muted">YOUR OFFERED PRICE (per kg)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light">₹</span>
+                                    <input type="number" name="proposed_price" class="form-control form-control-custom"
+                                           placeholder="Enter lower price" required min="1" step="0.01">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-muted">QUANTITY (kg)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light"><i class="fas fa-weight-hanging"></i></span>
+                                    <input type="number" name="quantity" class="form-control form-control-custom"
+                                           placeholder="How much do you need?" required min="1" max="{{ p.quantity }}">
+                                </div>
+                                <div class="form-text">Available Stock: {{ p.quantity }}kg</div>
+                            </div>
+
+                            <div class="alert alert-info py-2 small mb-0">
+                                <i class="fas fa-info-circle me-1"></i> Your offer will be sent to <strong>{{ p.farmer.name }}</strong> for approval.
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 p-4 pt-0">
+                            {% csrf_token %}
+                            <button type="button" class="btn btn-light rounded-3 px-4" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-success rounded-3 px-4 shadow-sm">Send Offer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-search fa-4x text-muted opacity-25 mb-3"></i>
+            <h4 class="text-muted">Oops! No products found matching your search.</h4>
+            <a href="/browse_products/" class="btn btn-outline-success mt-3">Reset All Filters</a>
+        </div>
+        {% endfor %}
     </div>
 </div>
 
-
-<!-- 🔥 Auto Search Script -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const searchBox = document.getElementById("searchBox");
@@ -154,21 +251,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
     searchBox.addEventListener("keyup", () => {
         const q = searchBox.value;
+        if (q.length < 2) { suggestBox.style.display="none"; return; }
 
-        if (!q) { suggestBox.style.display="none"; return }
-
-        fetch(/ajax_search/?q=${q})
+        fetch(`/ajax_search/?q=${q}`)
             .then(res => res.json())
             .then(data => {
                 suggestBox.innerHTML = "";
-                if (!data.length){ suggestBox.style.display="none"; return }
+                if (!data.length){ suggestBox.style.display="none"; return; }
 
                 data.forEach(item => {
-                    suggestBox.innerHTML +=
-                        <a class='list-group-item list-group-item-action' href='/browse_products/?q=${item}'>${item}</a>;
+                    const link = document.createElement('a');
+                    link.className = 'list-group-item list-group-item-action py-3 px-4';
+                    link.href = `/browse_products/?q=${item}`;
+                    link.innerHTML = `<i class="fas fa-search me-3 text-muted"></i> ${item}`;
+                    suggestBox.appendChild(link);
                 });
                 suggestBox.style.display="block";
             });
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!searchBox.contains(e.target)) suggestBox.style.display="none";
     });
 });
 </script>

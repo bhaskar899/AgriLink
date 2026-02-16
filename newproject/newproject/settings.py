@@ -199,3 +199,9 @@ TIME_ZONE = 'Asia/Kolkata'
 # 3. Agar aap dates ko local time mein dikhana chahte hain:
 USE_L10N = True
 
+# ---------------------
+# AUTHENTICATION REDIRECTS
+# ---------------------
+LOGIN_URL = 'retailer_login'  # Agar login nahi hai toh yahan bhejega
+LOGIN_REDIRECT_URL = 'retailer_dashboard'  # Login hone ke baad yahan bhejega
+LOGOUT_REDIRECT_URL = 'home'  # Logout hone ke baad yahan bhejega

@@ -1,11 +1,46 @@
 {% extends "master.html" %}
+{% block title %}AgriLink Pro | Security Warning{% endblock %}
 
-{% block body %}<br><br>
-<div class="container mt-5 text-center">
-  <h3>Are you sure you want to delete your profile?</h3>
-  <p class="text-danger">This action cannot be undone.</p>
+{% block body %}
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
-  <a href="/profile_delete_confirm/" class="btn btn-danger">Yes, Delete</a>
-  <a href="/profile/" class="btn btn-secondary">Cancel</a>
+<style>
+:root { --danger-red: #ef4444; }
+body { background: linear-gradient(135deg, #fff1f2 0%, #f8fafc 100%); font-family: 'Plus Jakarta Sans', sans-serif; }
+.delete-wrapper { display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+.warning-card { background: white; border-radius: 35px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); max-width: 450px; width: 90%; padding: 50px 40px; text-align: center; }
+.icon-box { background-color: #fef2f2; color: var(--danger-red); width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin: 0 auto 30px; font-size: 2.5rem; }
+.btn-terminate { background-color: var(--danger-red); color: white; border-radius: 18px; padding: 16px; font-weight: 700; text-decoration: none; transition: 0.3s; }
+.btn-terminate:hover { background-color: #dc2626; transform: scale(1.02); color: white; }
+.btn-cancel-pro { background-color: #f1f5f9; color: #475569; border-radius: 18px; padding: 16px; font-weight: 700; text-decoration: none; transition: 0.3s; }
+</style>
+
+<div class="delete-wrapper">
+    <div class="warning-card animate__animated animate__shakeX">
+        <div class="icon-box">
+            <i class="fas fa-user-shield"></i>
+        </div>
+
+        <h2 class="fw-bold text-dark mb-3">Terminate Account?</h2>
+
+        <p class="text-muted mb-4">
+            Deleting your Farmer account will permanently erase your data, order history, and active listings.
+            <strong>This action cannot be undone.</strong>
+        </p>
+
+        <div class="d-grid gap-3">
+            <a href="/profile_delete_confirm/" class="btn-terminate shadow-sm">
+                <i class="fas fa-trash-alt me-2"></i> Yes, Delete My Account
+            </a>
+            <a href="/profile/" class="btn-cancel-pro">
+                No, Keep My Profile
+            </a>
+        </div>
+
+        <div class="mt-4 pt-2 border-top border-light">
+            <small class="text-muted">Farmer ID: <span class="fw-bold">#FMR-{{ user.id }}</span></small>
+        </div>
+    </div>
 </div>
 {% endblock %}

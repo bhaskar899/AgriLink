@@ -1,64 +1,178 @@
 {% extends "master.html" %}
-{% block title %}Sample Deliveries{% endblock %}
+{% block title %}AgriLink Pro | Active Tasks{% endblock %}
 
 {% block body %}
-<br><br>
-<div class="container mt-4">
-    <div class="card shadow p-4 rounded-4">
-        <h3 class="text-center mb-4 text-success">🚚 Sample Deliveries</h3>
-        <div class="table-responsive">
-            <table class="table table-bordered align-middle text-center table-hover">
-                <thead class="table-warning">
-                    <tr>
-                        <th>ID</th>
-                        <th>Product</th>
-                        <th>Pickup (Farmer)</th>
-                        <th>Drop (Retailer)</th>
-                        <th>Qty</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for s in samples %}
-                    <tr>
-                        <td>#{{ s.id }}</td>
-                        <td>{{ s.product.product }}</td>
-                        <td>👨‍🌾 {{ s.farmer.name }}<br>📍 {{ s.farmer.address }}</td>
-                        <td>🛒 {{ s.retailer.name }}<br>📍 {{ s.retailer.address }}</td>
-                        <td>{{ s.quantity }} kg</td>
-                        <td>
-                            <span class="badge
-                                {% if s.status == 'approved' %}bg-warning
-                                {% elif s.status == 'picked' %}bg-info
-                                {% elif s.status == 'delivered' %}bg-success
-                                {% endif %}">{{ s.status|capfirst }}</span>
-                        </td>
-                        <td>
-                            {% if s.status == "approved" %}
-                                <a href="{% url 'driver_mark_sample_picked' s.id %}" class="btn btn-primary btn-sm">Mark Picked</a>
-                            {% elif s.status == "picked" %}
-                                <a href="{% url 'deliver_sample_complete' s.id %}" class="btn btn-success btn-sm">Mark Delivered</a>
-                            {% else %}
-                                <span class="text-success fw-bold">Completed ✓</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% empty %}
-                    <tr>
-                        <td colspan="7" class="text-muted">No sample deliveries assigned</td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-.table-hover tbody tr:hover {
-    background: #fff3e0;
-    transition: 0.2s;
+:root {
+    --delivery-blue: #0ea5e9;
+    --delivery-green: #10b981;
+    --delivery-orange: #f59e0b;
+    --dark-navy: #0f172a;
+}
+
+body {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.delivery-container { margin-top: 110px; padding-bottom: 60px; }
+
+/* Task Card Styling */
+.task-card {
+    background: white;
+    border-radius: 24px;
+    border: none;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transition: 0.3s;
+    overflow: hidden;
+    margin-bottom: 25px;
+}
+
+.task-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+
+/* Status Banner */
+.status-banner {
+    padding: 12px 20px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-approved { background: #fef3c7; color: #92400e; } /* Orange-ish */
+.status-picked { background: #e0f2fe; color: #075985; }   /* Blue-ish */
+.status-delivered { background: #dcfce7; color: #166534; } /* Green-ish */
+
+/* Timeline UI */
+.delivery-timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 20px;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -20px;
+    top: 5px;
+    width: 2px;
+    height: 100%;
+    background: #e2e8f0;
+}
+
+.timeline-icon {
+    position: absolute;
+    left: -28px;
+    top: 0;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border: 3px solid var(--delivery-blue);
+    border-radius: 50%;
+}
+
+.btn-action {
+    border-radius: 15px;
+    padding: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.8rem;
+}
+
+.nav-link-btn {
+    text-decoration: none;
+    color: var(--delivery-blue);
+    font-size: 0.8rem;
+    font-weight: 600;
 }
 </style>
+
+<div class="container delivery-container">
+    <div class="row mb-4 align-items-center">
+        <div class="col-8">
+            <h2 class="fw-bold text-dark">Route Tasks</h2>
+            <p class="text-muted small">Manage your active pickups and deliveries</p>
+        </div>
+        <div class="col-4 text-end">
+            <span class="badge bg-dark rounded-pill px-3 py-2">{{ samples|length }} Active</span>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for s in samples %}
+        <div class="col-md-6 col-lg-4">
+            <div class="task-card">
+                <div class="status-banner
+                    {% if s.status == 'approved' %}status-approved
+                    {% elif s.status == 'picked' %}status-picked
+                    {% else %}status-delivered{% endif %}">
+                    <span><i class="fas fa-box me-2"></i>{{ s.product.product }}</span>
+                    <span>#{{ s.id }}</span>
+                </div>
+
+                <div class="p-4">
+                    <div class="delivery-timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-icon" style="border-color: var(--delivery-orange);"></div>
+                            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Pickup from Farmer</small>
+                            <h6 class="fw-bold mb-1">{{ s.farmer.name }}</h6>
+                            <p class="small text-muted mb-2"><i class="fas fa-map-marker-alt me-1"></i> {{ s.farmer.address }}</p>
+                            <a href="https://www.google.com/maps/search/{{ s.farmer.address|urlencode }}" target="_blank" class="nav-link-btn">
+                                <i class="fas fa-directions me-1"></i> Navigate to Pickup
+                            </a>
+                        </div>
+
+                        <div class="timeline-item mb-0">
+                            <div class="timeline-icon" style="border-color: var(--delivery-green);"></div>
+                            <small class="text-muted text-uppercase fw-bold" style="font-size: 0.65rem;">Drop to Retailer</small>
+                            <h6 class="fw-bold mb-1">{{ s.retailer.name }}</h6>
+                            <p class="small text-muted mb-2"><i class="fas fa-map-marker-alt me-1"></i> {{ s.retailer.address }}</p>
+                            <a href="https://www.google.com/maps/search/{{ s.retailer.address|urlencode }}" target="_blank" class="nav-link-btn text-success">
+                                <i class="fas fa-location-arrow me-1"></i> Navigate to Drop
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-top d-flex justify-content-between align-items-center">
+                        <div>
+                            <small class="text-muted d-block">Quantity</small>
+                            <span class="fw-bold">{{ s.quantity }} KG</span>
+                        </div>
+                        <div class="flex-grow-1 ms-4">
+                            {% if s.status == "approved" %}
+                                <a href="{% url 'driver_mark_sample_picked' s.id %}" class="btn btn-primary btn-action w-100 shadow-sm">
+                                    Confirm Pickup
+                                </a>
+                            {% elif s.status == "picked" %}
+                                <a href="{% url 'deliver_sample_complete' s.id %}" class="btn btn-success btn-action w-100 shadow-sm">
+                                    Confirm Delivery
+                                </a>
+                            {% else %}
+                                <div class="text-center">
+                                    <span class="badge bg-success-subtle text-success w-100 py-2">✓ COMPLETED</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <i class="fas fa-truck-loading fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">No active deliveries assigned.</h4>
+            <a href="/driver_dashboard/" class="btn btn-outline-primary btn-sm rounded-pill mt-2">Back to Dashboard</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 {% endblock %}

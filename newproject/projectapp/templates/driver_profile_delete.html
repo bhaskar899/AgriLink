@@ -1,23 +1,31 @@
 {% extends "master.html" %}
-{% block title %}Delete Driver Profile{% endblock %}
+{% block title %}AgriLink Pro | Security{% endblock %}
 
 {% block body %}
-<br><br>
-<div class="container mt-5">
-  <div class="card shadow-lg p-4 mx-auto" style="max-width:500px; border-radius:20px; text-align:center;">
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+    <div class="card p-5 shadow-lg border-0 text-center animate__animated animate__shakeX" style="max-width: 450px; border-radius: 35px;">
+        <div class="mb-4">
+            <div class="bg-danger bg-opacity-10 d-inline-block p-4 rounded-circle">
+                <i class="fas fa-user-minus fa-3x text-danger"></i>
+            </div>
+        </div>
 
-    <h3 class="mb-4">Delete Profile</h3>
-    <p>Are you sure you want to delete your profile? This action cannot be undone.</p>
+        <h3 class="fw-bold text-dark">Terminate Account?</h3>
+        <p class="text-muted px-3">
+            Warning: This will permanently delete your driver profile, history, and earnings data.
+            <strong>This action is irreversible.</strong>
+        </p>
 
-    <div class="d-flex justify-content-around mt-4">
-      <a href="{% url 'driver_profile_delete_confirm' %}" class="btn btn-danger px-4 py-2 rounded-3">
-        Yes, Delete
-      </a>
-      <a href="{% url 'driver_profile' %}" class="btn btn-secondary px-4 py-2 rounded-3">
-        Cancel
-      </a>
+        <div class="mt-4 d-grid gap-2">
+            <a href="{% url 'driver_profile_delete_confirm' %}" class="btn btn-danger py-3 rounded-pill fw-bold shadow-sm">
+                Permanently Delete Account
+            </a>
+            <a href="{% url 'driver_profile' %}" class="btn btn-light py-3 rounded-pill fw-bold">
+                No, Keep My Profile
+            </a>
+        </div>
+
+        <p class="mt-4 small text-muted">Account ID: #DRV-{{ driver.id }}</p>
     </div>
-
-  </div>
 </div>
 {% endblock %}

@@ -1,438 +1,220 @@
 {% extends 'master.html' %}
-{% block title %}Retailer Register{% endblock %}
+{% block title %}Retailer Registration{% endblock %}
 {% block body %}
 
-<br><br>
-
-<div class="container mt-5 d-flex justify-content-center">
-  <div class="card shadow-lg p-4" style="max-width:750px; width:100%; border-radius:15px; transition:0.3s;">
-    <h2 class="text-center mb-4">Retailer Registration</h2>
-
-    <form method="post" id="retailerForm">
-      {% csrf_token %}
-
-      <div class="mb-3">
-        <label class="form-label">Full Name</label>
-        <input type="text" class="form-control form-control-lg" name="name" placeholder="Enter full name" required>
-        <div class="invalid-feedback"></div>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Email Address</label>
-        <div class="input-group">
-          <input type="email" class="form-control form-control-lg" name="email" id="emailInput" placeholder="Enter email" required>
-          <button type="button" class="btn btn-primary" id="sendEmailOtpBtn">Send OTP</button>
-        </div>
-        <small id="emailOtpSent" class="text-success d-none">OTP sent to email!</small>
-        <div class="mt-2 d-none" id="emailOtpBox">
-          <input type="text" class="form-control" id="emailOtpInput" placeholder="Enter Email OTP" maxlength="6">
-          <button type="button" class="btn btn-success mt-2" id="verifyEmailOtpBtn">Verify Email OTP</button>
-          <small id="emailOtpStatus"></small>
-        </div>
-        <div class="invalid-feedback"></div>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Shop Number</label>
-        <input type="text" class="form-control form-control-lg" name="shop_number" placeholder="Enter Shop Number" required>
-        <div class="invalid-feedback"></div>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">GST Number</label>
-        <input type="text" class="form-control form-control-lg" name="gst_number" placeholder="Enter 15-digit GST Number" required>
-        <div class="invalid-feedback"></div>
-      </div>
-
-      <label class="form-label">Address</label>
-      <div class="mb-3">
-          <input type="text" class="form-control form-control-lg" name="address" placeholder="Street / Area" required>
-          <div class="invalid-feedback"></div>
-      </div>
-      <div class="mb-3">
-          <input type="text" class="form-control form-control-lg" name="city" placeholder="City" required>
-          <div class="invalid-feedback"></div>
-      </div>
-      <div class="mb-3">
-          <input type="text" class="form-control form-control-lg" name="pincode" placeholder="Pincode (6 digits)" required>
-          <div class="invalid-feedback"></div>
-      </div>
-      <label class="form-label">Gender</label><br>
-      <div class="form-check form-check-inline">
-        <input type="radio" class="form-check-input" name="gender" value="Male" required>
-        <label class="form-check-label">Male</label>
-      </div>
-      <div class="form-check form-check-inline">
-        <input type="radio" class="form-check-input" name="gender" value="Female" required>
-        <label class="form-check-label">Female</label>
-      </div>
-      <div class="form-check form-check-inline mb-3">
-        <input type="radio" class="form-check-input" name="gender" value="Other" required>
-        <label class="form-check-label">Other</label>
-      </div>
-      <div class="mb-3">
-        <label class="form-label">Contact Number</label>
-        <input type="text" class="form-control form-control-lg" name="contact" placeholder="10-digit mobile number" required>
-        <div class="invalid-feedback"></div>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Password</label>
-        <div class="input-group">
-          <input type="password" class="form-control form-control-lg" id="passwordField" name="password" required>
-          <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-            <i class="fa fa-eye-slash" id="passwordIcon"></i>
-          </button>
-        </div>
-        <ul id="passwordRules" style="font-size:14px; margin-top:8px;">
-          <li id="ruleLength">At least 8 characters</li>
-          <li id="ruleUpper">One uppercase (A–Z)</li>
-          <li id="ruleLower">One lowercase (a–z)</li>
-          <li id="ruleNumber">One number (0–9)</li>
-          <li id="ruleSpecial">One special character (!@#$%^&*)</li>
-        </ul>
-        <div class="invalid-feedback"></div>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Confirm Password</label>
-        <div class="input-group">
-          <input type="password" class="form-control form-control-lg" id="confirmPassInput" name="confirm_password" required>
-          <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
-            <i class="fa fa-eye-slash" id="confirmPasswordIcon"></i>
-          </button>
-        </div>
-        <div class="invalid-feedback"></div>
-      </div>
-
-      <button type="submit" class="btn btn-success btn-lg w-100" id="registerSubmitBtn" disabled>Register</button>
-      <p class="text-center mt-3">
-        Already registered? <a href="{% url 'retailer_login' %}" class="text-primary"><b>Login here</b></a>
-      </p>
-    </form>
-  </div>
-</div>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
 
 <style>
-.card:hover { transform: scale(1.02); box-shadow: 0 0 18px rgba(0,0,0,0.3); }
-#passwordRules li.valid { color: green; }
-#passwordRules li.invalid { color: red; }
+    :root { --r-blue: #0d6efd; --r-dark: #0f172a; }
+
+    body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        margin: 0;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #f8fafc;
+    }
+
+    .auth-wrapper {
+        flex-grow: 1;
+        background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 160px 20px 80px;
+        position: relative;
+    }
+
+    /* Back Button - Same Position as Farmer */
+    .back-btn {
+        position: absolute;
+        top: 110px;
+        left: 40px;
+        text-decoration: none;
+        color: var(--r-dark);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        z-index: 1000;
+        padding: 12px 22px;
+        background: white;
+        border-radius: 50px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        border: 1px solid #e2e8f0;
+    }
+    .back-btn:hover { background: var(--r-dark); color: white; transform: translateY(-2px); }
+
+    .auth-card {
+        width: 100%;
+        max-width: 850px;
+        background: white;
+        border-radius: 30px;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.05);
+        padding: 40px;
+    }
+
+    .section-title {
+        color: var(--r-blue);
+        font-weight: 800;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        border-bottom: 2px solid #f1f5f9;
+        margin: 20px 0 15px;
+        padding-bottom: 5px;
+    }
+
+    .form-label { font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 5px; display: block; }
+    .form-control { border-radius: 12px; padding: 10px 15px; border: 1.5px solid #e2e8f0; background: #f8fafc; margin-bottom: 15px; }
+
+    /* Eye Button Styling */
+    .pass-group { position: relative; }
+    .eye-btn { position: absolute; right: 15px; top: 38px; cursor: pointer; color: #94a3b8; z-index: 10; }
+
+    .submit-btn {
+        background: var(--r-dark);
+        color: white;
+        border: none;
+        padding: 16px;
+        border-radius: 16px;
+        font-weight: 700;
+        width: 100%;
+        margin-top: 20px;
+        transition: 0.3s;
+    }
+    .submit-btn:disabled { background: #94a3b8; }
 </style>
 
+<div class="auth-wrapper">
+    <a href="javascript:history.back()" class="back-btn"><i class="fas fa-arrow-left"></i> Back</a>
+
+    <div class="auth-card">
+        <h2 class="text-center fw-bold">Retailer Registration</h2>
+        <p class="text-center text-muted small mb-4">Register your business to start buying from farmers</p>
+
+        <form method="post" id="retailerForm" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6 border-end pe-md-4">
+                    <div class="section-title">Owner & Contact</div>
+
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-control" name="name" required>
+
+                    <label class="form-label">Email Address</label>
+                    <div class="input-group mb-3 gap-2">
+                        <input type="email" class="form-control" name="email" id="emailInput" required>
+                        <button type="button" class="btn btn-primary rounded-3 btn-sm" onclick="sendOTP()">Send OTP</button>
+                    </div>
+
+                    <div id="otpBox" style="display:none;">
+                        <label class="form-label text-primary">Enter OTP</label>
+                        <input type="text" class="form-control border-primary" id="otpInput">
+                    </div>
+
+                    <label class="form-label">Mobile Number</label>
+                    <input type="text" class="form-control" name="contact" maxlength="10" required>
+
+                    <label class="form-label">Shop Address</label>
+                    <input type="text" class="form-control" name="address" required>
+
+                    <div class="row">
+                        <div class="col-6"><label class="form-label">City</label><input type="text" class="form-control" name="city" required></div>
+                        <div class="col-6"><label class="form-label">Pincode</label><input type="text" class="form-control" name="pincode" maxlength="6" required></div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 ps-md-4">
+                    <div class="section-title">Business Verification</div>
+
+                    <label class="form-label">Shop / Trade Name</label>
+                    <input type="text" class="form-control" name="shop_number" placeholder="Enter Business Name" required>
+
+                    <label class="form-label">GST Number</label>
+                    <input type="text" class="form-control" name="gst_number" id="gstInput" placeholder="15-Digit GST" maxlength="15" style="text-transform: uppercase;" required>
+
+                    <label class="form-label">Upload GST Certificate</label>
+                    <input type="file" class="form-control" id="gstFile" required>
+                    <small id="gstStatus" class="fw-bold d-block mb-3"></small>
+
+                    <div class="section-title">Security</div>
+
+                    <div class="pass-group">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" name="password" id="pass" required>
+                        <i class="fas fa-eye eye-btn" onclick="togglePass('pass')"></i>
+                    </div>
+
+                    <div class="pass-group">
+                        <label class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" id="confirmPass" required>
+                        <i class="fas fa-eye eye-btn" onclick="togglePass('confirmPass')"></i>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="regBtn">Register Business</button>
+
+            <div class="text-center mt-3">
+                <small>Already registered? <a href="{% url 'retailer_login' %}" class="text-primary fw-bold text-decoration-none">Login Here</a></small>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
-// Global status variable to track email verification state
-let isEmailVerified = false;
-
-// --- Password Toggle Function ---
-function setupPasswordToggle(toggleBtnId, passwordFieldId, iconId) {
-    const toggleButton = document.getElementById(toggleBtnId);
-    const passwordInput = document.getElementById(passwordFieldId);
-    const icon = document.getElementById(iconId);
-
-    if (toggleButton) {
-        toggleButton.addEventListener('click', function () {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            icon.classList.toggle('fa-eye');
-            icon.classList.toggle('fa-eye-slash');
-        });
+    // 1. Password Toggle (Simple)
+    function togglePass(id) {
+        const input = document.getElementById(id);
+        const icon = event.target;
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            input.type = "password";
+            icon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
     }
-}
 
-document.addEventListener("DOMContentLoaded", function () {
-    const form = document.getElementById('retailerForm');
-    const registerButton = document.getElementById('registerSubmitBtn');
+    // 2. OTP UI Toggle
+    function sendOTP() {
+        alert("Verification code sent to your email!");
+        document.getElementById("otpBox").style.display = "block";
+    }
 
-    // Setup Password Toggles
-    setupPasswordToggle('togglePassword', 'passwordField', 'passwordIcon');
-    setupPasswordToggle('toggleConfirmPassword', 'confirmPassInput', 'confirmPasswordIcon');
+    // 3. GST OCR (Simple Logic)
+    document.getElementById('gstFile').onchange = async function() {
+        const gstNum = document.getElementById('gstInput').value.toUpperCase();
+        const status = document.getElementById('gstStatus');
 
-    // Form fields
-    const nameInput = form.querySelector('input[name="name"]');
-    const emailInput = document.getElementById("emailInput");
-    const shopInput = form.querySelector('input[name="shop_number"]');
-    const gstInput = form.querySelector('input[name="gst_number"]');
-    const addrInput = form.querySelector('input[name="address"]');
-    const cityInput = form.querySelector('input[name="city"]');
-    const pinInput = form.querySelector('input[name="pincode"]');
-    const contactInput = form.querySelector('input[name="contact"]');
-    const passwordField = document.getElementById("passwordField");
-    const confirmPassInput = document.getElementById('confirmPassInput');
-    const genderInputs = form.querySelectorAll('input[name="gender"]');
-
-    // OTP Elements
-    const sendEmailOtpBtn = document.getElementById("sendEmailOtpBtn");
-    const emailOtpBox = document.getElementById("emailOtpBox");
-    const emailOtpInput = document.getElementById("emailOtpInput");
-    const verifyEmailOtpBtn = document.getElementById("verifyEmailOtpBtn");
-    const emailOtpStatus = document.getElementById("emailOtpStatus");
-    const emailOtpSent = document.getElementById("emailOtpSent");
-
-    const passwordRules = {
-        length: document.getElementById("ruleLength"),
-        upper: document.getElementById("ruleUpper"),
-        lower: document.getElementById("ruleLower"),
-        number: document.getElementById("ruleNumber"),
-        special: document.getElementById("ruleSpecial")
-    };
-
-    const inputsToValidate = [nameInput, emailInput, shopInput, gstInput, addrInput, cityInput, pinInput, contactInput];
-
-    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
-    const isValidEmail = email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    const isValidContact = c => /^\d{10}$/.test(c);
-    const isValidPincode = p => /^\d{6}$/.test(p);
-    const isValidGST = g => /^[0-9A-Z]{15}$/.test(g);
-    const isValidShopNumber = s => s.length >= 2;
-
-    // Validation state tracker
-    let validationStates = {};
-
-    // Helper for validation states (Adjusted to correctly find feedback for input-group fields)
-    const setValidationState = (input, isValid, message = '') => {
-        input.classList.remove('is-invalid', 'is-valid');
-
-        const isGrouped = input.closest('.input-group');
-        const parentDiv = isGrouped ? input.closest('.input-group').parentNode : input.parentNode;
-        const feedback = parentDiv.querySelector('.invalid-feedback');
-
-        validationStates[input.name] = isValid;
-
-        if (!feedback) return;
-
-        if (!isValid) {
-            input.classList.add('is-invalid');
-            feedback.textContent = message;
-        } else {
-            if (input.value.trim() !== '') {
-                 input.classList.add('is-valid');
-            }
-            feedback.textContent = '';
-        }
-    };
-
-    // Individual Validation Functions
-    const validateField = (input) => {
-        let isValid = true;
-        let message = '';
-        const value = input.value.trim();
-
-        if(value === "") {
-            isValid = false;
-            message = "This field is required.";
-        } else {
-            switch (input) {
-                case nameInput:
-                    isValid = value.length >= 3;
-                    message = "Full Name must be at least 3 characters.";
-                    break;
-                case emailInput:
-                    isValid = isValidEmail(value);
-                    message = "Enter a valid email address.";
-                    break;
-                case shopInput:
-                    isValid = isValidShopNumber(value);
-                    message = "Shop Number is required (min 2 chars).";
-                    break;
-                case gstInput:
-                    isValid = isValidGST(value);
-                    message = "GST must be 15 alphanumeric characters.";
-                    break;
-                case addrInput:
-                    isValid = value.length >= 5;
-                    message = "Address Line is required (min 5 chars).";
-                    break;
-                case cityInput:
-                    isValid = value.length >= 3;
-                    message = "City is required.";
-                    break;
-                case pinInput:
-                    isValid = isValidPincode(value);
-                    message = "Pincode must be 6 digits.";
-                    break;
-                case contactInput:
-                    isValid = isValidContact(value);
-                    message = "Contact must be a 10-digit number.";
-                    break;
-            }
-        }
-
-        setValidationState(input, isValid, message);
-        return isValid;
-    };
-
-    const validatePassword = () => {
-        const pass = passwordField.value;
-        const valid = passwordPattern.test(pass);
-
-        passwordRules.length.className = pass.length >= 8 ? 'valid' : 'invalid';
-        passwordRules.upper.className = /[A-Z]/.test(pass) ? 'valid' : 'invalid';
-        passwordRules.lower.className = /[a-z]/.test(pass) ? 'valid' : 'invalid';
-        passwordRules.number.className = /\d/.test(pass) ? 'valid' : 'invalid';
-        passwordRules.special.className = /[!@#$%^&*]/.test(pass) ? 'valid' : 'invalid';
-
-        setValidationState(passwordField, valid, "Password does not meet requirements.");
-        return valid;
-    };
-
-    const validateConfirmPassword = () => {
-        const pass = passwordField.value;
-        const confirm = confirmPassInput.value;
-        const valid = pass === confirm && confirm.length > 0;
-
-        setValidationState(confirmPassInput, valid, "Passwords do not match.");
-        return valid;
-    };
-
-
-    // Main Form Check Function
-    const checkForm = (forceValidateAll = false) => {
-        let allValid = true;
-
-        inputsToValidate.forEach(input => {
-             // Validate if input has content OR if we are forcing a full check
-            if (forceValidateAll || input.value.trim() !== '') {
-                validateField(input);
-            }
-            // Check if validation state is TRUE for all inputs
-            allValid = allValid && (validationStates[input.name] === true);
-        });
-
-        // Specific checks for Passwords
-        allValid = validatePassword() && allValid;
-        allValid = validateConfirmPassword() && allValid;
-
-        // Check Gender
-        const isGenderChecked = [...genderInputs].some(g => g.checked);
-        allValid = allValid && isGenderChecked;
-
-        // Final check requires all fields to be valid AND email to be verified
-        registerButton.disabled = !(allValid && isEmailVerified);
-        return allValid;
-    };
-
-    // --- OTP Logic FIX ---
-
-    // Reset verification status if email changes
-    emailInput.addEventListener('input', () => {
-        isEmailVerified = false;
-        emailOtpBox.classList.add("d-none");
-        emailOtpSent.classList.add("d-none");
-        sendEmailOtpBtn.disabled = false;
-        emailInput.readOnly = false;
-        validateField(emailInput);
-        checkForm();
-    });
-
-
-    // SEND EMAIL OTP
-    sendEmailOtpBtn.onclick = function () {
-        let email = emailInput.value.trim();
-
-        if (!validateField(emailInput) || email === "") {
-             alert("Enter a valid email address first.");
-             return;
-        }
-
-        emailOtpSent.innerHTML = "Sending OTP...";
-        emailOtpSent.classList.remove("d-none");
-        sendEmailOtpBtn.disabled = true;
-        emailInput.readOnly = true;
-
-        fetch("{% url 'send_email_otp' %}", {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": "{{ csrf_token }}",
-                "Content-Type": "application/x-www-form-urlencoded"
-            },
-            body: new URLSearchParams({ email: email })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.status === "success") {
-                emailOtpSent.innerHTML = "OTP sent to email!";
-                emailOtpBox.classList.remove("d-none");
-                verifyEmailOtpBtn.disabled = false;
-                emailOtpStatus.textContent = '';
-            } else {
-                emailOtpSent.innerHTML = `<span class="text-danger">${data.message || 'Failed to send OTP'}</span>`;
-                sendEmailOtpBtn.disabled = false;
-                emailInput.readOnly = false;
-            }
-        })
-        .catch(() => {
-            emailOtpSent.innerHTML = '<span class="text-danger">Failed to connect to server.</span>';
-            sendEmailOtpBtn.disabled = false;
-            emailInput.readOnly = false;
-        });
-    };
-
-    // VERIFY EMAIL OTP
-    verifyEmailOtpBtn.onclick = function () {
-        let otp = emailOtpInput.value.trim();
-        let email = emailInput.value.trim();
-
-        if (otp === "" || otp.length !== 6) {
-            emailOtpStatus.innerHTML = "<span class='text-danger'>Enter a 6-digit OTP</span>";
+        if(gstNum.length < 15) {
+            alert("Please enter a valid 15-digit GST number first!");
+            this.value = "";
             return;
         }
 
-        emailOtpStatus.innerHTML = "<span class='text-primary'>Verifying...</span>";
-        verifyEmailOtpBtn.disabled = true;
+        status.innerText = "Scanning Certificate...";
+        status.className = "text-warning";
 
-        fetch("{% url 'verify_email_otp' %}", {
-            method: "POST",
-            headers: {
-                "X-CSRFToken": "{{ csrf_token }}",
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ otp: otp, email: email })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.status === "success") {
-                emailOtpStatus.innerHTML = "<span class='text-success'>OTP Verified!</span>";
-                isEmailVerified = true;
-                emailOtpInput.disabled = true;
-                verifyEmailOtpBtn.disabled = true;
-                checkForm(); // Re-check to enable Register button
+        try {
+            const worker = await Tesseract.createWorker('eng');
+            const { data: { text } } = await worker.recognize(this.files[0]);
+            await worker.terminate();
+
+            if(text.toUpperCase().includes(gstNum)) {
+                status.innerText = "✅ GST Verified Successfully!";
+                status.className = "text-success";
             } else {
-                emailOtpStatus.innerHTML = `<span class='text-danger'>${data.message || 'Invalid OTP'}</span>`;
-                verifyEmailOtpBtn.disabled = false;
-                isEmailVerified = false;
+                status.innerText = "❌ GST Mismatch in Document";
+                status.className = "text-danger";
             }
-        })
-        .catch(() => {
-            emailOtpStatus.innerHTML = "<span class='text-danger'>Verification Failed due to server error.</span>";
-            verifyEmailOtpBtn.disabled = false;
-            isEmailVerified = false;
-        });
-    };
-
-    // --- Event Listeners for Real-time Validation and CheckForm ---
-
-    // Listeners for input and change events to keep the Register button status updated
-    inputsToValidate.forEach(i => i.addEventListener("input", checkForm));
-    passwordField.addEventListener("input", checkForm);
-    confirmPassInput.addEventListener("input", checkForm);
-    genderInputs.forEach(g => g.addEventListener("change", checkForm));
-
-    // Listeners for blur events to show validation messages
-    inputsToValidate.forEach(i => i.addEventListener("blur", () => { validateField(i); checkForm(); }));
-    passwordField.addEventListener("blur", () => { validatePassword(); checkForm(); });
-    confirmPassInput.addEventListener("blur", () => { validateConfirmPassword(); checkForm(); });
-
-    // Handle form submission (if required fields are invalid)
-    form.addEventListener('submit', function(event) {
-        if (!checkForm(true)) {
-            event.preventDefault();
-            const firstInvalid = form.querySelector('.is-invalid, .rule-invalid');
-            if(firstInvalid) firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } catch(e) {
+            status.innerText = "Scanning Error";
         }
-    });
-
-    // Initial check (Important)
-    checkForm();
-});
+    };
 </script>
-
 {% endblock %}

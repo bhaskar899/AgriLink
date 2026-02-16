@@ -1,142 +1,204 @@
 {% extends 'master.html' %}
-{% block title %}Farmer Login{% endblock %}
+{% block title %}Farmer Login - AgriLink{% endblock %}
 {% block body %}
 
-<!-- BACK BUTTON -->
-<div class="back-btn-wrapper">
-    <button class="back-btn" onclick="goBack()">⬅ Back</button>
-</div>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-.back-btn-wrapper{
-    margin-top: 89px; /* adjust this according to your navbar height */
-    margin-bottom: 15px;
-    margin-left:20px;
+:root {
+    --farmer-green: #198754;
+    --farmer-dark: #0f172a;
+    --glass-bg: rgba(255, 255, 255, 0.95);
 }
-.back-btn{
+
+/* White Space Fix - Stretching the background */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: #f8fafc;
+}
+
+.auth-wrapper {
+    flex-grow: 1;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 160px 20px 80px;
+    position: relative;
+}
+
+/* Back Button Position */
+.back-btn {
+    position: absolute;
+    top: 120px;
+    left: 40px;
+    text-decoration: none;
+    color: var(--farmer-dark);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 1000;
+    padding: 12px 20px;
+    background: white;
+    border-radius: 50px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: 0.3s ease;
+    border: 1px solid #e2e8f0;
+}
+
+.back-btn:hover {
+    background: var(--farmer-green);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.auth-card {
+    max-width: 450px;
+    width: 100%;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+    padding: 45px 35px;
+    position: relative;
+    z-index: 2;
+}
+
+.icon-box {
+    width: 70px; height: 70px;
+    background: linear-gradient(135deg, #198754, #28a745);
+    color: white; border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.2rem; margin: 0 auto 15px;
+}
+
+.auth-header { text-align: center; margin-bottom: 30px; }
+.auth-header h2 { font-size: 1.7rem; font-weight: 800; color: var(--farmer-dark); }
+
+.form-label { font-weight: 700; font-size: 0.85rem; color: #64748b; margin-bottom: 8px; display: block; }
+
+/* Custom Input Group for Eye Icon */
+.input-group-custom { position: relative; margin-bottom: 20px; }
+.input-group-custom i.main-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; z-index: 5; }
+
+.form-control {
+    width: 100%; border: 1.5px solid #e2e8f0; border-radius: 14px;
+    padding: 12px 40px 12px 45px; /* Added right padding for eye icon */
+    background: #f8fafc; transition: 0.3s;
+}
+
+.form-control:focus { border-color: var(--farmer-green); background: white; box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.1); outline: none; }
+
+/* Eye Button Style */
+.eye-btn {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
     border: none;
-    padding: 12px 26px;
-    border-radius: 35px;
-    background: linear-gradient(135deg,#198754,#2ecc71);
-    color: #fff;
-    font-weight: 600;
+    color: #94a3b8;
     cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    transition: .3s;
+    z-index: 10;
+    padding: 0;
 }
-.back-btn:hover{
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(0,0,0,.35);
+
+.btn-auth-primary {
+    background: var(--farmer-dark); color: white; border: none; width: 100%;
+    padding: 16px; font-weight: 700; border-radius: 16px; transition: 0.3s;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
 }
-.back-btn:active{
-    transform: scale(.95);
+
+.btn-auth-primary:hover { background: #1e293b; transform: translateY(-2px); }
+
+.auth-footer { text-align: center; margin-top: 25px; border-top: 1px solid #f1f5f9; padding-top: 20px; }
+.auth-link { color: var(--farmer-green); text-decoration: none; font-weight: 700; }
+
+footer { margin-top: 0 !important; }
+
+@media (max-width: 768px) {
+    .back-btn { top: 100px; left: 20px; }
+    .auth-wrapper { padding-top: 180px; }
 }
 </style>
 
-<script>
-function goBack(){
-    window.history.back();
-}
-</script>
-<style>
-.btn-primary-custom {
-  background-color: #0056D6 !important;
-  border: none !important;
-  color: white !important;
-  padding: 10px;
-  border-radius: 8px;
-  font-weight: 500;
-  transition: 0.3s ease;
-}
-.btn-primary-custom:hover {
-  background-color: #003C99 !important;
-  transform: scale(1.03);
-}
-.card:hover {
-  transform: scale(1.02);
-  box-shadow:0 0 18px rgba(0,0,0,0.3);
-}
-.is-invalid { border-color: red !important; }
-.invalid-feedback { display: block; color: red; font-size: 0.9rem; }
-.input-group button { border-radius: 0 8px 8px 0; }
-</style>
+<div class="auth-wrapper">
+    <a href="javascript:history.back()" class="back-btn">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
 
-<div class="container mt-5 d-flex justify-content-center">
-  <div class="card shadow-lg p-4" style="max-width:650px; width:100%; border-radius:15px; transition:0.3s;">
-    <h2 class="text-center mb-4">Farmer Login</h2>
-
-    {% if error %}
-      <div class="alert alert-danger">{{ error }}</div>
-    {% endif %}
-
-    <form method="post" action="{% url 'farmer_login' %}" id="farmerLoginForm">
-      {% csrf_token %}
-
-      <div class="mb-3">
-        <label class="form-label">Username</label>
-        <input type="text" class="form-control form-control-lg" name="name" placeholder="Enter username" required>
-        <div class="invalid-feedback">Please enter your username.</div>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Password</label>
-        <div class="input-group">
-          <input type="password" class="form-control form-control-lg" name="password" placeholder="Enter password" id="passwordField" required>
-          <button type="button" class="btn btn-outline-secondary" id="togglePassword">
-            <i class="fa fa-eye-slash" id="passwordIcon"></i>
-          </button>
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="icon-box">
+                <i class="fas fa-seedling"></i>
+            </div>
+            <h2>Farmer Login</h2>
+            <p class="text-muted small">Welcome back! Please login.</p>
         </div>
-        <div class="invalid-feedback">Please enter your password.</div>
-      </div>
 
-      <button type="submit" class="btn btn-primary-custom w-100">Login</button>
+        {% if error %}
+            <div class="alert alert-danger py-2 small text-center" style="border-radius: 10px;">
+                {{ error }}
+            </div>
+        {% endif %}
 
-      <div class="text-center mt-3">
-        <a href="{% url 'forgot_password' %}">Forgot Password?</a>
-      </div>
-    </form>
-  </div>
+        <form method="post" action="{% url 'farmer_login' %}">
+            {% csrf_token %}
+
+            <label class="form-label">Username</label>
+            <div class="input-group-custom">
+                <i class="fas fa-user main-icon"></i>
+                <input type="text" class="form-control" name="name" placeholder="Enter username" required autofocus>
+            </div>
+
+            <label class="form-label">Password</label>
+            <div class="input-group-custom">
+                <i class="fas fa-lock main-icon"></i>
+                <input type="password" class="form-control" name="password" id="passwordField" placeholder="••••••••" required>
+                <button type="button" class="eye-btn" onclick="togglePassword()">
+                    <i class="fas fa-eye-slash" id="passwordIcon"></i>
+                </button>
+            </div>
+
+            <div class="d-flex justify-content-end mb-4">
+                <a href="{% url 'forgot_password' %}" class="auth-link small">Forgot Password?</a>
+            </div>
+
+            <button type="submit" class="btn btn-auth-primary w-100">
+                Login <i class="fas fa-sign-in-alt"></i>
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p class="text-muted small mb-0">
+                Don't have an account? <a href="{% url 'farmer_register' %}" class="auth-link">Register Here</a>
+            </p>
+        </div>
+    </div>
 </div>
 
 <script>
-// Password show/hide toggle
-document.getElementById('togglePassword').addEventListener('click', function() {
-    const passwordInput = document.getElementById('passwordField');
+function togglePassword() {
+    const input = document.getElementById('passwordField');
     const icon = document.getElementById('passwordIcon');
-    if(passwordInput.type === "password") {
-        passwordInput.type = "text";
+
+    if (input.type === 'password') {
+        input.type = 'text';
         icon.classList.remove('fa-eye-slash');
         icon.classList.add('fa-eye');
     } else {
-        passwordInput.type = "password";
+        input.type = 'password';
         icon.classList.remove('fa-eye');
         icon.classList.add('fa-eye-slash');
     }
-});
-
-// Simple front-end validation
-const form = document.getElementById('farmerLoginForm');
-form.addEventListener('submit', function(e) {
-    let valid = true;
-    const username = form.querySelector('input[name="name"]');
-    const password = form.querySelector('input[name="password"]');
-
-    if(username.value.trim() === "") {
-        username.classList.add('is-invalid');
-        valid = false;
-    } else {
-        username.classList.remove('is-invalid');
-    }
-
-    if(password.value.trim() === "") {
-        password.classList.add('is-invalid');
-        valid = false;
-    } else {
-        password.classList.remove('is-invalid');
-    }
-
-    if(!valid) e.preventDefault();
-});
+}
 </script>
 
 {% endblock %}

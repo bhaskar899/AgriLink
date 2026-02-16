@@ -1,118 +1,173 @@
 {% extends 'master.html' %}
 {% load custom_filters %}
-{% block title %}My Orders{% endblock %}
+{% block title %}My Orders | AgriLink{% endblock %}
 {% block body %}
 
-<!-- BACK BUTTON -->
-<div class="back-btn-wrapper">
-    <button class="back-btn" onclick="goBack()">⬅ Back</button>
-</div>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-.back-btn-wrapper{
-    margin-top: 89px; /* adjust this according to your navbar height */
-    margin-bottom: 15px;
-    margin-left:20px;
-}
-.back-btn{
-    border: none;
-    padding: 12px 26px;
-    border-radius: 35px;
-    background: linear-gradient(135deg,#198754,#2ecc71);
-    color: #fff;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    transition: .3s;
-}
-.back-btn:hover{
-    transform: translateY(-3px);
-    box-shadow: 0 15px 35px rgba(0,0,0,.35);
-}
-.back-btn:active{
-    transform: scale(.95);
-}
+    :root {
+        --primary-green: #198754;
+        --dark-green: #16423C;
+        --glass-bg: rgba(255, 255, 255, 0.9);
+    }
+
+    body {
+        background: linear-gradient(135deg, #f0f9f4 0%, #e6f0eb 100%);
+        background-attachment: fixed;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .main-wrapper { margin-top: 110px; padding-bottom: 80px; }
+
+    /* Modern Back Button */
+    .btn-back-nav {
+        border: none; padding: 12px 24px; border-radius: 50px;
+        background: white; color: var(--primary-green);
+        font-weight: 700; text-decoration: none; display: inline-flex;
+        align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        transition: 0.3s; border: 1px solid #d1e7dd;
+    }
+    .btn-back-nav:hover { transform: translateX(-5px); background: var(--primary-green); color: white; }
+
+    /* Header Styling */
+    .orders-header {
+        background: var(--glass-bg); backdrop-filter: blur(10px);
+        border-radius: 20px; padding: 25px; border: 1px solid rgba(255,255,255,0.6);
+        margin-bottom: 40px; display: flex; justify-content: space-between; align-items: center;
+    }
+
+    /* Modern Order Card */
+    .order-card {
+        background: white; border-radius: 25px; border: none;
+        transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        overflow: hidden; position: relative; height: 100%;
+    }
+    .order-card:hover { transform: translateY(-10px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+
+    .card-top {
+        padding: 20px; border-bottom: 1px dashed #eee;
+        display: flex; justify-content: space-between; align-items: flex-start;
+    }
+
+    .order-id { font-size: 0.75rem; font-weight: 800; color: #8ba696; text-transform: uppercase; }
+
+    /* Status Pills */
+    .status-pill {
+        padding: 6px 14px; border-radius: 12px; font-weight: 800; font-size: 0.7rem; text-transform: uppercase;
+    }
+    .status-pending { background: #f5f5f5; color: #666; }
+    .status-accepted { background: #e3f2fd; color: #0d6efd; }
+    .status-packed { background: #e0f7fa; color: #00acc1; }
+    .status-dispatched { background: #fff3e0; color: #fb8c00; }
+    .status-delivered, .status-paid { background: #e8f5e9; color: #198754; }
+
+    .card-mid { padding: 20px; }
+    .product-name { font-weight: 800; font-size: 1.2rem; color: var(--dark-green); margin-bottom: 5px; }
+    .farmer-name { font-size: 0.9rem; color: #666; font-weight: 600; }
+
+    .price-box {
+        background: #f8faf9; border-radius: 15px; padding: 15px;
+        display: flex; justify-content: space-between; margin-top: 15px;
+    }
+    .price-label { font-size: 0.7rem; color: #8ba696; font-weight: 800; display: block; }
+    .price-val { font-size: 1rem; font-weight: 800; color: var(--dark-green); }
+
+    /* Action Buttons */
+    .action-grid {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 20px 20px 20px;
+    }
+    .btn-track {
+        background: var(--dark-green); color: white; border: none;
+        border-radius: 12px; padding: 10px; font-weight: 700; text-decoration: none;
+        text-align: center; transition: 0.3s;
+    }
+    .btn-track:hover { background: #000; color: white; }
+
+    .btn-chat-custom {
+        background: #e3f2fd; color: #0d6efd; border: none;
+        border-radius: 12px; padding: 10px; font-weight: 700; text-decoration: none;
+        text-align: center; transition: 0.3s;
+    }
+    .btn-chat-custom:hover { background: #0d6efd; color: white; }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .orders-header { flex-direction: column; gap: 15px; text-align: center; }
+    }
 </style>
+
+<div class="container main-wrapper">
+    <div class="orders-header shadow-sm">
+        <div>
+            <a href="javascript:history.back()" class="btn-back-nav mb-2">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+            <h2 class="fw-800 mb-0 mt-2" style="color: var(--dark-green);">📦 My Purchase Orders</h2>
+        </div>
+        <div class="text-md-end">
+            <p class="text-muted small mb-0">Track and manage your farm sourcing</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for order in orders %}
+        <div class="col-lg-4 col-md-6">
+            <div class="card order-card shadow-sm">
+                <div class="card-top">
+                    <div>
+                        <span class="order-id">ID: #{{ order.id }}</span>
+                        <p class="text-muted small mb-0">{{ order.order_date|date:"d M, Y" }}</p>
+                    </div>
+                    <span class="status-pill status-{{ order.status|lower }}">
+                        <i class="fas fa-circle me-1" style="font-size: 0.5rem;"></i> {{ order.status }}
+                    </span>
+                </div>
+
+                <div class="card-mid">
+                    <h5 class="product-name">{{ order.product.product }}</h5>
+                    <p class="farmer-name"><i class="fas fa-tractor me-1 text-success"></i> From: {{ order.farmer.name }}</p>
+
+                    <div class="price-box">
+                        <div>
+                            <span class="price-label">QUANTITY</span>
+                            <span class="price-val">{{ order.quantity }} kg</span>
+                        </div>
+                        <div class="text-end">
+                            <span class="price-label">TOTAL PAID</span>
+                            <span class="price-val text-success">₹{{ order.quantity|mul:order.product.price }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-grid">
+                    <a href="{% url 'track_order' order.id %}" class="btn-track">
+                        <i class="fas fa-map-marker-alt me-1"></i> Track
+                    </a>
+                    <a href="{% url 'chat' order.id %}" class="btn-chat-custom">
+                        <i class="fas fa-comments me-1"></i> Chat
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <div class="p-5 rounded-5 bg-white shadow-sm border border-dashed">
+                <i class="fas fa-shopping-bag fa-4x text-muted opacity-25 mb-4"></i>
+                <h4 class="fw-bold">No Orders Found</h4>
+                <p class="text-muted">You haven't placed any orders yet. Visit the marketplace to start shopping.</p>
+                <a href="/retailer_home/" class="btn btn-success rounded-pill px-5 mt-3">Go to Marketplace</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 
 <script>
 function goBack(){
     window.history.back();
 }
 </script>
-<div class="container mt-5">
-  <div class="card shadow p-4"><br><br>
-
-    <h2 class="text-center mb-4">📦 My Orders</h2><br>
-
-    <!-- ✅ FULL RESPONSIVE TABLE -->
-    <div class="table-responsive">
-      <table class="table table-bordered table-striped text-center">
-        <thead class="table-success">
-          <tr>
-            <th>Order ID</th>
-            <th>Product</th>
-            <th>Farmer</th>
-            <th>Quantity</th>
-            <th>Total Price</th>
-            <th>Status</th>
-            <th>Track</th>
-            <th>Chat</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {% for order in orders %}
-          <tr>
-            <td>#{{ order.id }}</td>
-            <td>{{ order.product.product }}</td>
-            <td>{{ order.farmer.name }}</td>
-            <td>{{ order.quantity }} kg</td>
-
-            <!-- Correct total price -->
-            <td>₹{{ order.quantity|mul:order.product.price }}</td>
-
-            <!-- Status badges -->
-            <td>
-              {% if order.status == "Pending" %}
-                <span class="badge bg-secondary">{{ order.status }}</span>
-              {% elif order.status == "Accepted" %}
-                <span class="badge bg-primary">{{ order.status }}</span>
-              {% elif order.status == "Packed" %}
-                <span class="badge bg-info">{{ order.status }}</span>
-              {% elif order.status == "Dispatched" %}
-                <span class="badge bg-warning text-dark">{{ order.status }}</span>
-              {% elif order.status == "Delivered" %}
-                <span class="badge bg-success">{{ order.status }}</span>
-              {% elif order.status == "Paid" %}
-                <span class="badge bg-success">Paid</span>
-              {% else %}
-                <span class="badge bg-dark">{{ order.status }}</span>
-              {% endif %}
-            </td>
-
-            <!-- Track button -->
-            <td>
-              <a href="{% url 'track_order' order.id %}" class="btn btn-outline-info btn-sm">Track</a>
-            </td>
-
-            <!-- Chat button -->
-            <td>
-              <a href="{% url 'chat' order.id %}" class="btn btn-outline-primary btn-sm">💬 Chat</a>
-            </td>
-          </tr>
-
-          {% empty %}
-          <tr>
-            <td colspan="8" class="text-center text-muted">No orders found yet.</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-
-      </table>
-    </div>
-    <!-- END responsive wrapper -->
-
-  </div>
-</div>
 
 {% endblock %}
