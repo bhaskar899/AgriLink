@@ -1042,7 +1042,7 @@ def payment_success(request, order_id):
         Notification.objects.create(
             sender_retailer=order.retailer,
             receiver_farmer=order.farmer,
-            message=f"Payment received for Order #{order.id}. Farmer amount ₹{farmer_amount}"
+            message=f"Payment received for Order #{order.id}. Your payment of ₹{farmer_amount} will be credited to your bank account within 24 hours."
         )
         print(f"Order #{order.id} status updated to Paid.")
 
