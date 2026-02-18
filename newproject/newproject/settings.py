@@ -205,3 +205,24 @@ USE_L10N = True
 LOGIN_URL = 'retailer_login'  # Agar login nahi hai toh yahan bhejega
 LOGIN_REDIRECT_URL = 'retailer_dashboard'  # Login hone ke baad yahan bhejega
 LOGOUT_REDIRECT_URL = 'home'  # Logout hone ke baad yahan bhejega
+
+# ---------------------
+# DATABASE
+# ---------------------
+DATABASE_URL = os.environ.get("DATABASE_URL")
+
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=600,
+            ssl_require=True
+        )
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
