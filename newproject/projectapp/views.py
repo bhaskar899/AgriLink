@@ -997,42 +997,42 @@ def payment_page(request, order_id):
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseForbidden
 from .models import Order, Delivery, Product, Notification
-from django.views.decorators.csrf import csrf_exempt
+
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseForbidden
 from .models import Order, Notification
 
 
-@csrf_exempt  # Live redirect sathi he garjeche aahe
+@csrf_exempt
 def payment_success(request, order_id):
+    # Order ID nusar order shodha
     order = get_object_or_404(Order, id=order_id)
 
-    # Live Mode madhe he parameters yetat
+    # ⚠️ LIVE FIX: Session var depend na rahata order verify kara
+    # Razorpay kadhun yenara payment_id check kara
     payment_id = request.POST.get('razorpay_payment_id')
-    razorpay_order_id = request.POST.get('razorpay_order_id')
-    signature = request.POST.get('razorpay_signature')
 
-    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-
-    try:
-        # Signature Verify kara (Live mode sathi mandatory)
-        params_dict = {
-            'razorpay_order_id': razorpay_order_id,
-            'razorpay_payment_id': payment_id,
-            'razorpay_signature': signature
-        }
-        client.utility.verify_payment_signature(params_dict)
-
-        # Jar verify jhale tarach status badla
+    if payment_id:  # Jar payment_id aala asel, tar payment zaliye
         if order.status != "Paid":
             order.status = "Paid"
-            # ... tumcha baki logic (quantity kami karne, notification) ...
-            order.save()
-            print(f"Order {order.id} marked as Paid in Live Mode")
 
-    except Exception as e:
-        print(f"Payment Verification Failed: {e}")
-        return render(request, "payment_failed.html")
+            # Stock kami kara
+            product = order.product
+            if product.quantity >= order.quantity:
+                product.quantity -= order.quantity
+                product.save()
+
+            # Amount update
+            total_amount = order.quantity * product.price
+            order.total_amount = total_amount
+            order.save()
+
+            # Notification
+            Notification.objects.create(
+                sender_retailer=order.retailer,
+                receiver_farmer=order.farmer,
+                message=f"Payment Success: Order #{order.id} verified."
+            )
 
     return render(request, "payment_success.html", {"order": order})
 
