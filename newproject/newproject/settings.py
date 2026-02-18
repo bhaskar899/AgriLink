@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 # ---------------------
 SECRET_KEY = 'django-insecure-your-secret-key'
-DEBUG = True
+DEBUG = False
 ALLOWED_HOSTS = ['*']
 
 # ---------------------
@@ -159,14 +159,15 @@ RAZORPAY_KEY_SECRET = "QD36AGTlyzRhuwdLVziqWNUj"
 # ---------------------
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'smtp-relay.brevo.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = os.environ.get("bhaskaryhubale.899gmail.com")
-EMAIL_HOST_PASSWORD = os.environ.get("liox giwz dlvz mpov")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
 
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = "bhaskaryhubale.899@gmail.com"
+
 
 # ---------------------
 # DEFAULT FIELD TYPE
