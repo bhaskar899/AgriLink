@@ -372,7 +372,7 @@ class Order(models.Model):
         ('Paid', 'Paid'),
     ]
 
-    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='orders')
+    product = models.ForeignKey('Product', on_delete=models.PROTECT, related_name='orders')
     farmer = models.ForeignKey('Farmer', on_delete=models.CASCADE, related_name='orders', default=1)
     retailer = models.ForeignKey('Retailer', on_delete=models.CASCADE, related_name='orders')
     quantity = models.IntegerField(default=1)
