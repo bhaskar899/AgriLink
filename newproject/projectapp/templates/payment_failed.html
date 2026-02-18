@@ -1,0 +1,8 @@
+{% extends 'master.html' %}
+{% block body %}
+<div class="container text-center" style="margin-top: 150px;">
+    <h2 class="text-danger">Payment Verification Failed!</h2>
+    <p>Tumche payment verify hou shakle nahi. Kripaya support la contact kara.</p>
+    <a href="{% url 'retailer_dashboard' %}" class="btn btn-primary">Go to Dashboard</a>
+</div>
+{% endblock %}
