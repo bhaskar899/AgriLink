@@ -136,6 +136,8 @@ class Notification(models.Model):
     def __str__(self):
         return f"{self.message[:30]}..."
 
+
+
 # Order model (unchanged)
 # ------------------------
 
