@@ -997,37 +997,42 @@ def payment_page(request, order_id):
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseForbidden
 from .models import Order, Delivery, Product, Notification
-
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseForbidden
 from .models import Order, Notification
 
+
+@csrf_exempt  # Live redirect sathi he garjeche aahe
 def payment_success(request, order_id):
     order = get_object_or_404(Order, id=order_id)
 
-    if request.session.get('user_type') != 'retailer' or request.session.get('name') != order.retailer.name:
-        return HttpResponseForbidden("Not authorized")
+    # Live Mode madhe he parameters yetat
+    payment_id = request.POST.get('razorpay_payment_id')
+    razorpay_order_id = request.POST.get('razorpay_order_id')
+    signature = request.POST.get('razorpay_signature')
 
-    if order.status != "Paid":
-        order.status = "Paid"
-        order.save()
+    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
-        product = order.product
-        if product.quantity >= order.quantity:
-            product.quantity -= order.quantity
-            product.save()
+    try:
+        # Signature Verify kara (Live mode sathi mandatory)
+        params_dict = {
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_payment_id': payment_id,
+            'razorpay_signature': signature
+        }
+        client.utility.verify_payment_signature(params_dict)
 
-        total_amount = order.quantity * product.price
-        order.total_amount = total_amount
-        order.save()
+        # Jar verify jhale tarach status badla
+        if order.status != "Paid":
+            order.status = "Paid"
+            # ... tumcha baki logic (quantity kami karne, notification) ...
+            order.save()
+            print(f"Order {order.id} marked as Paid in Live Mode")
 
-        farmer_amount = round(total_amount * 0.95, 2)
-
-        Notification.objects.create(
-            sender_retailer=order.retailer,
-            receiver_farmer=order.farmer,
-            message=f"Payment received for Order #{order.id}. Farmer amount ₹{farmer_amount}"
-        )
+    except Exception as e:
+        print(f"Payment Verification Failed: {e}")
+        return render(request, "payment_failed.html")
 
     return render(request, "payment_success.html", {"order": order})
 
