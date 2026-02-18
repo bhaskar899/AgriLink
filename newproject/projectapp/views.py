@@ -997,7 +997,7 @@ def payment_page(request, order_id):
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseForbidden
 from .models import Order, Delivery, Product, Notification
-
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponseForbidden
 from .models import Order, Notification
