@@ -951,6 +951,8 @@ from .models import Product, Order, Retailer, Farmer, Driver, Delivery, Notifica
 
 
 
+
+
 from django.shortcuts import render, get_object_or_404, redirect
 
 from django.http import HttpResponseForbidden
@@ -959,9 +961,7 @@ from .models import Order, Notification, Driver
 from django.conf import settings
 import razorpay
 
-# ------------------------
-# Payment Page
-# ------------------------
+
 def payment_page(request, order_id):
     order = get_object_or_404(Order, id=order_id)
 
@@ -990,6 +990,9 @@ def payment_page(request, order_id):
         "razorpay_key": settings.RAZORPAY_KEY_ID,
     }
     return render(request, "payment_page.html", context)
+
+
+
 
 # ------------------------
 # Payment Success
