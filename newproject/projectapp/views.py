@@ -1124,10 +1124,8 @@ from .models import Driver
 
 def driver_register(request):
     if request.method == "POST":
-        # .strip() removes accidental spaces, .lower() ensures consistency
         email = request.POST.get('email', '').strip().lower()
 
-        # Check if email already exists
         if Driver.objects.filter(email=email).exists():
             messages.error(request, "An account with this email already exists.")
             return redirect('driver_register')
@@ -1136,7 +1134,6 @@ def driver_register(request):
         name = request.POST.get('name')
         phone = request.POST.get('phone')
 
-        # Vehicle & Document Data
         vehicle_number = request.POST.get('vehicle_number', '').upper()
         vehicle_type = request.POST.get('vehicle_type')
         capacity = request.POST.get('capacity')
@@ -1149,11 +1146,12 @@ def driver_register(request):
         expiry_date = request.POST.get('license_expiry_date')
 
         try:
+            # 🟢 Yahan badlav kiya gaya hai
             driver = Driver.objects.create(
                 name=name,
                 email=email,
                 phone=phone,
-                password=make_password(password),  # Hashing the password
+                password=password,  # ❌ make_password hata diya, ab plain text save hoga
                 vehicle_type=vehicle_type,
                 vehicle_number=vehicle_number,
                 capacity_kg=capacity,
@@ -1161,17 +1159,17 @@ def driver_register(request):
                 location=location,
                 license_doc=license_img,
                 vehicle_photo=vehicle_img,
-                license_issue_date=issue_date,
-                license_expiry_date=expiry_date,
+                license_issue_date=issue_date or None, # Date agar empty ho toh None
+                license_expiry_date=expiry_date or None,
                 email_verified=True
             )
 
-            # Auto-login after registration
             request.session['id'] = driver.id
             request.session['user_type'] = 'driver'
+            request.session['name'] = driver.name
 
             messages.success(request, "Registration successful! Welcome to the fleet.")
-            return redirect('driver_dashboard')  # Or driver_profile
+            return redirect('driver_dashboard')
 
         except Exception as e:
             messages.error(request, f"Registration failed: {str(e)}")
@@ -1179,10 +1177,13 @@ def driver_register(request):
 
     return render(request, "driver_register.html")
 
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Driver
 
 def driver_login(request):
     if request.method == "POST":
-        email = request.POST.get("email", "").strip().lower()  # Normalize here too
+        email = request.POST.get("email", "").strip().lower()
         password = request.POST.get("password", "").strip()
 
         if not email or not password:
@@ -1190,26 +1191,27 @@ def driver_login(request):
             return redirect("driver_login")
 
         try:
-            # Querying the database
+            # Database se driver ko find karein
             driver = Driver.objects.get(email=email)
 
-            # 🔐 Check hashed password
-            if not check_password(password, driver.password):
+            # ✅ Plain Text Password Check (No Hashing)
+            # Yahan hum seedha database ke password aur user ke input ko compare kar rahe hain
+            if driver.password != password:
                 messages.error(request, "Incorrect password")
                 return redirect("driver_login")
 
-            # 📧 Check verification
+            # 📧 Email verification check
             if not driver.email_verified:
                 messages.error(request, "Please verify your email before login.")
                 return redirect("driver_login")
 
-            # ✅ Save session data
+            # ✅ Session data save karein
             request.session['id'] = driver.id
             request.session['user_type'] = 'driver'
             request.session['name'] = driver.name
 
-            # Handling profile image safely
-            if hasattr(driver, 'driver_photo') and driver.driver_photo:
+            # Profile image ko handle karein
+            if driver.driver_photo:
                 request.session['profile_image'] = driver.driver_photo.url
             else:
                 request.session['profile_image'] = '/static/images/no-image.jpg'
@@ -1218,12 +1220,10 @@ def driver_login(request):
             return redirect('driver_dashboard')
 
         except Driver.DoesNotExist:
-            # This triggers if the email isn't found at all
             messages.error(request, "No account found with that email.")
             return redirect("driver_login")
 
     return render(request, "driver_login.html")
-
 
 
 def driver_logout(request):
