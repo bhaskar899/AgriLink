@@ -1116,10 +1116,73 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from .models import Driver
 
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.hashers import make_password, check_password
+from .models import Driver
+
+
+def driver_register(request):
+    if request.method == "POST":
+        # .strip() removes accidental spaces, .lower() ensures consistency
+        email = request.POST.get('email', '').strip().lower()
+
+        # Check if email already exists
+        if Driver.objects.filter(email=email).exists():
+            messages.error(request, "An account with this email already exists.")
+            return redirect('driver_register')
+
+        password = request.POST.get('password')
+        name = request.POST.get('name')
+        phone = request.POST.get('phone')
+
+        # Vehicle & Document Data
+        vehicle_number = request.POST.get('vehicle_number', '').upper()
+        vehicle_type = request.POST.get('vehicle_type')
+        capacity = request.POST.get('capacity')
+        rate = request.POST.get('rate_per_km')
+        location = request.POST.get('location')
+
+        license_img = request.FILES.get('license_image')
+        vehicle_img = request.FILES.get('vehicle_image')
+        issue_date = request.POST.get('license_issue_date')
+        expiry_date = request.POST.get('license_expiry_date')
+
+        try:
+            driver = Driver.objects.create(
+                name=name,
+                email=email,
+                phone=phone,
+                password=make_password(password),  # Hashing the password
+                vehicle_type=vehicle_type,
+                vehicle_number=vehicle_number,
+                capacity_kg=capacity,
+                rate_per_km=rate,
+                location=location,
+                license_doc=license_img,
+                vehicle_photo=vehicle_img,
+                license_issue_date=issue_date,
+                license_expiry_date=expiry_date,
+                email_verified=True
+            )
+
+            # Auto-login after registration
+            request.session['id'] = driver.id
+            request.session['user_type'] = 'driver'
+
+            messages.success(request, "Registration successful! Welcome to the fleet.")
+            return redirect('driver_dashboard')  # Or driver_profile
+
+        except Exception as e:
+            messages.error(request, f"Registration failed: {str(e)}")
+            return redirect('driver_register')
+
+    return render(request, "driver_register.html")
+
 
 def driver_login(request):
     if request.method == "POST":
-        email = request.POST.get("email", "").strip()
+        email = request.POST.get("email", "").strip().lower()  # Normalize here too
         password = request.POST.get("password", "").strip()
 
         if not email or not password:
@@ -1127,6 +1190,7 @@ def driver_login(request):
             return redirect("driver_login")
 
         try:
+            # Querying the database
             driver = Driver.objects.get(email=email)
 
             # 🔐 Check hashed password
@@ -1134,29 +1198,33 @@ def driver_login(request):
                 messages.error(request, "Incorrect password")
                 return redirect("driver_login")
 
-            # 📧 Check email verified
+            # 📧 Check verification
             if not driver.email_verified:
                 messages.error(request, "Please verify your email before login.")
-                return redirect("driver_register")
+                return redirect("driver_login")
 
-            # ✅ Save session
+            # ✅ Save session data
             request.session['id'] = driver.id
             request.session['user_type'] = 'driver'
             request.session['name'] = driver.name
-            request.session['profile_image'] = (
-                driver.driver_photo.url
-                if driver.driver_photo
-                else '/static/images/no-image.jpg'
-            )
 
-            messages.success(request, f"Welcome {driver.name}!")
+            # Handling profile image safely
+            if hasattr(driver, 'driver_photo') and driver.driver_photo:
+                request.session['profile_image'] = driver.driver_photo.url
+            else:
+                request.session['profile_image'] = '/static/images/no-image.jpg'
+
+            messages.success(request, f"Welcome back, {driver.name}!")
             return redirect('driver_dashboard')
 
         except Driver.DoesNotExist:
-            messages.error(request, "Driver not found")
+            # This triggers if the email isn't found at all
+            messages.error(request, "No account found with that email.")
             return redirect("driver_login")
 
     return render(request, "driver_login.html")
+
+
 
 def driver_logout(request):
     request.session.flush()
@@ -1193,57 +1261,6 @@ from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from django.utils import timezone
 from .models import Driver  # Ensure your model name is correct
-
-
-def driver_register(request):
-    if request.method == "POST":
-        # Capture EXACT names from HTML attributes
-        name = request.POST.get('name')
-        email = request.POST.get('email')
-        phone = request.POST.get('phone')  # Was missing in your HTML
-        password = request.POST.get('password')
-
-        vehicle_number = request.POST.get('vehicle_number')
-        vehicle_type = request.POST.get('vehicle_type')
-        capacity = request.POST.get('capacity')
-        rate = request.POST.get('rate_per_km')  # Match name="rate_per_km"
-        location = request.POST.get('location')
-
-        # Files
-        license_img = request.FILES.get('license_image')
-        vehicle_img = request.FILES.get('vehicle_image')
-
-        # Dates
-        issue_date = request.POST.get('license_issue_date')
-        expiry_date = request.POST.get('license_expiry_date')
-
-        # Saving to Database
-        driver = Driver.objects.create(
-            name=name,
-            email=email,
-            phone=phone,
-            password=make_password(password),
-            vehicle_type=vehicle_type,
-            vehicle_number=vehicle_number,
-            capacity_kg=capacity,
-            rate_per_km=rate,
-            location=location,
-            license_doc=license_img,
-            vehicle_photo=vehicle_img,
-            license_issue_date=issue_date,
-            license_expiry_date=expiry_date,
-            email_verified=True  # Since you verified it via JS alert
-        )
-
-        # IMPORTANT: Set session so profile isn't empty
-        request.session['id'] = driver.id
-
-        messages.success(request, "Registration successful!")
-        return redirect('driver_profile')
-
-    # This prevents the 'Returned None' error
-    return render(request, "driver_register.html")
-
 
 
 
