@@ -88,6 +88,12 @@
                     <input type="file" class="form-control" id="docFile" name="farmer_document" required>
                     <small id="ocrStatus" class="fw-bold d-block mb-3"></small>
 
+                    <div class="section-title">Bank Details</div>
+                    <label class="form-label">Bank Account Number</label>
+                    <input type="text" class="form-control" name="bank_account_number" required>
+
+                    <label class="form-label">IFSC Code</label>
+                    <input type="text" class="form-control" name="ifsc_code" id="ifscInput" placeholder="Ex: SBIN0012345" required>
                     <div class="section-title">Security</div>
 
                     <div class="pass-group">
@@ -112,7 +118,7 @@
     // 1. Password Visibility Toggle
     function togglePass(id) {
         const input = document.getElementById(id);
-        const icon = event.target;
+        const icon = event.currentTarget;
         if (input.type === "password") {
             input.type = "text";
             icon.classList.replace('fa-eye', 'fa-eye-slash');
@@ -122,68 +128,139 @@
         }
     }
 
-    // 2. Simple OTP Show
-function sendOTP() {
-    const email = document.getElementById("emailInput").value;
+    // 2. Validations & Form Submit
+    document.getElementById('farmerForm').onsubmit = function(e) {
+        let isValid = true;
 
-    if (!email) {
-        alert("Enter email first!");
-        return;
-    }
+        // Password Match Validation
+        const pass = document.getElementById('pass').value;
+        const confirm = document.getElementById('confirmPass').value;
+        const passError = document.getElementById('passError');
 
-    fetch("{% url 'send_email_otp' %}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: "email=" + encodeURIComponent(email)
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log(data);   // 🔎 debug
-
-        if (data.status === "success") {
-            alert("OTP sent successfully!");
-            document.getElementById("otpBox").style.display = "block";
+        if (pass !== confirm) {
+            passError.style.display = 'block';
+            document.getElementById('confirmPass').classList.add('is-invalid');
+            isValid = false;
         } else {
-            alert(data.message);
+            passError.style.display = 'none';
+            document.getElementById('confirmPass').classList.remove('is-invalid');
         }
-    })
-    .catch(error => {
-        console.log("Error:", error);
-        alert("Server error");
-    });
-}
-    // 3. Simple Document Verification
-    document.getElementById('docFile').onchange = async function() {
-        const survey = document.getElementById('surveyNo').value;
-        const status = document.getElementById('ocrStatus');
 
-        if(!survey) {
-            alert("Pehle Survey number bhariye!");
-            this.value = "";
+        // Mobile Validation
+        const contact = document.getElementById('contact').value;
+        if (!/^\d{10}$/.test(contact)) {
+            alert("Please enter a valid 10-digit mobile number.");
+            isValid = false;
+        }
+
+        // Pincode Validation
+        const pincode = document.getElementById('pincode').value;
+        if (!/^\d{6}$/.test(pincode)) {
+            alert("Please enter a valid 6-digit pincode.");
+            isValid = false;
+        }
+
+        // IFSC Validation
+        const ifsc = document.getElementById('ifscInput').value;
+        const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+        if (!ifscRegex.test(ifsc.toUpperCase())) {
+            alert("Please enter a valid IFSC code (e.g., SBIN0012345).");
+            isValid = false;
+        }
+
+        if (!isValid) e.preventDefault();
+        return isValid;
+    };
+
+    // 3. OTP Function
+    function sendOTP() {
+        const email = document.getElementById("emailInput").value;
+        if (!email || !email.includes('@')) {
+            alert("Please enter a valid email address!");
             return;
         }
 
-        status.innerText = "Scanning Document...";
-        status.className = "text-warning";
-
-        try {
-            const worker = await Tesseract.createWorker('eng');
-            const { data: { text } } = await worker.recognize(this.files[0]);
-            await worker.terminate();
-
-            if(text.includes(survey)) {
-                status.innerText = "✅ Match Found!";
-                status.className = "text-success";
+        fetch("{% url 'send_email_otp' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: "email=" + encodeURIComponent(email)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                alert("OTP sent successfully!");
+                document.getElementById("otpBox").style.display = "block";
             } else {
-                status.innerText = "❌ Survey Number not found";
-                status.className = "text-danger";
+                alert(data.message);
             }
-        } catch(e) {
-            status.innerText = "Error scanning file";
+        })
+        .catch(() => alert("Server error while sending OTP."));
+    }
+
+
+
+
+    // 3. Simple Document Verification
+document.getElementById('docFile').onchange = async function() {
+    // 1. User ne taklela survey number ghyaycha
+    const surveyInput = document.getElementById('surveyNo').value.trim();
+    const status = document.getElementById('ocrStatus');
+    const file = this.files[0];
+
+    if(!surveyInput) {
+        alert("Please Fill Survey Number First!");
+        this.value = "";
+        return;
+    }
+
+    status.innerText = "⏳ Processing Document (JPG, PNG, PDF, WEBP)...";
+    status.className = "text-warning fw-bold";
+
+    try {
+        let sourceForOCR = file;
+
+        // PDF Support (Ensure pdfjsLib is loaded)
+        if (file.type === "application/pdf") {
+            const pdfData = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({data: pdfData}).promise;
+            const page = await pdf.getPage(1);
+            const viewport = page.getViewport({scale: 2.0}); // Resolution vadhvli mhanje clarity yete
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            await page.render({canvasContext: context, viewport: viewport}).promise;
+            sourceForOCR = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
         }
-    };
+
+        const worker = await Tesseract.createWorker('eng');
+        const { data: { text } } = await worker.recognize(sourceForOCR);
+        await worker.terminate();
+
+        // 🔍 CLEANING LOGIC: White space ani special characters kadhun taka
+        const cleanOCRText = text.replace(/[\s\n\r/.-]/g, '').toLowerCase();
+        const cleanUserInput = surveyInput.replace(/[\s\n\r/.-]/g, '').toLowerCase();
+
+        console.log("OCR Text Found:", cleanOCRText); // Debugging sathi terminal madhe check kara
+
+        if(cleanOCRText.includes(cleanUserInput)) {
+            status.innerText = "✅ Match Found! Document Verified.";
+            status.className = "text-success fw-bold";
+        } else {
+            // Jar match nahi jhala, tar partial check kara
+            status.innerText = "❌ Match Not Found. Please upload a clearer image.";
+            status.className = "text-danger fw-bold";
+        }
+
+    } catch(e) {
+        console.error("OCR Error:", e);
+        status.innerText = "❌ Error scanning file. Try a JPG/PNG.";
+        status.className = "text-danger fw-bold";
+    }
+};
+
 </script>
 {% endblock %}

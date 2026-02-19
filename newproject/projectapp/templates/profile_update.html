@@ -152,6 +152,29 @@ body {
                         <textarea name="address" class="form-control" rows="1">{{ user.address }}</textarea>
                     </div>
                 </div>
+               {% if request.session.user_type == "farmer" %}
+<div class="col-md-6">
+    <div class="section-title">
+        <i class="fas fa-university"></i> Bank Details
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Bank Account Number</label>
+        <input type="text"
+               name="bank_account_number"
+               class="form-control"
+               value="{{ user.bank_account_number }}">
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">IFSC Code</label>
+        <input type="text"
+               name="ifsc_code"
+               class="form-control"
+               value="{{ user.ifsc_code }}">
+    </div>
+</div>
+{% endif %}
 
                 <div class="col-12 mt-5">
                     <button type="submit" class="btn btn-save w-100 shadow">

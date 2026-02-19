@@ -33,6 +33,10 @@ def contact(request):
     return render(request, "contact.html")
 
 # ---------- Authentication (simple session-based) ----------
+import re
+from django.contrib import messages
+from django.contrib.auth.hashers import make_password
+
 def farmer_register(request):
     if request.method == "POST":
         name = request.POST.get('name')
@@ -40,9 +44,48 @@ def farmer_register(request):
         password = request.POST.get('password')
         contact = request.POST.get('contact')
         address = request.POST.get('address')
+        bank_account_number = request.POST.get("bank_account_number")
+        ifsc_code = request.POST.get("ifsc_code")
         gender = request.POST.get('gender')
-        Farmer.objects.create(name=name, email=email, password=password, contact=contact, address=address, gender=gender)
+
+        # 🔹 Basic Backend Validations
+
+        # Email already exists check
+        if Farmer.objects.filter(email=email).exists():
+            messages.error(request, "Email already registered")
+            return redirect('farmer_register')
+
+        # Mobile validation
+        if not re.match(r'^\d{10}$', contact):
+            messages.error(request, "Invalid mobile number")
+            return redirect('farmer_register')
+
+        # Bank Account validation
+        if not re.match(r'^\d{9,18}$', bank_account_number):
+            messages.error(request, "Invalid bank account number")
+            return redirect('farmer_register')
+
+        # IFSC validation (convert to uppercase)
+        ifsc_code = ifsc_code.upper()
+        if not re.match(r'^[A-Z]{4}0[A-Z0-9]{6}$', ifsc_code):
+            messages.error(request, "Invalid IFSC code")
+            return redirect('farmer_register')
+
+        # 🔹 Create Farmer (Password Hashed)
+        Farmer.objects.create(
+            name=name,
+            email=email,
+            password=make_password(password),  # 🔐 secure password
+            contact=contact,
+            address=address,
+            gender=gender,
+            bank_account_number=bank_account_number,
+            ifsc_code=ifsc_code
+        )
+
+        messages.success(request, "Registration successful")
         return redirect('farmer_login')
+
     return render(request, "farmer_register.html")
 
 def farmer_login(request):
@@ -627,11 +670,21 @@ def profile_update(request):
         user.contact = request.POST.get("contact")
         user.address = request.POST.get("address")
 
+        # 🔹 Only for Farmer - Bank Details Update
+        if user_type == "farmer":
+            user.bank_account_number = request.POST.get("bank_account_number")
+            user.ifsc_code = request.POST.get("ifsc_code")
+
         if request.FILES.get("profile_image"):
             user.profile_image = request.FILES["profile_image"]
 
         user.save()
-        request.session['profile_image'] = user.profile_image.url if user.profile_image else '/static/images/no-image.jpg'
+
+        request.session['profile_image'] = (
+            user.profile_image.url if user.profile_image
+            else '/static/images/no-image.jpg'
+        )
+
         messages.success(request, "Profile updated successfully")
         return redirect("profile")
 

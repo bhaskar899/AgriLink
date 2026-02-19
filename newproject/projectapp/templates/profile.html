@@ -140,6 +140,18 @@ body {
                         <span class="fw-bold">{{ user.address }}</span>
                     </div>
                 </div>
+                <div class="farmer-info-item">
+    <i class="fas fa-university"></i>
+    <small class="d-block text-muted">Bank Account Number</small>
+    <span class="fw-bold">{{ user.bank_account_number }}</span>
+</div>
+
+<div class="farmer-info-item">
+    <i class="fas fa-code"></i>
+    <small class="d-block text-muted">IFSC Code</small>
+    <span class="fw-bold">{{ user.ifsc_code }}</span>
+</div>
+
 
                 <div class="mt-5 text-center px-md-5">
                     <a href="/profile_update/" class="btn btn-edit-pro text-decoration-none d-block">
