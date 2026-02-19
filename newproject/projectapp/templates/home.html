@@ -342,30 +342,60 @@
   <div class="container">
     <div class="text-center mb-5">
       <h2 class="fw-bold display-5">🌟 What Retailers Say</h2>
+
+      <div class="mt-2 d-flex justify-content-center align-items-center gap-2">
+        <h4 class="mb-0 fw-bold">{{ avg_rating|default:"0" }}</h4>
+        <div class="text-warning">
+          {% for i in "12345" %}
+            <i class="fa{% if forloop.counter <= avg_rating %}-solid{% else %}-regular{% endif %} fa-star"></i>
+          {% endfor %}
+        </div>
+        <span class="text-muted small">({{ reviews|length }} reviews)</span>
+      </div>
+
+      <div class="mt-4">
+        <!-- Correct link -->
+<a href="{% url 'retailer_sample_reviews' %}" class="btn btn-success rounded-pill px-4 shadow-sm">
+  <i class="fas fa-star me-2"></i> View All Reviews
+</a>
+
+
+      </div>
     </div>
+
     <div class="position-relative px-4">
       <button id="prevReview" class="review-arrow left-arrow">❮</button>
+
       <div class="d-flex overflow-hidden gap-4 py-4" id="reviewsTrack" style="scroll-snap-type: x mandatory; scrollbar-width: none;">
         {% for r in reviews %}
         <div class="card review-card border-0 shadow-sm p-4 flex-shrink-0" style="scroll-snap-align: start;">
-          <div class="card-body p-0">
-            <p class="card-text mb-4 text-secondary italic">{{ r.review }}</p>
+          <div class="card-body p-0 d-flex flex-column">
+            <p class="card-text mb-4 text-secondary italic">"{{ r.review }}"</p>
             <div class="d-flex align-items-center mt-auto border-top pt-3">
-              <div class="avatar m-0" style="width: 50px; height: 50px; font-size: 1.2rem;">{{ r.retailer.name|slice:":1"|upper }}</div>
+              <div class="avatar m-0 bg-success text-white d-flex align-items-center justify-content-center rounded-circle"
+                   style="width: 50px; height: 50px; font-size: 1.2rem;">
+                {{ r.retailer.name|slice:":1"|upper }}
+              </div>
               <div class="ms-3 text-start">
                 <h6 class="mb-0 fw-bold text-dark">{{ r.retailer.name }}</h6>
-                <div class="text-warning small">⭐ {{ r.rating }}/5</div>
+                <div class="text-warning small">
+                  {% for i in "12345" %}
+                    <i class="fa{% if forloop.counter <= r.rating %}-solid{% else %}-regular{% endif %} fa-star"></i>
+                  {% endfor %}
+                </div>
               </div>
             </div>
           </div>
         </div>
+        {% empty %}
+        <div class="w-100 text-center text-muted py-4">No reviews yet. Be the first to review!</div>
         {% endfor %}
       </div>
+
       <button id="nextReview" class="review-arrow right-arrow">❯</button>
     </div>
   </div>
 </section>
-
 <section id="contact" class="py-5">
   <div class="container">
     <div class="text-center mb-5">
