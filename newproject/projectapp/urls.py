@@ -182,6 +182,9 @@ path('reject_bid/<int:bid_id>/', views.reject_bid, name='reject_bid'),
     # Iska view asaan hai, status 'Rejected' karna hai
 path("pay_bid/<int:bid_id>/", views.pay_bid, name="pay_bid"),
 
+# तुमच्या urls.py मध्ये ही ओळ शोधा आणि खालील ओळ जोडा:
+path('mark_notification_read/<int:nid>/', views.mark_notification_read, name='mark_notification_read'),
+
 ]
 
 # ---------------- MEDIA & STATIC ----------------

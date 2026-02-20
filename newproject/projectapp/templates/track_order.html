@@ -1,200 +1,172 @@
 {% extends 'master.html' %}
-{% block title %}Track Shipment | AgriLink Pro{% endblock %}
+{% block title %}Live Tracking | AgriLink Pro{% endblock %}
 
 {% block body %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-:root {
-    --track-blue: #2563eb;
-    --track-success: #22c55e;
-    --bg-light: #f8fafc;
-}
+    :root { --primary: #198754; --dark: #16423C; --glass: rgba(255, 255, 255, 0.9); }
+    body { background: #f0f2f5; font-family: 'Plus Jakarta Sans', sans-serif; }
 
-body { background: var(--bg-light); font-family: 'Plus Jakarta Sans', sans-serif; }
+    /* 🌍 Map Styling */
+    .map-container {
+        position: relative;
+        height: 600px;
+        width: 100%;
+        border-radius: 25px;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border: 1px solid white;
+    }
+    #map { height: 100%; width: 100%; z-index: 1; }
 
-/* 🔙 Back Button */
-.back-btn-wrapper { margin-top: 100px; margin-left: 20px; margin-bottom: 20px; }
-.btn-modern-back {
-    border: none; padding: 10px 22px; border-radius: 12px;
-    background: white; color: #1e293b; font-weight: 600;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: 0.3s;
-}
-.btn-modern-back:hover { transform: translateX(-5px); background: #f1f5f9; }
+    /* 🛰️ Floating Info Card */
+    .floating-card {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 320px;
+        background: var(--glass);
+        backdrop-filter: blur(10px);
+        padding: 20px;
+        border-radius: 20px;
+        z-index: 1000;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255,255,255,0.5);
+    }
 
-/* 📦 Info Card */
-.tracking-card {
-    background: white; border-radius: 24px; border: none;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.04); overflow: hidden;
-}
+    .live-dot {
+        height: 10px; width: 10px; background: #ff4757;
+        border-radius: 50%; display: inline-block;
+        margin-right: 8px; animation: blink 1.2s infinite;
+    }
+    @keyframes blink { 0% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.2); } 100% { opacity: 1; transform: scale(1); } }
 
-.status-banner {
-    background: #1e293b; color: white; padding: 20px 30px;
-}
+    /* 🚚 Custom Truck Marker Styling */
+    .truck-marker {
+        background: var(--primary);
+        color: white;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 3px solid white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        transition: all 0.5s ease-in-out; /* Smooth movement */
+    }
 
-/* 📍 Timeline Stepper */
-.track-step { position: relative; padding-bottom: 30px; padding-left: 40px; }
-.track-step::before {
-    content: ""; position: absolute; left: 15px; top: 0;
-    height: 100%; width: 2px; background: #e2e8f0;
-}
-.track-step:last-child::before { display: none; }
-.step-icon {
-    position: absolute; left: 0; top: 0; width: 32px; height: 32px;
-    border-radius: 50%; background: #e2e8f0; color: white;
-    display: flex; align-items: center; justify-content: center; z-index: 2;
-}
-.step-active .step-icon { background: var(--track-blue); box-shadow: 0 0 15px rgba(37,99,235,0.4); }
-.step-complete .step-icon { background: var(--track-success); }
-
-/* 🗺️ Map Styling */
-#map {
-    height: 450px; width: 100%; border-radius: 20px;
-    border: 8px solid white; box-shadow: 0 15px 40px rgba(0,0,0,0.08);
-}
-
-.refresh-btn {
-    position: absolute; top: 20px; right: 20px; z-index: 1000;
-    background: white; border: none; padding: 10px 15px;
-    border-radius: 10px; font-weight: 600; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
+    .main-wrapper { margin-top: 100px; margin-bottom: 50px; }
 </style>
 
-<div class="back-btn-wrapper animate__animated animate__fadeIn">
-    <button class="btn-modern-back" onclick="history.back()">
-        <i class="fas fa-arrow-left me-2"></i> Dashboard
-    </button>
-</div>
+<input type="hidden" id="raw_lat" value="{{ order.current_lat|default:'' }}">
+<input type="hidden" id="raw_lng" value="{{ order.current_lng|default:'' }}">
 
-<div class="container mb-5">
+<div class="container main-wrapper">
     <div class="row g-4">
+        <div class="col-12">
+            <div class="map-container">
 
-        <div class="col-lg-4 animate__animated animate__fadeInLeft">
-            <div class="tracking-card">
-                <div class="status-banner">
-                    <small class="opacity-75 text-uppercase fw-bold" style="letter-spacing: 1px;">Order ID: #{{ order.id }}</small>
-                    <h3 class="fw-bold m-0 mt-1">{{ order.product.product }}</h3>
-                </div>
+                <div class="floating-card animate__animated animate__fadeIn">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="live-dot"></span>
+                        <span class="fw-bold text-uppercase small" style="letter-spacing: 1px;">Live Tracking</span>
+                    </div>
+                    <h5 class="fw-800 mb-1">Order #{{ order.id }}</h5>
+                    <p class="text-muted small mb-3">{{ order.product.product }}</p>
 
-                <div class="p-4">
-                    <div class="d-flex justify-content-between mb-4">
-                        <div>
-                            <p class="text-muted small mb-0">Current Status</p>
-                            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2 mt-1">
-                                <i class="fas fa-truck-moving me-1"></i> {{ order.status|capfirst }}
-                            </span>
+                    <div class="p-3 rounded-4 bg-light">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted small">Status</span>
+                            <span class="badge bg-success-subtle text-success">{{ order.status }}</span>
                         </div>
-                        <div class="text-end">
-                            <p class="text-muted small mb-0">Total Weight</p>
-                            <h6 class="fw-bold mt-1">{{ order.quantity }} kg</h6>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted small">Driver</span>
+                            <span class="fw-bold small">{{ order.driver.name|default:"Assigning..." }}</span>
                         </div>
                     </div>
 
-                    <hr class="opacity-50">
-
-                    <div class="tracking-timeline mt-4">
-                        <div class="track-step step-complete">
-                            <div class="step-icon"><i class="fas fa-check small"></i></div>
-                            <h6 class="fw-bold mb-1">Order Placed</h6>
-                            <p class="text-muted small">Farmer accepted your request.</p>
-                        </div>
-
-                        <div class="track-step {% if order.status != 'pending' %}step-complete{% else %}step-active{% endif %}">
-                            <div class="step-icon"><i class="fas fa-box-open small"></i></div>
-                            <h6 class="fw-bold mb-1">Packed & Ready</h6>
-                            <p class="text-muted small">Shipment is ready for pickup.</p>
-                        </div>
-
-                        <div class="track-step {% if order.status == 'picked' or order.status == 'delivered' %}step-complete{% elif order.status == 'shipped' %}step-active{% endif %}">
-                            <div class="step-icon"><i class="fas fa-road small"></i></div>
-                            <h6 class="fw-bold mb-1">On the Way</h6>
-                            <p class="text-muted small">The driver is moving to your location.</p>
-                        </div>
-
-                        <div class="track-step {% if order.status == 'delivered' %}step-complete{% endif %}">
-                            <div class="step-icon"><i class="fas fa-home small"></i></div>
-                            <h6 class="fw-bold mb-1">Delivered</h6>
-                            <p class="text-muted small">Reach your doorstep.</p>
-                        </div>
-                    </div>
-
-                    <div class="mt-4">
-                        <a href="tel:1234567890" class="btn btn-outline-primary w-100 rounded-3 py-2 fw-bold">
-                            <i class="fas fa-phone-alt me-2"></i> Contact Farmer
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-8 animate__animated animate__fadeInRight">
-            <div class="position-relative">
-                {% if order.current_lat and order.current_lng %}
-                    <button class="refresh-btn" onclick="location.reload()">
-                        <i class="fas fa-sync-alt me-2 text-primary"></i> Refresh Location
+                    <button class="btn btn-dark w-100 mt-3 rounded-pill btn-sm py-2" onclick="location.reload()">
+                        <i class="fas fa-sync-alt me-2"></i> Refresh
                     </button>
+                </div>
+
+                {% if order.current_lat and order.current_lng %}
                     <div id="map"></div>
                 {% else %}
-                    <div class="tracking-card d-flex flex-column align-items-center justify-content-center p-5 text-center" style="height: 450px;">
-                        <div class="bg-light p-4 rounded-circle mb-4">
-                            <i class="fas fa-map-marker-slash fa-4x text-muted opacity-50"></i>
-                        </div>
-                        <h4 class="fw-bold">GPS Data Unavailable</h4>
-                        <p class="text-muted px-lg-5">Location tracking will start once the farmer or driver initiates the shipment process.</p>
-                        <button onclick="location.reload()" class="btn btn-dark rounded-pill px-4 mt-2">Check Again</button>
+                    <div class="h-100 d-flex flex-column align-items-center justify-content-center bg-white text-center p-5">
+                        <img src="https://cdn-icons-png.flaticon.com/512/854/854878.png" style="width: 120px; opacity: 0.6;" class="mb-4">
+                        <h4 class="fw-bold">Awaiting GPS Signal</h4>
+                        <p class="text-muted px-md-5">The map will automatically appear once the driver starts the journey and updates their location.</p>
+                        <a href="javascript:location.reload()" class="btn btn-outline-success rounded-pill px-4">Check Again</a>
                     </div>
                 {% endif %}
             </div>
-
-            <div class="mt-4 p-4 tracking-card bg-white d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center">
-                    <div class="bg-success-subtle p-3 rounded-3 me-3">
-                        <i class="fas fa-shield-alt text-success"></i>
-                    </div>
-                    <div>
-                        <h6 class="fw-bold mb-0">AgriLink Secure Transit</h6>
-                        <small class="text-muted">Your payment is protected until delivery confirmation.</small>
-                    </div>
-                </div>
-                <i class="fas fa-chevron-right text-muted"></i>
-            </div>
         </div>
-
     </div>
 </div>
 
+
+
 {% if order.current_lat and order.current_lng %}
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const lat = {{ order.current_lat }};
-        const lng = {{ order.current_lng }};
+document.addEventListener("DOMContentLoaded", function() {
+    let lat = parseFloat(document.getElementById('raw_lat').value);
+    let lng = parseFloat(document.getElementById('raw_lng').value);
 
-        // Initialize Map with Premium Style
-        const map = L.map('map', {
-            zoomControl: false // Hide default zoom
-        }).setView([lat, lng], 14);
+    // Initialize Map with Voyager Tiles (looks better than default OSM)
+    const map = L.map('map', { zoomControl: false }).setView([lat, lng], 16);
 
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: 'AgriLink Pro'
-        }).addTo(map);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: 'AgriLink Pro'
+    }).addTo(map);
 
-        // Custom Marker Icon
-        const truckIcon = L.divIcon({
-            html: '<div style="background: #2563eb; width: 40px; height: 40px; border-radius: 50%; border: 4px solid white; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 5px 15px rgba(0,0,0,0.2);"><i class="fas fa-truck"></i></div>',
-            className: 'custom-div-icon',
-            iconSize: [40, 40],
-            iconAnchor: [20, 20]
-        });
-
-        const marker = L.marker([lat, lng], {icon: truckIcon}).addTo(map)
-            .bindPopup("<div class='text-center fw-bold'>Shipment is Here!<br><small class='text-muted'>Last updated: Just now</small></div>")
-            .openPopup();
-
-        // Add Zoom Control at bottom right
-        L.control.zoom({ position: 'bottomright' }).addTo(map);
+    // Custom Truck Marker
+    const truckIcon = L.divIcon({
+        html: `<div class="truck-marker"><i class="fas fa-truck"></i></div>`,
+        className: '',
+        iconSize: [45, 45],
+        iconAnchor: [22, 22]
     });
+
+    let marker = L.marker([lat, lng], {icon: truckIcon}).addTo(map);
+    marker.bindPopup("<b>Your Order is here!</b>").openPopup();
+
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    // 🚀 Smart Refresh Logic
+    setInterval(function(){
+        fetch(window.location.href)
+        .then(response => response.text())
+        .then(html => {
+            let parser = new DOMParser();
+            let doc = parser.parseFromString(html, "text/html");
+
+            // Latest Lat/Lng values from hidden inputs in the fetched HTML
+            let newLatVal = doc.getElementById("raw_lat").value;
+            let newLngVal = doc.getElementById("raw_lng").value;
+
+            if(newLatVal && newLngVal){
+                let nl = parseFloat(newLatVal);
+                let ng = parseFloat(newLngVal);
+
+                // Sirf tab move karein agar location change hui ho
+                if(nl !== lat || ng !== lng){
+                    lat = nl;
+                    lng = ng;
+
+                    // Move marker smoothly
+                    marker.setLatLng([lat, lng]);
+                    map.panTo([lat, lng]);
+                    console.log("Location Updated:", lat, lng);
+                }
+            }
+        });
+    }, 5000); // Har 5 second me background me update check karega
+});
 </script>
 {% endif %}
 

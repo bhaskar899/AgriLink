@@ -160,9 +160,9 @@ body {
                             <i class="fas fa-credit-card me-2"></i>Pay Now
                         </a>
                     {% else %}
-                        <button class="btn btn-light btn-sm rounded-pill px-3 text-muted border">
+                        <a href="/mark_notification_read/{{ n.id }}/" class="btn btn-light btn-sm rounded-pill px-3 text-muted border">
                             Mark as read
-                        </button>
+                        </a>
                     {% endif %}
                 </div>
             </div>

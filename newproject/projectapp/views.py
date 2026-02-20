@@ -2011,50 +2011,30 @@ def retailer_dashboard(request):
 
     # ✅ Delivered / Completed Orders
     completed_statuses = ['Delivered', 'Completed']
-
-    completed_orders = Order.objects.filter(
-        retailer=retailer,
-        status__in=completed_statuses
-    )
+    completed_orders = Order.objects.filter(retailer=retailer, status__in=completed_statuses)
 
     # ✅ Total Amount Spent
     total_spent = 0
     for order in completed_orders:
         amount_to_add = order.total_amount
-
         if amount_to_add is None or amount_to_add == 0:
             amount_to_add = order.quantity * order.product.price
-
         total_spent += amount_to_add
 
     # ✅ Pending Orders
-    pending_statuses = [
-        'Pending', 'Paid', 'Accepted', 'Packed',
-        'Dispatched', 'Driver Assigned', 'Picked',
-        'Assigned to Driver'
-    ]
-
-    pending_orders = Order.objects.filter(
-        retailer=retailer,
-        status__in=pending_statuses
-    ).count()
+    pending_statuses = ['Pending', 'Paid', 'Accepted', 'Packed', 'Dispatched', 'Driver Assigned', 'Picked', 'Assigned to Driver']
+    pending_orders = Order.objects.filter(retailer=retailer, status__in=pending_statuses).count()
 
     # ✅ Recent Orders
-    recent_orders = Order.objects.filter(
-        retailer=retailer
-    ).order_by('-order_date')[:5]
-
+    recent_orders = Order.objects.filter(retailer=retailer).order_by('-order_date')[:5]
     for order in recent_orders:
-        order.calculated_amount = (
-            order.total_amount if order.total_amount is not None
-            else order.quantity * order.product.price
-        )
+        order.calculated_amount = order.total_amount if order.total_amount is not None else order.quantity * order.product.price
 
-    # 🔔 ✅ NEW: Notifications for Retailer
+    # 🔔 ✅ UPDATED: Only show notifications that have a Payment Link
     notifications = Notification.objects.filter(
         receiver_retailer=retailer,
         is_read=False
-    ).order_by('-timestamp')
+    ).exclude(link=None).order_by('-timestamp') # <--- ही ओळ बदलली आहे
 
     context = {
         'retailer': retailer,
@@ -2062,11 +2042,9 @@ def retailer_dashboard(request):
         'pending_orders': pending_orders,
         'total_spent': f"{total_spent:.2f}",
         'recent_orders': recent_orders,
-        'notifications': notifications,   # ✅ Added
+        'notifications': notifications,
     }
-
     return render(request, "retailer_dashboard.html", context)
-
 
 
 
@@ -2170,25 +2148,31 @@ def update_status(request, order_id):
         new_status = request.POST.get("status")
         driver_id = request.POST.get("driver")
 
+        # ✅ SAVE STATUS
         order.status = new_status
 
+        # ✅ SAVE GPS LOCATION (THIS WAS MISSING)
+        lat = request.POST.get("current_lat")
+        lng = request.POST.get("current_lng")
+
+        if lat and lng:
+            order.current_lat = lat
+            order.current_lng = lng
+
+        # ✅ DRIVER ASSIGNMENT
         if driver_id:
             driver = get_object_or_404(Driver, id=driver_id)
             order.driver = driver
             order.status = "Driver Assigned"
-            order.save()
 
-            # ✅ FIX: Check if delivery exists first
             existing_delivery = Delivery.objects.filter(order=order).first()
 
             if existing_delivery:
-                # Update karein agar already exists
                 existing_delivery.driver = driver
                 existing_delivery.status = "assigned"
                 existing_delivery.assigned_at = timezone.now()
                 existing_delivery.save()
             else:
-                # Naya banayein agar nahi hai
                 Delivery.objects.create(
                     order=order,
                     driver=driver,
@@ -2199,25 +2183,20 @@ def update_status(request, order_id):
             driver.is_available = False
             driver.save()
 
-            # Notifications...
-            Notification.objects.create(receiver_driver=driver, message=f"You are assigned Order #{order.id}")
-            Notification.objects.create(receiver_retailer=order.retailer,
-                                        message=f"Driver {driver.name} assigned for Order #{order.id}")
-            Notification.objects.create(receiver_farmer=order.farmer,
-                                        message=f"You assigned driver {driver.name} for Order #{order.id}")
-        else:
-            order.save()
+            Notification.objects.create(
+                receiver_driver=driver,
+                message=f"You are assigned Order #{order.id}"
+            )
 
-        # Status-based notifications (rest of your code remains same)
-        if new_status == "Accepted":
-            Notification.objects.create(receiver_retailer=order.retailer,
-                                        message=f"Order #{order.id} accepted by farmer")
-        # ... etc
+        # ✅ SAVE ORDER AFTER EVERYTHING
+        order.save()
 
         return redirect("farmer_order")
 
-    return render(request, "update_status.html", {"order": order, "drivers": drivers})
-
+    return render(request, "update_status.html", {
+        "order": order,
+        "drivers": drivers
+    })
 
 from django.utils import timezone
 from .models import Delivery, Driver
