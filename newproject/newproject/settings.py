@@ -11,8 +11,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ---------------------
 # SECURITY
 # ---------------------
-SECRET_KEY = 'django-insecure-your-secret-key'
-DEBUG = True  # change to False when done testing
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-your-secret-key')
+DEBUG = True  # Render par error dekhne ke liye True rakhein, baad mein False kar dena
 ALLOWED_HOSTS = ['*']
 
 # ---------------------
@@ -32,34 +32,29 @@ INSTALLED_APPS = [
     'channels',
     'rest_framework',
     'api',
-
 ]
 
 ASGI_APPLICATION = 'newproject.asgi.application'
 
-# settings.py
-
-# ... (other settings) ...
-
+# ---------------------
+# CHANNEL LAYERS (REDIS FIX FOR RENDER)
+# ---------------------
 CHANNEL_LAYERS = {
     "default": {
-        # ⚠️ CRITICAL FIX: Use Redis for inter-process communication
         "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
         "CONFIG": {
-            # Change this to your actual Redis location/credentials if needed
-            "hosts": [("127.0.0.1", 6379)],
+            # Render par 127.0.0.1 nahi chalta. REDIS_URL environment variable use karein.
+            "hosts": [os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379')],
         },
     }
 }
-
-# ... (rest of the settings) ...
 
 # ---------------------
 # MIDDLEWARE
 # ---------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # for static files
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -88,11 +83,12 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'projectapp.context_processors.navbar_notifications',  # <- Add this
+                'projectapp.context_processors.navbar_notifications',
             ],
         },
     },
 ]
+
 # ---------------------
 # DATABASE
 # ---------------------
@@ -113,6 +109,7 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
 # ---------------------
 # PASSWORD VALIDATION
 # ---------------------
@@ -127,9 +124,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # LOCALIZATION
 # ---------------------
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 USE_TZ = True
+USE_L10N = True
 
 # ---------------------
 # STATIC & MEDIA FILES
@@ -159,49 +157,34 @@ RAZORPAY_KEY_ID = "rzp_live_SHWiIZFCskqFhT"
 RAZORPAY_KEY_SECRET = "QD36AGTlyzRhuwdLVziqWNUj"
 
 # ---------------------
-# EMAIL CONFIGURATION
+# EMAIL CONFIGURATION (FIXED FOR DEPLOYMENT)
 # ---------------------
-# 📧 EMAIL SETTINGS
-# IMPORTANT — Use custom backend
-EMAIL_BACKEND = 'newproject.email_backend.CustomEmailBackend'
-# ↑ project folder name EXACT same jisme settings.py hai
+# CustomBackend agar crash ho raha hai toh default use karna behtar hai
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
 
-EMAIL_HOST_USER = 'bhaskaryhubale.899@gmail.com'
-EMAIL_HOST_PASSWORD = 'liox giwz dlvz mpov'
+# Render Environment Variables se uthayega, warna default use karega
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'bhaskaryhubale.899@gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'liox giwz dlvz mpov')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-# ---------------------
-# DEFAULT FIELD TYPE
-# ---------------------
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# ---------------------
-# SSL FIX (Local Only)
-# ---------------------
-ssl._create_default_https_context = lambda: ssl._create_unverified_context()
-
-PLATFORM_COMMISSION = 0.05   # 5% default
-
-# settings.py
-
-# settings.py
-
-# 1. Time zone enable karein
-USE_TZ = True
-
-# 2. Apne time zone ko set karein
-# India Standard Time (IST) ke liye
-TIME_ZONE = 'Asia/Kolkata'
-
-# 3. Agar aap dates ko local time mein dikhana chahte hain:
-USE_L10N = True
 
 # ---------------------
 # AUTHENTICATION REDIRECTS
 # ---------------------
-LOGIN_URL = 'retailer_login'  # Agar login nahi hai toh yahan bhejega
-LOGIN_REDIRECT_URL = 'retailer_dashboard'  # Login hone ke baad yahan bhejega
-LOGOUT_REDIRECT_URL = 'home'  # Logout hone ke baad yahan bhejega
+LOGIN_URL = 'retailer_login'
+LOGIN_REDIRECT_URL = 'retailer_dashboard'
+LOGOUT_REDIRECT_URL = 'home'
+
+# ---------------------
+# DEFAULT FIELD TYPE & MISC
+# ---------------------
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+PLATFORM_COMMISSION = 0.05
+
+# IMPORTANT: Render/Production mein ye SSL bypass avoid karein
+if not os.environ.get('RENDER'):
+    ssl._create_default_https_context = lambda: ssl._create_unverified_context()
