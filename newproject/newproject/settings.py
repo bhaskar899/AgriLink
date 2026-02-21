@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 # ---------------------
 SECRET_KEY = 'django-insecure-your-secret-key'
-DEBUG = False  # change to False when done testing
+DEBUG = True  # change to False when done testing
 ALLOWED_HOSTS = ['*']
 
 # ---------------------
