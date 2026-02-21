@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 # ---------------------
 SECRET_KEY = 'django-insecure-your-secret-key'
-DEBUG = True  # change to False when done testing
+DEBUG = False  # change to False when done testing
 ALLOWED_HOSTS = ['*']
 
 # ---------------------
@@ -163,7 +163,8 @@ RAZORPAY_KEY_SECRET = "QD36AGTlyzRhuwdLVziqWNUj"
 # ---------------------
 # 📧 EMAIL SETTINGS
 # IMPORTANT — Use custom backend
-EMAIL_BACKEND = 'newproject.email_backend.CustomEmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 # ↑ project folder name EXACT same jisme settings.py hai
 
 EMAIL_HOST = 'smtp.gmail.com'
