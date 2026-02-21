@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 # ---------------------
 SECRET_KEY = 'django-insecure-your-secret-key'
-DEBUG = True  # change to False when done testing
+DEBUG = z  # change to False when done testing
 ALLOWED_HOSTS = ['*']
 
 # ---------------------
@@ -135,6 +135,7 @@ USE_TZ = True
 # STATIC & MEDIA FILES
 # ---------------------
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = '/media/'
@@ -162,18 +163,16 @@ RAZORPAY_KEY_SECRET = "QD36AGTlyzRhuwdLVziqWNUj"
 # ---------------------
 # 📧 EMAIL SETTINGS
 # IMPORTANT — Use custom backend
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-
+EMAIL_BACKEND = 'newproject.email_backend.CustomEmailBackend'
 # ↑ project folder name EXACT same jisme settings.py hai
 
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+EMAIL_HOST_USER = 'bhaskaryhubale.899@gmail.com'
+EMAIL_HOST_PASSWORD = 'liox giwz dlvz mpov'
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
 # ---------------------
 # DEFAULT FIELD TYPE
 # ---------------------
