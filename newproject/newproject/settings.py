@@ -207,4 +207,3 @@ LOGIN_URL = 'retailer_login'  # Agar login nahi hai toh yahan bhejega
 LOGIN_REDIRECT_URL = 'retailer_dashboard'  # Login hone ke baad yahan bhejega
 LOGOUT_REDIRECT_URL = 'home'  # Logout hone ke baad yahan bhejega
 
-ek kam karo give me full updated code wiithout any changes
