@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Farmer, Retailer, Product, Order, SampleRequest
+from .models import Farmer, Retailer, Product, Order, SampleRequest, Notification
 # Register your models here.
 
 from django.contrib import admin
@@ -17,3 +17,4 @@ admin.site.register(Order)
 admin.site.register(Driver)
 admin.site.register(Delivery)
 admin.site.register(SampleRequest)
+admin.site.register(Notification)

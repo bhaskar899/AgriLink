@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY
 # ---------------------
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-your-secret-key')
-DEBUG = True  # Render par error dekhne ke liye True rakhein, baad mein False kar dena
+DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 # ---------------------
@@ -39,15 +39,7 @@ ASGI_APPLICATION = 'newproject.asgi.application'
 # ---------------------
 # CHANNEL LAYERS (REDIS FIX FOR RENDER)
 # ---------------------
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
-        "CONFIG": {
-            # Render par 127.0.0.1 nahi chalta. REDIS_URL environment variable use karein.
-            "hosts": [os.environ.get('REDIS_URL', 'redis://127.0.0.1:6379')],
-        },
-    }
-}
+
 
 # ---------------------
 # MIDDLEWARE
@@ -92,23 +84,7 @@ TEMPLATES = [
 # ---------------------
 # DATABASE
 # ---------------------
-DATABASE_URL = os.environ.get("DATABASE_URL")
 
-if DATABASE_URL:
-    DATABASES = {
-        'default': dj_database_url.parse(
-            DATABASE_URL,
-            conn_max_age=600,
-            ssl_require=True
-        )
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
 
 # ---------------------
 # PASSWORD VALIDATION
@@ -159,7 +135,6 @@ RAZORPAY_KEY_SECRET = "QD36AGTlyzRhuwdLVziqWNUj"
 # ---------------------
 # EMAIL CONFIGURATION (FIXED FOR DEPLOYMENT)
 # ---------------------
-# CustomBackend agar crash ho raha hai toh default use karna behtar hai
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_HOST = 'smtp.gmail.com'
@@ -167,7 +142,6 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
-# Render Environment Variables se uthayega, warna default use karega
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'bhaskaryhubale.899@gmail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'liox giwz dlvz mpov')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
@@ -185,6 +159,5 @@ LOGOUT_REDIRECT_URL = 'home'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 PLATFORM_COMMISSION = 0.05
 
-# IMPORTANT: Render/Production mein ye SSL bypass avoid karein
 if not os.environ.get('RENDER'):
     ssl._create_default_https_context = lambda: ssl._create_unverified_context()

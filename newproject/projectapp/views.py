@@ -13,7 +13,7 @@ def master(request):
 from .models import RetailerSampleReview
 
 
-from .models import SampleRequest  # ya jo model tumhare reviews ka hai
+from .models import SampleRequest
 
 from django.db.models import Avg
 from .models import SampleRequest
@@ -26,6 +26,7 @@ def home(request):
         "reviews": reviews,
         "avg_rating": round(avg_rating, 1),  # one decimal
     })
+
 def about(request):
     return render(request, "about.html")
 
@@ -75,7 +76,7 @@ def farmer_register(request):
         Farmer.objects.create(
             name=name,
             email=email,
-            password=make_password(password),  # 🔐 secure password
+            password=make_password(password),  #secure password
             contact=contact,
             address=address,
             gender=gender,
@@ -129,8 +130,7 @@ def retailer_register(request):
             messages.error(request, "Email already registered")
             return redirect('retailer_register')
 
-        # 2) create retailer (Assuming email_verified is set to False initially
-        #    and verified later via the separate verify_email_otp view)
+
         retailer = Retailer.objects.create(
             name=name,
             email=email,
@@ -146,7 +146,7 @@ def retailer_register(request):
 
         # 3) registration successful, send to login
         messages.success(request, "Registration successful. Please log in.")
-        return redirect("retailer_login")  # <-- अब यह लॉगिन पेज पर जाएगा
+        return redirect("retailer_login")
 
     return render(request, "retailer_register.html")
 
@@ -161,7 +161,7 @@ def send_email_otp_async(subject, message, recipient_list):
         recipient_list=recipient_list,
         fail_silently=False
     )
-    # आप यहाँ logging भी जोड़ सकते हैं
+
 
 # views.py (Required imports)
 import random
@@ -172,20 +172,17 @@ def send_email_otp(request):
     if request.method == "POST":
         email = request.POST.get("email", "").strip()
 
-        # Validation: Ensure email is provided (basic)
         if not email:
             return JsonResponse({"status": "error", "message": "Email not provided"})
 
         otp = str(random.randint(100000, 999999))
 
-        # OTP aur Email dono ko session mein store karen
         request.session["email_otp"] = otp
         request.session["email_to_verify"] = email
         request.session['email_otp_verified'] = False  # Verification status reset
 
         try:
-            # Note: Celery is required for fast asynchronous sending.
-            # If not using Celery, this part will be synchronous and slow.
+
             send_mail(
                 subject="Your Retailer Registration OTP",
                 message=f"Your OTP for retailer registration is: {otp}",
@@ -200,29 +197,21 @@ def send_email_otp(request):
             return JsonResponse({"status": "error", "message": "Failed to send OTP email"})
 
 def verify_email_otp(request):
-    """User dwara entered OTP aur email ko session se check karta hai."""
     if request.method == "POST":
         try:
-            # Data JSON format mein expect kar rahe hain (as sent by fetch in JS)
             data = json.loads(request.body)
             entered_otp = data.get("otp", "").strip()
             entered_email = data.get("email", "").strip()
         except Exception as e:
-            # Fallback for form data (though JSON is preferred for fetch)
             entered_otp = request.POST.get("otp", "").strip()
             entered_email = request.POST.get("email", "").strip()
 
-        # Session se sacha (true) OTP aur email lein
         saved_otp = request.session.get("email_otp")
         saved_email = request.session.get("email_to_verify")
 
-        # Check if the entered OTP and the email match the saved values
         if saved_otp and entered_otp == saved_otp and entered_email == saved_email:
-            # Verification successful, set a session flag
             request.session['email_otp_verified'] = True
-            # OTP ko session se clear kar dena ek achhi practice hai
-            # request.session.pop("email_otp", None)
-            # request.session.pop("email_to_verify", None)
+
             return JsonResponse({"status": "success", "message": "Email OTP Verified"})
         else:
             return JsonResponse({"status": "error", "message": "Invalid OTP or Email Mismatch"})
@@ -303,7 +292,6 @@ def add_product(request):
             image=image,
             farmer=farmer
         )
-        # p.save() will call model save and do optimization
         return redirect('show_products')
 
     return render(request, "add_product.html")
