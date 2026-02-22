@@ -41,16 +41,7 @@ ASGI_APPLICATION = 'newproject.asgi.application'
 
 # ... (other settings) ...
 
-CHANNEL_LAYERS = {
-    "default": {
-        # ⚠️ CRITICAL FIX: Use Redis for inter-process communication
-        "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
-        "CONFIG": {
-            # Change this to your actual Redis location/credentials if needed
-            "hosts": [("127.0.0.1", 6379)],
-        },
-    }
-}
+
 
 # ... (rest of the settings) ...
 
