@@ -1,6 +1,5 @@
 from pathlib import Path
 import os
-import ssl
 import dj_database_url
 
 # ---------------------
@@ -11,8 +10,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ---------------------
 # SECURITY
 # ---------------------
-SECRET_KEY = 'django-insecure-your-secret-key'
-DEBUG = True  # change to False when done testing
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-your-secret-key')
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = ['*']
 
 # ---------------------
@@ -32,25 +31,16 @@ INSTALLED_APPS = [
     'channels',
     'rest_framework',
     'api',
-
 ]
 
 ASGI_APPLICATION = 'newproject.asgi.application'
-
-# settings.py
-
-# ... (other settings) ...
-
-
-
-# ... (rest of the settings) ...
 
 # ---------------------
 # MIDDLEWARE
 # ---------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # for static files
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -79,11 +69,12 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'projectapp.context_processors.navbar_notifications',  # <- Add this
+                'projectapp.context_processors.navbar_notifications',
             ],
         },
     },
 ]
+
 # ---------------------
 # DATABASE
 # ---------------------
@@ -104,6 +95,7 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
 # ---------------------
 # PASSWORD VALIDATION
 # ---------------------
@@ -118,9 +110,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # LOCALIZATION
 # ---------------------
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 USE_TZ = True
+USE_L10N = True
 
 # ---------------------
 # STATIC & MEDIA FILES
@@ -138,63 +131,45 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'dhjactcwx',
-    'API_KEY': '543344718597668',
-    'API_SECRET': '5hrZqEM1zB3qTfZa8oNzvSCDzF8',
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME', 'dhjactcwx'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY', '543344718597668'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET', '5hrZqEM1zB3qTfZa8oNzvSCDzF8'),  # PUT THIS IN RENDER ENV VARS
 }
 
 # ---------------------
 # RAZORPAY
 # ---------------------
-RAZORPAY_KEY_ID = "rzp_live_SHWiIZFCskqFhT"
-RAZORPAY_KEY_SECRET = "QD36AGTlyzRhuwdLVziqWNUj"
+RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', 'rzp_live_SHWiIZFCskqFhT')       # PUT THIS IN RENDER ENV VARS
+RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', 'QD36AGTlyzRhuwdLVziqWNUj') # PUT THIS IN RENDER ENV VARS
 
 # ---------------------
-# EMAIL CONFIGURATION
+# EMAIL CONFIGURATION  ✅ FIXED
 # ---------------------
-# 📧 EMAIL SETTINGS
-# IMPORTANT — Use custom backend
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
-# Render Environment Variables se uthayega, warna default use karega
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'bhaskaryhubale.899@gmail.com')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'liox giwz dlvz mpov')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
 # ---------------------
 # DEFAULT FIELD TYPE
 # ---------------------
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# ❌ REMOVED: ssl._create_default_https_context override — this was breaking email in production
+
 # ---------------------
-# SSL FIX (Local Only)
+# PLATFORM SETTINGS
 # ---------------------
-ssl._create_default_https_context = lambda: ssl._create_unverified_context()
-
-PLATFORM_COMMISSION = 0.05   # 5% default
-
-# settings.py
-
-# settings.py
-
-# 1. Time zone enable karein
-USE_TZ = True
-
-# 2. Apne time zone ko set karein
-# India Standard Time (IST) ke liye
-TIME_ZONE = 'Asia/Kolkata'
-
-# 3. Agar aap dates ko local time mein dikhana chahte hain:
-USE_L10N = True
+PLATFORM_COMMISSION = 0.05  # 5% default
 
 # ---------------------
 # AUTHENTICATION REDIRECTS
 # ---------------------
-LOGIN_URL = 'retailer_login'  # Agar login nahi hai toh yahan bhejega
-LOGIN_REDIRECT_URL = 'retailer_dashboard'  # Login hone ke baad yahan bhejega
-LOGOUT_REDIRECT_URL = 'home'  # Logout hone ke baad yahan bhejega
-
+LOGIN_URL = 'retailer_login'
+LOGIN_REDIRECT_URL = 'retailer_dashboard'
+LOGOUT_REDIRECT_URL = 'home'
