@@ -4,69 +4,135 @@
 
 <style>
     /* Global Background */
-    body { background: #f4f7f6; }
+    body {
+        background: #f4f7f6;
+    }
 
     /* Back Button */
-    .back-btn-wrapper { margin-top: 100px; margin-left: 20px; }
-    .back-btn {
-        border: none; padding: 10px 22px; border-radius: 50px;
-        background: #fff; color: #198754; font-weight: 600;
-        cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        transition: .3s; border: 1px solid #198754;
+    .back-btn-wrapper {
+        margin-top: 100px;
+        margin-left: 20px;
     }
-    .back-btn:hover { background: #198754; color: #fff; }
+    .back-btn {
+        border: none;
+        padding: 10px 22px;
+        border-radius: 50px;
+        background: #fff;
+        color: #198754;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: .3s;
+        border: 1px solid #198754;
+    }
+    .back-btn:hover {
+        background: #198754;
+        color: #fff; }
 
     /* Success Card */
     .success-card {
-        border-radius: 25px; border: none; overflow: hidden;
+        border-radius: 25px;
+        border: none;
+        overflow: hidden;
         box-shadow: 0 20px 50px rgba(0,0,0,0.1) !important;
-        background: #fff; animation: fadeInUp 0.6s ease-out;
+        background: #fff;
+        animation: fadeInUp 0.6s ease-out;
     }
 
     @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(30px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(30px); }
+        to {
+            opacity: 1;
+            transform: translateY(0); }
     }
 
     .success-icon-wrapper {
-        background: #e8f5e9; width: 100px; height: 100px;
-        border-radius: 50%; display: flex; align-items: center;
-        justify-content: center; margin: 0 auto 20px;
-        border: 5px solid #fff; box-shadow: 0 10px 20px rgba(25,135,84,0.15);
+        background: #e8f5e9;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        border: 5px solid #fff;
+        box-shadow: 0 10px 20px rgba(25,135,84,0.15);
     }
 
     /* Receipt Box */
     .receipt-box {
-        background: #f8fbf9; border-radius: 15px; padding: 25px;
-        border: 1px solid #d4edda; margin: 30px 0;
+        background: #f8fbf9;
+        border-radius: 15px;
+        padding: 25px;
+        border: 1px solid #d4edda;
+        margin: 30px 0;
     }
     .receipt-row {
-        display: flex; justify-content: space-between;
-        margin-bottom: 12px; border-bottom: 1px dashed #ced4da;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 12px;
+        border-bottom: 1px dashed #ced4da;
         padding-bottom: 8px;
     }
-    .receipt-row:last-child { border-bottom: none; }
+    .receipt-row:last-child {
+        border-bottom: none;
+    }
 
     .status-badge {
-        background: #28a745; color: #fff; padding: 5px 15px;
-        border-radius: 50px; font-size: 0.9rem; font-weight: 600;
+        background: #28a745;
+        color: #fff;
+        padding: 5px 15px;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 600;
     }
 
     /* Buttons */
     .btn-main {
-        border-radius: 12px; padding: 12px 25px; font-weight: 700;
-        transition: 0.3s; text-decoration: none; display: inline-block;
+        border-radius: 12px;
+        padding: 12px 25px;
+        font-weight: 700;
+        transition: 0.3s;
+        text-decoration: none;
+        display: inline-block;
     }
-    .btn-receipt { border: 2px solid #198754; color: #198754; }
-    .btn-receipt:hover { background: #198754; color: #fff; }
+    .btn-receipt {
+        border: 2px solid #198754;
+        color: #198754;
+    }
+    .btn-receipt:hover {
+        background: #198754;
+        color: #fff;
+    }
 
     /* Progress Steps */
-    .order-steps { display: flex; justify-content: space-between; margin-bottom: 30px; }
-    .step { text-align: center; flex: 1; font-size: 0.85rem; font-weight: 600; color: #2ecc71; }
-    .step.active { color: #198754; font-weight: 800; }
+    .order-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 30px;
+    }
+    .step {
+        text-align: center;
+        flex: 1;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #2ecc71;
+    }
+    .step.active {
+        color: #198754;
+        font-weight: 800;
+    }
     .step-icon {
-        width: 30px; height: 30px; line-height: 30px; border-radius: 50%;
-        background: #2ecc71; color: #fff; display: block; margin: 0 auto 5px;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        border-radius: 50%;
+        background: #2ecc71;
+        color: #fff;
+        display: block;
+        margin: 0 auto 5px;
     }
 </style>
 

@@ -154,6 +154,8 @@ RAZORPAY_KEY_SECRET = "QD36AGTlyzRhuwdLVziqWNUj"
 # ---------------------
 # 📧 EMAIL SETTINGS
 # IMPORTANT — Use custom backend
+# EMAIL CONFIGURATION (Production Safe)
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_HOST = 'smtp.gmail.com'
@@ -161,9 +163,9 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 
-# Render Environment Variables se uthayega, warna default use karega
-EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'bhaskaryhubale.899@gmail.com')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'liox giwz dlvz mpov')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # ---------------------
 # DEFAULT FIELD TYPE
@@ -173,7 +175,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # ---------------------
 # SSL FIX (Local Only)
 # ---------------------
-ssl._create_default_https_context = lambda: ssl._create_unverified_context()
 
 PLATFORM_COMMISSION = 0.05   # 5% default
 
