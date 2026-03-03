@@ -135,8 +135,9 @@
                         </div>
                         <div class="col-md-6 mb-4">
                             <label class="form-label">Total Quantity (kg)</label>
-                            <input type="number" class="form-control" name="quantity" min="1" placeholder="0.0" required>
-                            <div class="error-msg">Quantity must be at least 1kg.</div>
+<input type="number" class="form-control" name="quantity" min="5" max="1000" placeholder="5 - 1000kg" required>
+<div class="error-msg">Quantity must be between 5kg and 1000kg.</div>
+                            <div class="error-msg">Minimum quantity must be 5kg.</div>                            <div class="error-msg">Quantity must be at least 1kg.</div>
                         </div>
                     </div>
 
@@ -212,21 +213,52 @@ fileInput.addEventListener("change", e => {
 });
 
 form.addEventListener("submit", e => {
+
     let isValid = true;
+
+    const quantityInput = form.querySelector('input[name="quantity"]');
+    const quantityError = quantityInput.parentElement.querySelector('.error-msg');
+
     const inputs = form.querySelectorAll('input[required], textarea[required]');
 
+    // Reset all errors first
+    document.querySelectorAll('.error-msg').forEach(err => err.style.display = 'none');
+    inputs.forEach(input => input.classList.remove('is-invalid'));
+
+    // General Required Validation
     inputs.forEach(input => {
         const error = input.parentElement.querySelector('.error-msg');
-        if (!input.value || (input.type === 'number' && input.value <= 0)) {
+
+        if (!input.value.trim()) {
             input.classList.add('is-invalid');
-            if(error) error.style.display = 'block';
+            if (error) error.style.display = 'block';
             isValid = false;
-        } else {
-            input.classList.remove('is-invalid');
-            if(error) error.style.display = 'none';
         }
     });
 
+    // 🔥 Quantity Special Validation
+    const quantityValue = parseInt(quantityInput.value);
+
+    if (isNaN(quantityValue)) {
+        quantityInput.classList.add('is-invalid');
+        quantityError.innerText = "Please enter a valid quantity.";
+        quantityError.style.display = 'block';
+        isValid = false;
+    }
+    else if (quantityValue < 5) {
+        quantityInput.classList.add('is-invalid');
+        quantityError.innerText = "Minimum quantity must be 5kg.";
+        quantityError.style.display = 'block';
+        isValid = false;
+    }
+    else if (quantityValue > 1000) {
+        quantityInput.classList.add('is-invalid');
+        quantityError.innerText = "Maximum quantity allowed is 500kg.";
+        quantityError.style.display = 'block';
+        isValid = false;
+    }
+
+    // Image Required
     if (!fileInput.files.length) {
         document.getElementById('imageError').style.display = 'block';
         isValid = false;

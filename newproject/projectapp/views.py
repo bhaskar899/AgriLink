@@ -264,37 +264,99 @@ def logout(request):
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Product, Farmer
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Farmer, Product
+
+
 def add_product(request):
     if request.method == "POST":
+
         farmer_name = request.session.get('name')
         if not farmer_name:
             return redirect('farmer_login')
 
         farmer = get_object_or_404(Farmer, name=farmer_name)
 
+        # Get form data
         product_name = request.POST.get('product', '').strip()
         description = request.POST.get('description', '').strip()
-        price = request.POST.get('price') or 0
-        quantity = request.POST.get('quantity') or 0
+        price = request.POST.get('price')
+        quantity = request.POST.get('quantity')
         location = request.POST.get('location', '').strip()
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
         image = request.FILES.get('image')
 
-        # minimal validation
-        if not product_name:
-            return render(request, "add_product.html", {"error": "Product name is required."})
+        # -------- VALIDATIONS --------
 
-        p = Product.objects.create(
+        # Product Name Required
+        if not product_name:
+            messages.error(request, "Product name is required.")
+            return render(request, "add_product.html")
+
+        # Price Validation
+        try:
+            price = float(price)
+            if price <= 0:
+                messages.error(request, "Price must be greater than 0.")
+                return render(request, "add_product.html")
+        except:
+            messages.error(request, "Invalid price value.")
+            return render(request, "add_product.html")
+
+        # Quantity Validation (Minimum 5kg)
+        try:
+            quantity = int(quantity)
+
+            if quantity < 5:
+                messages.error(request, "Minimum quantity must be 5kg.")
+                return render(request, "add_product.html")
+
+            if quantity > 500:
+                messages.error(request, "Maximum quantity allowed is 500kg.")
+                return render(request, "add_product.html")
+
+        except:
+            messages.error(request, "Invalid quantity value.")
+            return render(request, "add_product.html")
+        # Image Required
+        if not image:
+            messages.error(request, "Product image is required.")
+            return render(request, "add_product.html")
+
+        # Location Required
+        if not location:
+            messages.error(request, "Location is required.")
+            return render(request, "add_product.html")
+
+        # -------- SAVE FARMER LOCATION (VERY IMPORTANT FOR 100KM RULE) --------
+        if latitude and longitude:
+            try:
+                farmer.latitude = float(latitude)
+                farmer.longitude = float(longitude)
+                farmer.save()
+            except:
+                pass
+
+        # -------- CREATE PRODUCT --------
+        Product.objects.create(
             product=product_name,
             description=description,
-            price=float(price),
-            quantity=int(quantity),
+            price=price,
+            quantity=quantity,
             location=location,
             image=image,
             farmer=farmer
         )
+
+        messages.success(request, "Product added successfully!")
         return redirect('show_products')
 
     return render(request, "add_product.html")
+
+
+
 
 from django.shortcuts import render, get_object_or_404
 from .models import Product, Farmer
