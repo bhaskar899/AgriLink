@@ -24,8 +24,6 @@ class Farmer(models.Model):
     password = models.CharField(max_length=100)
     contact = models.CharField(max_length=20)
     address = models.TextField()
-    latitude = models.FloatField(null=True, blank=True)
-    longitude = models.FloatField(null=True, blank=True)
     gender = models.CharField(max_length=10)
     first_login = models.BooleanField(default=True)
     profile_image = models.ImageField(upload_to='profiles/', default='profiles/default.jpg')
@@ -382,7 +380,6 @@ class Order(models.Model):
     current_lat = models.FloatField(null=True, blank=True)
     current_lng = models.FloatField(null=True, blank=True)
     driver = models.ForeignKey('Driver', on_delete=models.SET_NULL, null=True, blank=True)
-    trip = models.ForeignKey('Trip', on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
 
     total_amount = models.FloatField(default=0.0)
 
@@ -425,27 +422,3 @@ class Bid(models.Model):
 
     def __str__(self):
         return f"Bid by {self.retailer.name} for {self.product.product}"
-
-from django.utils import timezone
-from datetime import timedelta
-
-class Trip(models.Model):
-
-    STATUS_CHOICES = [
-        ('collecting', 'Collecting Orders'),
-        ('ready', 'Ready For Dispatch'),
-        ('dispatched', 'Dispatched'),
-        ('completed', 'Completed'),
-    ]
-
-    driver = models.ForeignKey('Driver', on_delete=models.SET_NULL, null=True)
-    farmer = models.ForeignKey('Farmer', on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-    dispatch_deadline = models.DateTimeField()
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='collecting')
-
-    def order_count(self):
-        return self.orders.count()
-
-    def __str__(self):
-        return f"Trip {self.id} - {self.driver}"
