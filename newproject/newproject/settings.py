@@ -186,7 +186,7 @@ EMAIL_HOST_PASSWORD = os.environ.get("BREVO_PASSWORD")
 BREVO_API_KEY = os.environ.get("BREVO_API_KEY")
 
 # Verified sender email
-DEFAULT_FROM_EMAIL = "bhaskarhubale.899@gmail.com"
+DEFAULT_FROM_EMAIL = os.environ.get("BREVO_USER")
 # ---------------------
 # DEFAULT FIELD TYPE
 # ---------------------

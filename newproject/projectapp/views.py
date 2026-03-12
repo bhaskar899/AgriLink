@@ -168,33 +168,37 @@ import random
 import json
 
 def send_email_otp(request):
-    """OTP generate karta hai aur session mein store karke email bhejta hai."""
     if request.method == "POST":
         email = request.POST.get("email", "").strip()
-
         if not email:
             return JsonResponse({"status": "error", "message": "Email not provided"})
 
         otp = str(random.randint(100000, 999999))
-
         request.session["email_otp"] = otp
         request.session["email_to_verify"] = email
-        request.session['email_otp_verified'] = False  # Verification status reset
+        request.session['email_otp_verified'] = False
 
         try:
-
-            send_mail(
-                subject="Your Retailer Registration OTP",
-                message=f"Your OTP for retailer registration is: {otp}",
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[email],
-                fail_silently=False
-            )
-            return JsonResponse({"status": "success", "message": "OTP sent successfully"})
+            import requests as req
+            url = "https://api.brevo.com/v3/smtp/email"
+            headers = {
+                "accept": "application/json",
+                "api-key": settings.BREVO_API_KEY,
+                "content-type": "application/json"
+            }
+            data = {
+                "sender": {"email": settings.DEFAULT_FROM_EMAIL},
+                "to": [{"email": email}],
+                "subject": "Your OTP for Registration",
+                "textContent": f"Your OTP is: {otp}"
+            }
+            r = req.post(url, headers=headers, json=data, timeout=30)
+            if r.status_code == 201:
+                return JsonResponse({"status": "success"})
+            else:
+                return JsonResponse({"status": "error", "message": r.text})
         except Exception as e:
-            # Handle mail sending errors
-            print(f"Error sending email: {e}")
-            return JsonResponse({"status": "error", "message": "Failed to send OTP email"})
+            return JsonResponse({"status": "error", "message": str(e)})
 
 def verify_email_otp(request):
     if request.method == "POST":
@@ -915,50 +919,61 @@ def forgot_password(request):
     if request.method == "POST":
         email = request.POST.get("email").strip()
 
-        # Validate email
         try:
             validate_email(email)
         except ValidationError:
             messages.error(request, "⚠ Invalid email address.")
             return redirect("forgot_password")
 
-        # Check Farmer OR Retailer
         user = None
         user_type = None
 
         if Farmer.objects.filter(email=email).exists():
             user = Farmer.objects.get(email=email)
             user_type = "farmer"
-
         elif Retailer.objects.filter(email=email).exists():
             user = Retailer.objects.get(email=email)
             user_type = "retailer"
-
         else:
             messages.error(request, "❌ Email not found!")
             return redirect("forgot_password")
 
-        # Generate OTP
         otp = random.randint(100000, 999999)
 
-        # Save in session
         request.session["reset_email"] = email
         request.session["reset_otp"] = otp
         request.session["reset_user_type"] = user_type
 
-        # Send OTP email
-        send_mail(
-            subject="🔐 AgriLink Password Reset OTP",
-            message=f"Your OTP for password reset is: {otp}",
-            from_email=settings.EMAIL_HOST_USER,
-            recipient_list=[email],
-            fail_silently=False,
-        )
+        # ✅ Brevo API se mail bhejo
+        try:
+            import requests as req
+            url = "https://api.brevo.com/v3/smtp/email"
+            headers = {
+                "accept": "application/json",
+                "api-key": settings.BREVO_API_KEY,
+                "content-type": "application/json"
+            }
+            data = {
+                "sender": {"email": settings.DEFAULT_FROM_EMAIL},
+                "to": [{"email": email}],
+                "subject": "🔐 AgriLink Password Reset OTP",
+                "textContent": f"Your OTP for password reset is: {otp}\n\nThis OTP is valid for 10 minutes."
+            }
+            r = req.post(url, headers=headers, json=data, timeout=30)
 
-        messages.success(request, "📩 OTP sent to your email!")
-        return redirect("verify_otp")
+            if r.status_code == 201:
+                messages.success(request, "📩 OTP sent to your email!")
+                return redirect("verify_otp")
+            else:
+                messages.error(request, f"❌ Failed to send OTP: {r.text}")
+                return redirect("forgot_password")
+
+        except Exception as e:
+            messages.error(request, f"❌ Error: {str(e)}")
+            return redirect("forgot_password")
 
     return render(request, "forgot_password.html")
+
 
 def verify_otp(request):
     if request.method == "POST":
@@ -2935,3 +2950,28 @@ def test_email(request):
         return HttpResponse("✅ Email sent successfully!")
     except Exception as e:
         return HttpResponse(f"❌ Error: {str(e)}")
+
+import requests
+from django.http import HttpResponse
+from django.conf import settings
+
+def brevo_test(request):
+
+    url = "https://api.brevo.com/v3/smtp/email"
+
+    headers = {
+        "accept": "application/json",
+        "api-key": settings.BREVO_API_KEY,
+        "content-type": "application/json"
+    }
+
+    data = {
+        "sender": {"email": "bhaskarhubale.899@gmail.com"},
+        "to": [{"email": "bhaskarhubale.899@gmail.com"}],
+        "subject": "Test Email",
+        "htmlContent": "<h1>Email test</h1>"
+    }
+
+    r = requests.post(url, headers=headers, json=data, timeout=30)
+
+    return HttpResponse(str(r.text))
