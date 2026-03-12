@@ -165,19 +165,27 @@ RAZORPAY_KEY_SECRET = "QD36AGTlyzRhuwdLVziqWNUj"
 
 # EMAIL CONFIGURATION
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# ---------------------
+# EMAIL CONFIGURATION
+# ---------------------
 
+import os
+
+# SMTP (optional)
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp-relay.brevo.com'
 EMAIL_PORT = 587
-
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
-
 EMAIL_TIMEOUT = 60
 
 EMAIL_HOST_USER = os.environ.get("BREVO_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("BREVO_PASSWORD")
 
+# Brevo API (recommended)
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY")
+
+# Verified sender email
 DEFAULT_FROM_EMAIL = "bhaskarhubale.899@gmail.com"
 # ---------------------
 # DEFAULT FIELD TYPE

@@ -571,6 +571,12 @@ from django.contrib import messages
 from django.conf import settings
 
 
+import requests
+from django.conf import settings
+from django.shortcuts import redirect
+from django.contrib import messages
+from django.core.validators import validate_email
+
 def contact_submit(request):
     if request.method != "POST":
         return redirect("home")
@@ -591,34 +597,43 @@ def contact_submit(request):
         return redirect("home")
 
     subject = f"📩 New Contact Message from {name}"
+
     body = f"""
 Name: {name}
 Email: {email}
 
 Message:
 {message_text}
-    """
+"""
 
-    # ⭐ Retry logic added Karega 2 attempts
-    for attempt in range(2):
-        try:
-            send_mail(
-                subject,
-                body,
-                settings.EMAIL_HOST_USER,
-                [settings.EMAIL_HOST_USER],
-                fail_silently=False,
-            )
+    url = "https://api.brevo.com/v3/smtp/email"
 
+    headers = {
+        "accept": "application/json",
+        "api-key": settings.BREVO_API_KEY,
+        "content-type": "application/json"
+    }
+
+    data = {
+        "sender": {"email": settings.DEFAULT_FROM_EMAIL},
+        "to": [{"email": settings.DEFAULT_FROM_EMAIL}],
+        "subject": subject,
+        "textContent": body
+    }
+
+    try:
+        response = requests.post(url, json=data, headers=headers)
+
+        if response.status_code == 201:
             messages.success(request, "✅ Your message has been sent successfully!")
-            return redirect("home")
+        else:
+            messages.error(request, f"❌ Email failed: {response.text}")
 
-        except Exception as e:
-            last_error = str(e)
+    except Exception as e:
+        messages.error(request, f"❌ Error sending email: {str(e)}")
 
-    # If both retries fail → show error
-    messages.error(request, f"❌ Email failed even after retrying: {last_error}")
-    return redirect("home")# views.py
+    return redirect("home")
+
 # --- Training Views ---
 def training(request):
     user_type = request.session.get('user_type')
