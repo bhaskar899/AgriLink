@@ -1838,6 +1838,13 @@ def place_order(request, product_id):
                 status='Pending'
             )
 
+            # Order.objects.create ke baad add karo
+            Notification.objects.create(
+                receiver_farmer=product.farmer,
+                sender_retailer=retailer,
+                message=f"New order placed for {product.product} x{quantity} by {retailer.name}!"
+            )
+
             # ✅ Create Sale
             Sale.objects.create(
                 product=product,
@@ -2026,6 +2033,15 @@ def driver_mark_picked(request, delivery_id):
         delivery.picked_at = timezone.now()
         delivery.save()
 
+        # delivery.save() ke baad add karo
+        Notification.objects.create(
+            receiver_farmer=delivery.order.farmer,
+            message=f"Order #{delivery.order.id} has been picked up by driver {delivery.driver.name}."
+        )
+        Notification.objects.create(
+            receiver_retailer=delivery.order.retailer,
+            message=f"Order #{delivery.order.id} is on the way! Driver {delivery.driver.name} has picked it up."
+        )
         order.status = "Picked"
         order.save()
 
@@ -2256,6 +2272,16 @@ def driver_mark_delivered(request, delivery_id):
     delivery.status = "delivered"  # lowercase 'd'
     delivery.delivered_at = timezone.now()
     delivery.save()
+
+    # order.save() ke baad add karo
+    Notification.objects.create(
+        receiver_retailer=order.retailer,
+        message=f"Order #{order.id} has been delivered successfully!"
+    )
+    Notification.objects.create(
+        receiver_farmer=order.farmer,
+        message=f"Order #{order.id} has been delivered to {order.retailer.name}."
+    )
 
     # Order table update
     order.status = "Delivered"
@@ -2589,6 +2615,13 @@ def request_sample(request, product_id):
         quantity=2  # default sample quantity
     )
 
+    # SampleRequest.objects.create ke baad add karo
+    Notification.objects.create(
+        receiver_farmer=product.farmer,
+        sender_retailer=retailer,
+        message=f"Sample request received for '{product.product}' from {retailer.name}."
+    )
+
     messages.success(request, f"Sample request for '{product.product}' sent successfully!")
     return redirect("retailer_dashboard")
 # -------------------------------
@@ -2629,6 +2662,11 @@ def approve_sample(request, id):
     sample = get_object_or_404(SampleRequest, id=id)
     sample.status = "approved"
     sample.save()
+    # sample.save() ke baad add karo
+    Notification.objects.create(
+        receiver_retailer=sample.retailer,
+        message=f"Your sample request for '{sample.product.product}' has been approved!"
+    )
     messages.success(request, "Sample request approved!")
     return redirect("farmer_sample_requests")
 
@@ -2637,6 +2675,11 @@ def reject_sample(request, id):
     sample = get_object_or_404(SampleRequest, id=id)
     sample.status = "rejected"
     sample.save()
+    # sample.save() ke baad add karo
+    Notification.objects.create(
+        receiver_retailer=sample.retailer,
+        message=f"Your sample request for '{sample.product.product}' has been rejected."
+    )
     messages.success(request, "Sample request rejected!")
     return redirect("farmer_sample_requests")
 
@@ -2688,6 +2731,12 @@ def deliver_sample_complete(request, id):
 
     sample.status = "delivered"
     sample.save()
+
+    # sample.save() ke baad add karo
+    Notification.objects.create(
+        receiver_retailer=sample.retailer,
+        message=f"Your sample for '{sample.product.product}' has been delivered! Please rate it."
+    )
 
     messages.success(request, "Sample delivered successfully")
 
