@@ -1,266 +1,558 @@
 {% extends 'master.html' %}
-{% block title %}Farmer Registration{% endblock %}
+{% block title %}Farmer Registration — AgriLink{% endblock %}
 {% block body %}
 
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700;800&family=Sora:wght@700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
 
 <style>
-    :root { --f-green: #198754; --f-dark: #0f172a; }
-    body { display: flex; flex-direction: column; min-height: 100vh; margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+  /* ===========================
+     PAGE WRAPPER
+  =========================== */
+  .content-wrapper { margin-bottom: 0 !important; padding-bottom: 0 !important; }
 
-    .auth-wrapper { flex-grow: 1; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); display: flex; justify-content: center; align-items: center; padding: 160px 20px 80px; position: relative; }
+  .reg-page {
+    background: var(--bg2, #f0fdf4);
+    padding: 90px 16px 60px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    transition: background .35s;
+  }
 
-    .back-btn { position: absolute; top: 110px; left: 40px; text-decoration: none; color: var(--f-dark); font-weight: 700; display: flex; align-items: center; gap: 8px; z-index: 1000; padding: 12px 22px; background: white; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
+  /* ===========================
+     CARD
+  =========================== */
+  .reg-card {
+    width: 100%;
+    max-width: 900px;
+    background: var(--bg3, #fff);
+    border-radius: 24px;
+    box-shadow: var(--sh3, 0 14px 44px rgba(10,40,20,.15));
+    overflow: hidden;
+    border: 1.5px solid var(--bdr, #d1fae5);
+    transition: background .35s, border-color .35s;
+  }
 
-    .auth-card { width: 100%; max-width: 850px; background: white; border-radius: 30px; box-shadow: 0 25px 50px rgba(0,0,0,0.05); padding: 40px; }
-    .section-title { color: var(--f-green); font-weight: 800; font-size: 0.85rem; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; margin: 20px 0 15px; padding-bottom: 5px; }
+  /* ===========================
+     CARD HEADER
+  =========================== */
+  .reg-header {
+    background: linear-gradient(120deg, #0b5e35, #157a47, #1ea860);
+    padding: 36px 40px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .reg-header::before {
+    content: '';
+    position: absolute; top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: rgba(255,255,255,.07);
+    border-radius: 50%;
+  }
+  .reg-header::after {
+    content: '';
+    position: absolute; bottom: -40px; left: 30%;
+    width: 140px; height: 140px;
+    background: rgba(255,255,255,.04);
+    border-radius: 50%;
+  }
+  .reg-header-icon {
+    width: 60px; height: 60px; border-radius: 18px;
+    background: rgba(255,255,255,.18);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem; margin-bottom: 14px;
+    backdrop-filter: blur(8px);
+  }
+  .reg-header h2 {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.65rem; font-weight: 800;
+    color: white; margin: 0 0 6px; letter-spacing: -.4px;
+  }
+  .reg-header p {
+    color: rgba(255,255,255,.75); font-size: .9rem; margin: 0;
+  }
 
-    .form-label { font-size: 0.8rem; font-weight: 700; color: #64748b; margin-bottom: 5px; display: block; }
-    .form-control { border-radius: 12px; padding: 10px 15px; border: 1.5px solid #e2e8f0; background: #f8fafc; margin-bottom: 15px; }
+  /* ===========================
+     BACK BUTTON
+  =========================== */
+  .btn-back-reg {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 8px 18px; border-radius: 100px;
+    background: rgba(255,255,255,.18); color: white;
+    font-weight: 700; font-size: .82rem; text-decoration: none;
+    border: 1.5px solid rgba(255,255,255,.3);
+    backdrop-filter: blur(8px);
+    transition: all .22s ease;
+    position: relative; z-index: 2;
+    margin-bottom: 18px; width: fit-content;
+  }
+  .btn-back-reg:hover {
+    background: rgba(255,255,255,.3);
+    color: white; transform: translateX(-3px);
+  }
 
-    /* Eye Button Fix */
-    .pass-group { position: relative; }
-    .eye-btn { position: absolute; right: 15px; top: 38px; cursor: pointer; color: #94a3b8; z-index: 10; }
+  /* ===========================
+     FORM BODY
+  =========================== */
+  .reg-body { padding: 36px 40px; }
 
-    .submit-btn { background: var(--f-green); color: white; border: none; padding: 16px; border-radius: 16px; font-weight: 700; width: 100%; margin-top: 20px; transition: 0.3s; }
-    .submit-btn:disabled { background: #94a3b8; }
+  /* ===========================
+     SECTION LABEL
+  =========================== */
+  .reg-section {
+    display: flex; align-items: center; gap: 10px;
+    margin: 28px 0 18px;
+  }
+  .reg-section:first-child { margin-top: 0; }
+  .reg-section-icon {
+    width: 32px; height: 32px; border-radius: 9px;
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .9rem; flex-shrink: 0;
+  }
+  [data-theme="dark"] .reg-section-icon { background: rgba(34,197,94,.12); }
+  .reg-section-title {
+    font-size: .78rem; font-weight: 800; text-transform: uppercase;
+    letter-spacing: .6px; color: #15803d;
+  }
+  [data-theme="dark"] .reg-section-title { color: #4ade80; }
+  .reg-section-line {
+    flex: 1; height: 1px; background: var(--bdr, #d1fae5);
+  }
+
+  /* ===========================
+     FORM FIELDS
+  =========================== */
+  .field-group { margin-bottom: 18px; }
+
+  .field-label {
+    display: block; font-size: .78rem; font-weight: 700;
+    color: var(--txt2, #3d6650); margin-bottom: 6px;
+    letter-spacing: .2px;
+  }
+
+  .field-input {
+    width: 100%;
+    background: var(--inp, #f8fffc);
+    border: 1.5px solid var(--bdr, #d1fae5);
+    color: var(--txt, #0d1f14);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: .9rem;
+    transition: border-color .22s, box-shadow .22s, background .35s;
+    outline: none;
+    -webkit-appearance: none;
+  }
+  .field-input:focus {
+    border-color: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34,197,94,.14);
+    background: var(--bg3, #fff);
+  }
+  .field-input::placeholder { color: var(--txt3, #6b8070); }
+
+  /* Password field */
+  .pass-wrap { position: relative; }
+  .pass-wrap .field-input { padding-right: 46px; }
+  .pass-eye {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    color: var(--txt3, #6b8070); cursor: pointer; font-size: .9rem;
+    transition: color .2s;
+  }
+  .pass-eye:hover { color: #15803d; }
+
+  /* OTP Box */
+  .otp-row { display: flex; gap: 10px; }
+  .otp-row .field-input { flex: 1; }
+
+  .btn-send-otp {
+    padding: 12px 18px; border-radius: 12px; border: none;
+    background: linear-gradient(135deg, #15803d, #0f6c3e);
+    color: white; font-weight: 700; font-size: .82rem;
+    cursor: pointer; white-space: nowrap;
+    transition: all .22s ease; flex-shrink: 0;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-send-otp:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(21,128,61,.35); }
+
+  .otp-verify-box {
+    display: none;
+    margin-top: 10px;
+    background: rgba(34,197,94,.07);
+    border: 1.5px solid rgba(34,197,94,.2);
+    border-radius: 12px; padding: 14px 16px;
+  }
+  [data-theme="dark"] .otp-verify-box { background: rgba(34,197,94,.06); }
+
+  /* OCR Status */
+  .ocr-status {
+    display: block; font-size: .8rem; font-weight: 700;
+    margin-top: 6px; min-height: 20px;
+    transition: color .2s;
+  }
+
+  /* Radio Gender */
+  .gender-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .gender-opt {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 10px;
+    border: 1.5px solid var(--bdr, #d1fae5);
+    background: var(--inp, #f8fffc);
+    cursor: pointer; transition: all .22s ease;
+    font-size: .88rem; font-weight: 600;
+    color: var(--txt2, #3d6650);
+  }
+  .gender-opt input { display: none; }
+  .gender-opt.selected,
+  .gender-opt:has(input:checked) {
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    border-color: #22c55e; color: #15803d;
+  }
+  [data-theme="dark"] .gender-opt.selected,
+  [data-theme="dark"] .gender-opt:has(input:checked) {
+    background: rgba(34,197,94,.12); border-color: #22c55e;
+  }
+
+  /* Column divider */
+  .col-divider {
+    border-right: 1.5px solid var(--bdr, #d1fae5);
+  }
+  @media (max-width: 767px) { .col-divider { border-right: none; border-bottom: 1.5px solid var(--bdr, #d1fae5); margin-bottom: 24px; padding-bottom: 24px; } }
+
+  /* ===========================
+     SUBMIT BUTTON
+  =========================== */
+  .reg-submit {
+    width: 100%; padding: 15px;
+    background: linear-gradient(135deg, #15803d, #0f6c3e);
+    color: white; font-weight: 800; font-size: 1rem;
+    border: none; border-radius: 14px;
+    cursor: pointer; margin-top: 28px;
+    box-shadow: 0 6px 24px rgba(21,128,61,.35);
+    transition: all .28s ease;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: .2px;
+  }
+  .reg-submit:hover { transform: translateY(-3px); box-shadow: 0 10px 32px rgba(21,128,61,.5); }
+  .reg-submit:disabled { background: #94a3b8; box-shadow: none; transform: none; cursor: not-allowed; }
+
+  /* Login link */
+  .login-link {
+    text-align: center; margin-top: 18px; font-size: .85rem;
+    color: var(--txt3, #6b8070);
+  }
+  .login-link a {
+    color: #15803d; font-weight: 700; text-decoration: none;
+  }
+  .login-link a:hover { text-decoration: underline; }
+  [data-theme="dark"] .login-link a { color: #4ade80; }
+
+  /* ===========================
+     ERROR TEXT
+  =========================== */
+  .err-text { color: #ef4444; font-size: .78rem; font-weight: 600; margin-top: 4px; display: none; }
+
+  /* ===========================
+     MOBILE
+  =========================== */
+  @media (max-width: 768px) {
+    .reg-header { padding: 28px 22px 24px; }
+    .reg-body    { padding: 24px 20px; }
+    .reg-header h2 { font-size: 1.35rem; }
+  }
 </style>
 
-<div class="auth-wrapper">
-    <a href="javascript:history.back()" class="back-btn"><i class="fas fa-arrow-left"></i> Back</a>
+<div class="reg-page">
+  <div class="reg-card">
 
-    <div class="auth-card">
-        <h2 class="text-center fw-bold">Farmer Registration</h2>
-        <form method="post" id="farmerForm" enctype="multipart/form-data">
-            {% csrf_token %}
-            <div class="row">
-                <div class="col-md-6 border-end pe-md-4">
-                    <div class="section-title">Personal Information</div>
-
-                    <label class="form-label">Full Name</label>
-                    <input type="text" class="form-control" name="name" required>
-
-                    <label class="form-label">Email Address</label>
-                    <div class="input-group mb-3 gap-2">
-                        <input type="email" class="form-control" name="email" id="emailInput">
-                        <button type="button" class="btn btn-dark rounded-3" onclick="sendOTP()">Send OTP</button>
-                    </div>
-
-                    <div id="otpBox" style="display:none;">
-                        <label class="form-label text-success">Enter OTP</label>
-                        <input type="text" class="form-control border-success" id="otpInput">
-                    </div>
-
-                    <label class="form-label">Full Address</label>
-                    <input type="text" class="form-control" name="address" required>
-
-                    <div class="row">
-                        <div class="col-6">
-                            <label class="form-label">City</label>
-                            <input type="text" class="form-control" name="city" required>
-                        </div>
-                        <div class="col-6">
-                            <label class="form-label">Pincode</label>
-                            <input type="text" class="form-control" name="pincode" maxlength="6" required>
-                        </div>
-                    </div>
-
-                    <label class="form-label">Gender</label>
-                    <div class="d-flex gap-3 mb-3">
-                        <div class="form-check"><input class="form-check-input" type="radio" name="gender" value="Male" id="m" required><label class="form-check-label small" for="m">Male</label></div>
-                        <div class="form-check"><input class="form-check-input" type="radio" name="gender" value="Female" id="f"><label class="form-check-label small" for="f">Female</label></div>
-                    </div>
-
-                    <label class="form-label">Mobile Number</label>
-                    <input type="text" class="form-control" name="contact" maxlength="10" required>
-                </div>
-
-                <div class="col-md-6 ps-md-4">
-                    <div class="section-title">7/12 Verification</div>
-
-                    <label class="form-label">Gat / Survey Number</label>
-                    <input type="text" class="form-control" name="farmer_id_number" id="surveyNo" placeholder="Ex: 335/5/3" required>
-
-                    <label class="form-label">Upload Proof (JPG, PDF)</label>
-                    <input type="file" class="form-control" id="docFile" name="farmer_document" required>
-                    <small id="ocrStatus" class="fw-bold d-block mb-3"></small>
-
-                    <div class="section-title">Bank Details</div>
-                    <label class="form-label">Bank Account Number</label>
-                    <input type="text" class="form-control" name="bank_account_number" required>
-
-                    <label class="form-label">IFSC Code</label>
-                    <input type="text" class="form-control" name="ifsc_code" id="ifscInput" placeholder="Ex: SBIN0012345" required>
-                    <div class="section-title">Security</div>
-
-                    <div class="pass-group">
-                        <label class="form-label">Password</label>
-                        <input type="password" class="form-control" name="password" id="pass" required>
-                        <i class="fas fa-eye eye-btn" onclick="togglePass('pass')"></i>
-                    </div>
-
-                    <div class="pass-group">
-                        <label class="form-label">Confirm Password</label>
-                        <input type="password" class="form-control" id="confirmPass" required>
-                        <i class="fas fa-eye eye-btn" onclick="togglePass('confirmPass')"></i>
-                    </div>
-                </div>
-            </div>
-            <button type="submit" class="submit-btn" id="regBtn">Complete Registration</button>
-        </form>
+    <!-- Header -->
+    <div class="reg-header">
+      <a href="javascript:history.back()" class="btn-back-reg">
+        <i class="fas fa-arrow-left"></i> Back
+      </a>
+      <div class="reg-header-icon">👨‍🌾</div>
+      <h2>Farmer Registration</h2>
+      <p>Join AgriLink and sell your produce directly to retailers</p>
     </div>
+
+    <!-- Form Body -->
+    <div class="reg-body">
+      <form method="post" id="farmerForm" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="row g-4">
+
+          <!-- LEFT COLUMN -->
+          <div class="col-md-6 col-divider pe-md-4">
+
+            <div class="reg-section">
+              <div class="reg-section-icon">👤</div>
+              <span class="reg-section-title">Personal Info</span>
+              <div class="reg-section-line"></div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Full Name</label>
+              <input type="text" class="field-input" name="name" placeholder="Enter your full name" required>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Email Address</label>
+              <div class="otp-row">
+                <input type="email" class="field-input" name="email" id="emailInput" placeholder="you@example.com">
+                <button type="button" class="btn-send-otp" onclick="sendOTP()">
+                  <i class="fas fa-paper-plane"></i> Send OTP
+                </button>
+              </div>
+              <div class="otp-verify-box" id="otpBox">
+                <label class="field-label" style="color:#15803d;">✉️ Enter OTP sent to your email</label>
+                <input type="text" class="field-input" id="otpInput" placeholder="6-digit OTP" maxlength="6">
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Full Address</label>
+              <input type="text" class="field-input" name="address" placeholder="House no, Street, Area" required>
+            </div>
+
+            <div class="row g-3">
+              <div class="col-6">
+                <div class="field-group">
+                  <label class="field-label">City</label>
+                  <input type="text" class="field-input" name="city" placeholder="City" required>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="field-group">
+                  <label class="field-label">Pincode</label>
+                  <input type="text" class="field-input" id="pincode" name="pincode" maxlength="6" placeholder="6 digits" required>
+                </div>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Gender</label>
+              <div class="gender-row">
+                <label class="gender-opt">
+                  <input type="radio" name="gender" value="Male" required> 👨 Male
+                </label>
+                <label class="gender-opt">
+                  <input type="radio" name="gender" value="Female"> 👩 Female
+                </label>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Mobile Number</label>
+              <input type="text" class="field-input" name="contact" id="contact" maxlength="10" placeholder="10-digit mobile" required>
+            </div>
+
+          </div>
+
+          <!-- RIGHT COLUMN -->
+          <div class="col-md-6 ps-md-4">
+
+            <div class="reg-section">
+              <div class="reg-section-icon">📄</div>
+              <span class="reg-section-title">7/12 Verification</span>
+              <div class="reg-section-line"></div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Gat / Survey Number</label>
+              <input type="text" class="field-input" name="farmer_id_number" id="surveyNo" placeholder="e.g. 335/5/3" required>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Upload Proof (JPG / PDF)</label>
+              <input type="file" class="field-input" id="docFile" name="farmer_document" style="padding:10px;" required>
+              <span class="ocr-status" id="ocrStatus"></span>
+            </div>
+
+            <div class="reg-section">
+              <div class="reg-section-icon">🏦</div>
+              <span class="reg-section-title">Bank Details</span>
+              <div class="reg-section-line"></div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Bank Account Number</label>
+              <input type="text" class="field-input" name="bank_account_number" placeholder="Enter account number" required>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">IFSC Code</label>
+              <input type="text" class="field-input" name="ifsc_code" id="ifscInput" placeholder="e.g. SBIN0012345" style="text-transform:uppercase;" required>
+            </div>
+
+            <div class="reg-section">
+              <div class="reg-section-icon">🔐</div>
+              <span class="reg-section-title">Security</span>
+              <div class="reg-section-line"></div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Password</label>
+              <div class="pass-wrap">
+                <input type="password" class="field-input" name="password" id="pass" placeholder="Create a strong password" required>
+                <i class="fas fa-eye pass-eye" onclick="togglePass('pass', this)"></i>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Confirm Password</label>
+              <div class="pass-wrap">
+                <input type="password" class="field-input" id="confirmPass" placeholder="Re-enter password" required>
+                <i class="fas fa-eye pass-eye" onclick="togglePass('confirmPass', this)"></i>
+              </div>
+              <span class="err-text" id="passError">⚠ Passwords do not match</span>
+            </div>
+
+          </div>
+        </div>
+
+        <button type="submit" class="reg-submit" id="regBtn">
+          <i class="fas fa-user-plus"></i> Complete Registration
+        </button>
+
+        <div class="login-link">
+          Already have an account? <a href="{% url 'farmer_login' %}">Login Here</a>
+        </div>
+
+      </form>
+    </div>
+  </div>
 </div>
 
 <script>
-    // 1. Password Visibility Toggle
-    function togglePass(id) {
-        const input = document.getElementById(id);
-        const icon = event.currentTarget;
-        if (input.type === "password") {
-            input.type = "text";
-            icon.classList.replace('fa-eye', 'fa-eye-slash');
-        } else {
-            input.type = "password";
-            icon.classList.replace('fa-eye-slash', 'fa-eye');
-        }
+  /* Password toggle */
+  function togglePass(id, icon) {
+    const inp = document.getElementById(id);
+    const show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    icon.classList.toggle('fa-eye', !show);
+    icon.classList.toggle('fa-eye-slash', show);
+  }
+
+  /* Gender option highlight */
+  document.querySelectorAll('.gender-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.gender-opt').forEach(o => o.classList.remove('selected'));
+      opt.classList.add('selected');
+    });
+  });
+
+  /* Form validation */
+  document.getElementById('farmerForm').onsubmit = function(e) {
+    let valid = true;
+
+    const pass = document.getElementById('pass').value;
+    const confirm = document.getElementById('confirmPass').value;
+    const passError = document.getElementById('passError');
+
+    if (pass !== confirm) {
+      passError.style.display = 'block';
+      document.getElementById('confirmPass').style.borderColor = '#ef4444';
+      valid = false;
+    } else {
+      passError.style.display = 'none';
+      document.getElementById('confirmPass').style.borderColor = '';
     }
 
-    // 2. Validations & Form Submit
-    document.getElementById('farmerForm').onsubmit = function(e) {
-        let isValid = true;
-
-        // Password Match Validation
-        const pass = document.getElementById('pass').value;
-        const confirm = document.getElementById('confirmPass').value;
-        const passError = document.getElementById('passError');
-
-        if (pass !== confirm) {
-            passError.style.display = 'block';
-            document.getElementById('confirmPass').classList.add('is-invalid');
-            isValid = false;
-        } else {
-            passError.style.display = 'none';
-            document.getElementById('confirmPass').classList.remove('is-invalid');
-        }
-
-        // Mobile Validation
-        const contact = document.getElementById('contact').value;
-        if (!/^\d{10}$/.test(contact)) {
-            alert("Please enter a valid 10-digit mobile number.");
-            isValid = false;
-        }
-
-        // Pincode Validation
-        const pincode = document.getElementById('pincode').value;
-        if (!/^\d{6}$/.test(pincode)) {
-            alert("Please enter a valid 6-digit pincode.");
-            isValid = false;
-        }
-
-        // IFSC Validation
-        const ifsc = document.getElementById('ifscInput').value;
-        const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
-        if (!ifscRegex.test(ifsc.toUpperCase())) {
-            alert("Please enter a valid IFSC code (e.g., SBIN0012345).");
-            isValid = false;
-        }
-
-        if (!isValid) e.preventDefault();
-        return isValid;
-    };
-
-    // 3. OTP Function
-    function sendOTP() {
-        const email = document.getElementById("emailInput").value;
-        if (!email || !email.includes('@')) {
-            alert("Please enter a valid email address!");
-            return;
-        }
-
-        fetch("{% url 'send_email_otp' %}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
-            },
-            body: "email=" + encodeURIComponent(email)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.status === "success") {
-                alert("OTP sent successfully!");
-                document.getElementById("otpBox").style.display = "block";
-            } else {
-                alert(data.message);
-            }
-        })
-        .catch(() => alert("Server error while sending OTP."));
+    const contact = document.getElementById('contact').value;
+    if (!/^\d{10}$/.test(contact)) {
+      alert("Please enter a valid 10-digit mobile number.");
+      valid = false;
     }
 
+    const pincode = document.getElementById('pincode').value;
+    if (!/^\d{6}$/.test(pincode)) {
+      alert("Please enter a valid 6-digit pincode.");
+      valid = false;
+    }
 
+    const ifsc = document.getElementById('ifscInput').value;
+    if (!/^[A-Z]{4}0[A-Z0-9]{6}$/i.test(ifsc)) {
+      alert("Please enter a valid IFSC code (e.g. SBIN0012345).");
+      valid = false;
+    }
 
+    if (!valid) e.preventDefault();
+    return valid;
+  };
 
-    // 3. Simple Document Verification
-document.getElementById('docFile').onchange = async function() {
-    // 1. User ne taklela survey number ghyaycha
+  /* Send OTP */
+  function sendOTP() {
+    const email = document.getElementById('emailInput').value;
+    if (!email || !email.includes('@')) {
+      alert("Please enter a valid email address!"); return;
+    }
+    fetch("{% url 'send_email_otp' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+      },
+      body: "email=" + encodeURIComponent(email)
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.status === "success") {
+        document.getElementById("otpBox").style.display = "block";
+      } else {
+        alert(d.message);
+      }
+    })
+    .catch(() => alert("Server error while sending OTP."));
+  }
+
+  /* OCR Document Verification */
+  document.getElementById('docFile').onchange = async function() {
     const surveyInput = document.getElementById('surveyNo').value.trim();
     const status = document.getElementById('ocrStatus');
     const file = this.files[0];
 
-    if(!surveyInput) {
-        alert("Please Fill Survey Number First!");
-        this.value = "";
-        return;
+    if (!surveyInput) {
+      alert("Please fill Survey Number first!");
+      this.value = ""; return;
     }
 
-    status.innerText = "⏳ Processing Document (JPG, PNG, PDF, WEBP)...";
-    status.className = "text-warning fw-bold";
+    status.style.color = '#f59e0b';
+    status.innerText = "⏳ Scanning document...";
 
     try {
-        let sourceForOCR = file;
+      let src = file;
+      if (file.type === "application/pdf") {
+        const pdf = await pdfjsLib.getDocument({data: await file.arrayBuffer()}).promise;
+        const page = await pdf.getPage(1);
+        const vp = page.getViewport({scale: 2.0});
+        const canvas = document.createElement('canvas');
+        canvas.width = vp.width; canvas.height = vp.height;
+        await page.render({canvasContext: canvas.getContext('2d'), viewport: vp}).promise;
+        src = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.95));
+      }
 
-        // PDF Support (Ensure pdfjsLib is loaded)
-        if (file.type === "application/pdf") {
-            const pdfData = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument({data: pdfData}).promise;
-            const page = await pdf.getPage(1);
-            const viewport = page.getViewport({scale: 2.0}); // Resolution vadhvli mhanje clarity yete
-            const canvas = document.createElement('canvas');
-            const context = canvas.getContext('2d');
-            canvas.height = viewport.height;
-            canvas.width = viewport.width;
-            await page.render({canvasContext: context, viewport: viewport}).promise;
-            sourceForOCR = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.95));
-        }
+      const worker = await Tesseract.createWorker('eng');
+      const { data: { text } } = await worker.recognize(src);
+      await worker.terminate();
 
-        const worker = await Tesseract.createWorker('eng');
-        const { data: { text } } = await worker.recognize(sourceForOCR);
-        await worker.terminate();
+      const clean = s => s.replace(/[\s\n\r/.-]/g, '').toLowerCase();
 
-        // 🔍 CLEANING LOGIC: White space ani special characters kadhun taka
-        const cleanOCRText = text.replace(/[\s\n\r/.-]/g, '').toLowerCase();
-        const cleanUserInput = surveyInput.replace(/[\s\n\r/.-]/g, '').toLowerCase();
-
-        console.log("OCR Text Found:", cleanOCRText); // Debugging sathi terminal madhe check kara
-
-        if(cleanOCRText.includes(cleanUserInput)) {
-            status.innerText = "✅ Match Found! Document Verified.";
-            status.className = "text-success fw-bold";
-        } else {
-            // Jar match nahi jhala, tar partial check kara
-            status.innerText = "❌ Match Not Found. Please upload a clearer image.";
-            status.className = "text-danger fw-bold";
-        }
-
+      if (clean(text).includes(clean(surveyInput))) {
+        status.style.color = '#15803d';
+        status.innerText = "✅ Document Verified Successfully!";
+      } else {
+        status.style.color = '#ef4444';
+        status.innerText = "❌ Survey number not found. Upload a clearer image.";
+      }
     } catch(e) {
-        console.error("OCR Error:", e);
-        status.innerText = "❌ Error scanning file. Try a JPG/PNG.";
-        status.className = "text-danger fw-bold";
+      status.style.color = '#ef4444';
+      status.innerText = "❌ Error scanning file. Try JPG/PNG.";
     }
-};
-
+  };
 </script>
 {% endblock %}

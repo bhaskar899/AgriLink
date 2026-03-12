@@ -6,169 +6,485 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-    :root {
-        --primary-green: #198754;
-        --dark-green: #16423C;
-        --glass-bg: rgba(255, 255, 255, 0.9);
-    }
+  /* ===========================
+     PAGE BASE
+  =========================== */
+  .notif-wrapper {
+    margin-top: 90px;
+    padding: 36px 0 80px;
+    min-height: 100vh;
+    background: var(--bg2, #f0fdf4);
+    transition: background .35s;
+  }
 
-    body {
-        background: linear-gradient(135deg, #f0f9f4 0%, #e6f0eb 100%);
-        font-family: 'Plus Jakarta Sans', sans-serif;
-    }
+  /* ===========================
+     HEADER CARD
+  =========================== */
+  .notif-header {
+    background: var(--bg3, #fff);
+    border: 1.5px solid var(--bdr, #d1fae5);
+    border-radius: 20px;
+    padding: 26px 30px;
+    margin-bottom: 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    box-shadow: var(--sh2, 0 4px 18px rgba(10,40,20,.11));
+    transition: background .35s, border-color .35s;
+    flex-wrap: wrap;
+  }
 
-    .main-wrapper { margin-top: 110px; padding-bottom: 80px; }
+  .notif-title {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: var(--txt, #0d1f14);
+    letter-spacing: -.4px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
 
-    /* Modern Back Button */
-    .btn-back-nav {
-        border: none; padding: 12px 24px; border-radius: 50px;
-        background: white; color: var(--primary-green);
-        font-weight: 700; text-decoration: none; display: inline-flex;
-        align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        transition: 0.3s; border: 1px solid #d1e7dd;
-    }
-    .btn-back-nav:hover { transform: translateX(-5px); background: var(--primary-green); color: white; }
+  .notif-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #15803d, #0f6c3e);
+    color: white;
+    font-size: .72rem;
+    font-weight: 700;
+    min-width: 24px;
+    height: 24px;
+    border-radius: 12px;
+    padding: 0 7px;
+  }
 
-    /* Header Section */
-    .notify-header {
-        background: var(--glass-bg); backdrop-filter: blur(10px);
-        border-radius: 20px; padding: 25px; border: 1px solid rgba(255,255,255,0.6);
-        margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center;
-    }
+  .btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 20px;
+    border-radius: 100px;
+    background: var(--bg2, #f0fdf4);
+    color: #15803d;
+    font-weight: 700;
+    font-size: .85rem;
+    text-decoration: none;
+    border: 1.5px solid var(--bdr, #d1fae5);
+    transition: all .25s ease;
+    margin-bottom: 12px;
+    width: fit-content;
+  }
+  .btn-back:hover {
+    background: #15803d;
+    color: white;
+    border-color: #15803d;
+    transform: translateX(-4px);
+  }
 
-    /* Modern Notification Card */
-    .notify-card {
-        background: white;
-        border-radius: 20px;
-        padding: 20px;
-        margin-bottom: 15px;
-        display: flex;
-        gap: 15px;
-        align-items: center;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.03);
-        transition: 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
-        border: 1px solid transparent;
-        cursor: pointer;
-        position: relative;
-    }
+  .btn-clear-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-radius: 100px;
+    background: transparent;
+    color: #ef4444;
+    font-weight: 700;
+    font-size: .85rem;
+    border: 1.5px solid #fca5a5;
+    text-decoration: none;
+    transition: all .25s ease;
+    white-space: nowrap;
+  }
+  .btn-clear-all:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+    transform: scale(1.03);
+  }
 
-    .notify-card:hover {
-        transform: scale(1.01);
-        box-shadow: 0 12px 30px rgba(25, 135, 84, 0.1);
-        border-color: var(--primary-green);
-    }
+  /* ===========================
+     FILTER TABS
+  =========================== */
+  .filter-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 22px;
+    flex-wrap: wrap;
+  }
 
-    /* Unread Glow Effect */
-    .unread-glow {
-        background: #f8faf9;
-        border-left: 5px solid var(--primary-green);
-    }
+  .filter-tab {
+    padding: 7px 18px;
+    border-radius: 100px;
+    font-size: .82rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1.5px solid var(--bdr, #d1fae5);
+    background: var(--bg3, #fff);
+    color: var(--txt2, #3d6650);
+    transition: all .22s ease;
+    user-select: none;
+  }
+  .filter-tab:hover,
+  .filter-tab.active {
+    background: linear-gradient(135deg, #15803d, #0f6c3e);
+    color: white;
+    border-color: transparent;
+  }
 
-    /* Icon Container */
-    .icon-box {
-        width: 50px; height: 50px; border-radius: 15px;
-        display: flex; align-items: center; justify-content: center;
-        font-size: 1.2rem; flex-shrink: 0;
-    }
-    .icon-unread { background: #e8f5e9; color: var(--primary-green); }
-    .icon-read { background: #f5f5f5; color: #aaa; }
+  /* ===========================
+     NOTIFICATION CARD
+  =========================== */
+  .notif-card {
+    background: var(--bg3, #fff);
+    border-radius: 16px;
+    padding: 18px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1.5px solid var(--bdr, #d1fae5);
+    box-shadow: var(--sh1, 0 1px 4px rgba(10,40,20,.07));
+    transition: all .28s cubic-bezier(.165,.84,.44,1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
 
-    .content-box { flex-grow: 1; }
+  .notif-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: transparent;
+    border-radius: 4px 0 0 4px;
+    transition: background .25s;
+  }
 
-    .msg-text {
-        font-weight: 600; color: var(--dark-green);
-        margin-bottom: 4px; display: block; line-height: 1.4;
-    }
+  .notif-card.unread::before {
+    background: linear-gradient(to bottom, #22c55e, #15803d);
+  }
 
-    .time-text { font-size: 0.75rem; color: #8ba696; font-weight: 600; }
+  .notif-card.unread {
+    background: linear-gradient(to right, rgba(240,253,244,.8), var(--bg3, #fff));
+    border-color: #bbf7d0;
+  }
+  [data-theme="dark"] .notif-card.unread {
+    background: linear-gradient(to right, rgba(34,197,94,.07), var(--bg3));
+    border-color: rgba(34,197,94,.2);
+  }
 
-    /* NEW Badge */
-    .badge-new {
-        background: var(--primary-green); color: white;
-        font-size: 0.6rem; padding: 3px 8px; border-radius: 6px;
-        font-weight: 900; margin-left: 8px; vertical-align: middle;
-    }
+  .notif-card:hover {
+    transform: translateY(-3px) scale(1.005);
+    box-shadow: 0 12px 32px rgba(21,128,61,.14);
+    border-color: #4ade80;
+  }
+  [data-theme="dark"] .notif-card:hover {
+    box-shadow: 0 12px 32px rgba(0,0,0,.35);
+    border-color: rgba(74,222,128,.35);
+  }
 
-    /* Action Buttons */
-    .delete-btn {
-        color: #ffcdd2; transition: 0.3s; padding: 8px;
-    }
-    .delete-btn:hover { color: #e53935; background: #ffebee; border-radius: 10px; }
+  /* ===========================
+     ICON BOX
+  =========================== */
+  .notif-icon {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.15rem;
+    flex-shrink: 0;
+    transition: transform .28s ease;
+  }
+  .notif-card:hover .notif-icon { transform: scale(1.12) rotate(5deg); }
 
-    /* Empty State Animation */
-    .empty-state {
-        text-align: center; padding: 60px; background: white;
-        border-radius: 30px; border: 2px dashed #d1e7dd;
-    }
+  .icon-order   { background: linear-gradient(135deg,#dcfce7,#bbf7d0); color: #15803d; }
+  .icon-approve { background: linear-gradient(135deg,#dbeafe,#bfdbfe); color: #1d4ed8; }
+  .icon-payment { background: linear-gradient(135deg,#fef3c7,#fde68a); color: #b45309; }
+  .icon-default { background: linear-gradient(135deg,#f0fdf4,#dcfce7);  color: #15803d; }
 
+  [data-theme="dark"] .icon-order   { background: rgba(34,197,94,.14);  color: #4ade80; }
+  [data-theme="dark"] .icon-approve { background: rgba(59,130,246,.14); color: #93c5fd; }
+  [data-theme="dark"] .icon-payment { background: rgba(245,158,11,.14); color: #fcd34d; }
+  [data-theme="dark"] .icon-default { background: rgba(34,197,94,.1);   color: #4ade80; }
+
+  /* ===========================
+     CONTENT
+  =========================== */
+  .notif-body { flex-grow: 1; min-width: 0; }
+
+  .notif-msg {
+    font-weight: 600;
+    font-size: .92rem;
+    color: var(--txt, #0d1f14);
+    line-height: 1.45;
+    margin-bottom: 5px;
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .notif-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .notif-time {
+    font-size: .76rem;
+    color: var(--txt3, #6b8070);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .badge-new {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: linear-gradient(135deg, #15803d, #0f6c3e);
+    color: white;
+    font-size: .66rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 6px;
+    letter-spacing: .3px;
+    animation: newPulse 2s ease-in-out infinite;
+  }
+  @keyframes newPulse {
+    0%,100% { opacity: 1; }
+    50%      { opacity: .7; }
+  }
+
+  /* ===========================
+     DELETE BUTTON
+  =========================== */
+  .notif-delete {
+    width: 34px; height: 34px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--txt3, #6b8070); background: transparent;
+    border: 1.5px solid transparent;
+    font-size: .85rem; flex-shrink: 0;
+    transition: all .22s ease;
+    text-decoration: none;
+  }
+  .notif-delete:hover {
+    background: #fef2f2;
+    color: #ef4444;
+    border-color: #fca5a5;
+    transform: scale(1.1);
+  }
+  [data-theme="dark"] .notif-delete:hover {
+    background: rgba(239,68,68,.12);
+    color: #f87171;
+    border-color: rgba(239,68,68,.25);
+  }
+
+  /* ===========================
+     DATE DIVIDER
+  =========================== */
+  .date-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 22px 0 14px;
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    color: var(--txt3, #6b8070);
+  }
+  .date-divider::before,
+  .date-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--bdr, #d1fae5);
+  }
+
+  /* ===========================
+     EMPTY STATE
+  =========================== */
+  .empty-state {
+    text-align: center;
+    padding: 72px 32px;
+    background: var(--bg3, #fff);
+    border-radius: 22px;
+    border: 2px dashed var(--bdr, #d1fae5);
+    transition: background .35s, border-color .35s;
+  }
+
+  .empty-icon-wrap {
+    width: 90px; height: 90px; border-radius: 24px;
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.4rem; margin: 0 auto 22px;
+    animation: floatIcon 3s ease-in-out infinite;
+  }
+  [data-theme="dark"] .empty-icon-wrap { background: rgba(34,197,94,.12); }
+
+  @keyframes floatIcon {
+    0%,100% { transform: translateY(0); }
+    50%      { transform: translateY(-8px); }
+  }
+
+  .empty-state h4 {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.25rem; font-weight: 800;
+    color: var(--txt, #0d1f14); margin-bottom: 8px;
+  }
+
+  .empty-state p { color: var(--txt3, #6b8070); font-size: .9rem; }
+
+  /* ===========================
+     MOBILE
+  =========================== */
+  @media (max-width: 768px) {
+    .notif-wrapper { margin-top: 80px; padding: 20px 0 60px; }
+    .notif-header  { padding: 18px 20px; }
+    .notif-title   { font-size: 1.25rem; }
+    .notif-card    { padding: 14px 15px; gap: 12px; }
+    .notif-icon    { width: 42px; height: 42px; font-size: 1rem; border-radius: 12px; }
+    .notif-msg     { font-size: .88rem; }
+  }
 </style>
 
-<div class="container main-wrapper">
-
-    <div class="notify-header shadow-sm">
-        <div>
-            <a href="javascript:history.back()" class="btn-back-nav mb-2">
-                <i class="fas fa-arrow-left"></i> Back
-            </a>
-            <h2 class="fw-800 mb-0 mt-2" style="color: var(--dark-green);">🔔 Notifications</h2>
-        </div>
-        <a href="{% url 'delete_all_notification' %}"
-           class="btn btn-outline-danger rounded-pill px-4 fw-bold"
-           onclick="return confirm('Clear all notifications?')">
-            <i class="fas fa-trash-alt me-2"></i> Clear All
-        </a>
-    </div>
-
+<div class="notif-wrapper">
+  <div class="container">
     <div class="row justify-content-center">
-        <div class="col-lg-10">
-            {% for n in notifications %}
-            <div class="notify-card {% if not n.is_read %}unread-glow{% endif %}"
-                 onclick="openNotification('{{ n.id }}')">
+      <div class="col-lg-9 col-xl-8">
 
-                <div class="icon-box {% if not n.is_read %}icon-unread{% else %}icon-read{% endif %}">
-                    {% if "order" in n.message|lower %}
-                        <i class="fas fa-shopping-bag"></i>
-                    {% elif "approve" in n.message|lower %}
-                        <i class="fas fa-check-double"></i>
-                    {% else %}
-                        <i class="fas fa-bell"></i>
-                    {% endif %}
-                </div>
-
-                <div class="content-box">
-                    <span class="msg-text">
-                        {{ n.message }}
-                        {% if not n.is_read %}<span class="badge-new">NEW</span>{% endif %}
-                    </span>
-                    <span class="time-text">
-                        <i class="far fa-clock me-1"></i> {{ n.timestamp|date:"d M, h:i A" }}
-                    </span>
-                </div>
-
-                <a href="{% url 'delete_notification' n.id %}"
-                   class="delete-btn"
-                   onclick="event.stopPropagation(); return confirm('Delete?')">
-                    <i class="fas fa-times"></i>
-                </a>
-            </div>
-            {% empty %}
-            <div class="empty-state">
-                <div class="mb-3">
-                    <i class="fas fa-bell-slash fa-4x" style="color: #d1e7dd;"></i>
-                </div>
-                <h4 class="fw-bold text-muted">All Caught Up!</h4>
-                <p class="text-muted">You have no new notifications at the moment.</p>
-            </div>
-            {% endfor %}
+        <!-- Header -->
+        <div class="notif-header">
+          <div>
+            <a href="javascript:history.back()" class="btn-back">
+              <i class="fas fa-arrow-left"></i> Back
+            </a>
+            <h2 class="notif-title">
+              🔔 Notifications
+              {% if notifications %}
+              <span class="notif-count-badge">{{ notifications|length }}</span>
+              {% endif %}
+            </h2>
+          </div>
+          {% if notifications %}
+          <a href="{% url 'delete_all_notification' %}"
+             class="btn-clear-all"
+             onclick="return confirm('Clear all notifications?')">
+            <i class="fas fa-trash-alt"></i> Clear All
+          </a>
+          {% endif %}
         </div>
+
+        <!-- Filter Tabs -->
+        {% if notifications %}
+        <div class="filter-tabs">
+          <div class="filter-tab active" data-filter="all">All</div>
+          <div class="filter-tab" data-filter="unread">Unread</div>
+          <div class="filter-tab" data-filter="order">Orders</div>
+          <div class="filter-tab" data-filter="approve">Approvals</div>
+        </div>
+        {% endif %}
+
+        <!-- Notification List -->
+        {% if notifications %}
+          <div class="date-divider">Today</div>
+
+          {% for n in notifications %}
+          <div class="notif-card {% if not n.is_read %}unread{% endif %} notif-item"
+               data-type="{% if 'order' in n.message|lower %}order{% elif 'approve' in n.message|lower %}approve{% elif 'pay' in n.message|lower %}payment{% else %}default{% endif %}"
+               data-read="{{ n.is_read|yesno:'read,unread' }}"
+               onclick="openNotification('{{ n.id }}')">
+
+            <!-- Icon -->
+            <div class="notif-icon
+              {% if 'order' in n.message|lower %}icon-order
+              {% elif 'approve' in n.message|lower %}icon-approve
+              {% elif 'pay' in n.message|lower %}icon-payment
+              {% else %}icon-default{% endif %}">
+              {% if 'order' in n.message|lower %}
+                <i class="fas fa-shopping-bag"></i>
+              {% elif 'approve' in n.message|lower %}
+                <i class="fas fa-check-double"></i>
+              {% elif 'pay' in n.message|lower %}
+                <i class="fas fa-credit-card"></i>
+              {% elif 'deliver' in n.message|lower %}
+                <i class="fas fa-truck"></i>
+              {% elif 'sample' in n.message|lower %}
+                <i class="fas fa-flask"></i>
+              {% else %}
+                <i class="fas fa-bell"></i>
+              {% endif %}
+            </div>
+
+            <!-- Content -->
+            <div class="notif-body">
+              <span class="notif-msg">{{ n.message }}</span>
+              <div class="notif-meta">
+                <span class="notif-time">
+                  <i class="far fa-clock"></i> {{ n.timestamp|date:"d M, h:i A" }}
+                </span>
+                {% if not n.is_read %}
+                <span class="badge-new">● NEW</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Delete -->
+            <a href="{% url 'delete_notification' n.id %}"
+               class="notif-delete"
+               title="Delete"
+               onclick="event.stopPropagation(); return confirm('Delete this notification?')">
+              <i class="fas fa-times"></i>
+            </a>
+          </div>
+          {% endfor %}
+
+        {% else %}
+        <div class="empty-state">
+          <div class="empty-icon-wrap">🔕</div>
+          <h4>All Caught Up!</h4>
+          <p>You have no notifications at the moment.<br>We'll let you know when something new arrives.</p>
+        </div>
+        {% endif %}
+
+      </div>
     </div>
+  </div>
 </div>
 
 <script>
-function openNotification(id) {
-    // Add a small fade out effect before redirecting
-    window.location.href = "/notifications/read/" + id + "/";
-}
-</script>
+  /* Open notification */
+  function openNotification(id) {
+    window.location.href = '/notifications/read/' + id + '/';
+  }
 
+  /* Filter tabs */
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+
+      const filter = this.dataset.filter;
+      document.querySelectorAll('.notif-item').forEach(card => {
+        const type   = card.dataset.type;
+        const isRead = card.dataset.read;
+
+        let show = true;
+        if (filter === 'unread')  show = isRead === 'unread';
+        else if (filter === 'order')   show = type === 'order';
+        else if (filter === 'approve') show = type === 'approve';
+
+        card.style.display    = show ? 'flex' : 'none';
+        card.style.opacity    = show ? '1'    : '0';
+        card.style.transform  = show ? ''     : 'scale(.97)';
+      });
+    });
+  });
+</script>
 {% endblock %}

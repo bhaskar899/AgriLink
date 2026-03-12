@@ -4,381 +4,612 @@
 {% block title %}Home - AgriLink{% endblock %}
 
 {% block body %}
-
 <style>
-  /* ===== ESSENTIAL FIX FOR SPACE & ICONS ===== */
-  html, body {
-    overflow-x: hidden; /* Removes side space */
-    width: 100%;
-    margin: 0;
-    padding: 0;
-  }
+  /* ===========================
+     LAYOUT FIXES
+  =========================== */
+  html, body { overflow-x: hidden; width: 100%; margin: 0; padding: 0; }
+  .row { margin-right: 0 !important; margin-left: 0 !important; }
 
-  .row {
-    margin-right: 0 !important;
-    margin-left: 0 !important;
-  }
-
-  /* ICONS FIX: Stacking them properly on the right */
-  #translate-floating-btn {
-    position: fixed !important;
-    bottom: 150px !important; /* Top position */
-    right: 20px !important;
-    z-index: 9999 !important;
-  }
+  /* ===========================
+     FLOATING BUTTONS POSITIONS
+  =========================== */
+  #translate-floating-btn { position: fixed !important; bottom: 170px !important; right: 22px !important; z-index: 9999 !important; }
 
   #scrollTopBtn {
-    position: fixed !important;
-    bottom: 85px !important; /* Middle position */
-    right: 20px !important;
-    background: linear-gradient(135deg, #198754, #0f6c3e);
-    color: white;
-    width: 55px;
-    height: 55px;
-    border-radius: 50%;
-    border: none;
-    font-size: 1.4rem;
-    cursor: pointer;
-    box-shadow: 0 5px 20px rgba(25,135,84,0.4);
-    z-index: 9997;
-    display: none; /* Controlled by JS */
-    align-items: center;
-    justify-content: center;
+    position: fixed !important; bottom: 46px !important; right: 22px !important;
+    background: linear-gradient(135deg, #15803d, #0f6c3e);
+    color: white; width: 52px; height: 52px; border-radius: 50%; border: none;
+    font-size: 1.3rem; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(21,128,61,.45);
+    z-index: 9997; display: none;
+    align-items: center; justify-content: center;
+    transition: all .28s ease;
   }
+  #scrollTopBtn:hover { transform: scale(1.12) translateY(-3px); box-shadow: 0 8px 28px rgba(21,128,61,.6); }
 
   .whatsapp-float {
-    position: fixed !important;
-    bottom: 20px !important; /* Bottom position */
-    right: 20px !important;
-    background: #25D366;
-    color: white;
-    width: 55px;
-    height: 55px;
-    border-radius: 50%;
-    font-size: 1.8rem;
-    box-shadow: 0 5px 20px rgba(37,211,102,0.5);
-    z-index: 9998;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
+    position: fixed !important; bottom: 170px !important; right: 86px !important;
+    background: linear-gradient(135deg, #25D366, #1aa34a);
+    color: white; width: 52px; height: 52px; border-radius: 50%;
+    font-size: 1.55rem; box-shadow: 0 4px 20px rgba(37,211,102,.5);
+    z-index: 9998; display: flex; align-items: center; justify-content: center;
+    text-decoration: none; transition: all .28s ease;
   }
+  .whatsapp-float:hover { transform: scale(1.12); box-shadow: 0 8px 28px rgba(37,211,102,.7); }
 
-  /* Mobile adjustment for icons */
   @media (max-width: 768px) {
-    #translate-floating-btn { bottom: 140px !important; right: 15px !important; }
-    #scrollTopBtn { bottom: 80px !important; right: 15px !important; width: 50px; height: 50px; }
-    .whatsapp-float { bottom: 20px !important; right: 15px !important; width: 50px; height: 50px; }
+    #translate-floating-btn { bottom: 158px !important; right: 16px !important; }
+    #scrollTopBtn            { bottom: 16px !important;  right: 16px !important; width: 48px; height: 48px; }
+    .whatsapp-float          { bottom: 158px !important; right: 80px !important; width: 48px; height: 48px; }
   }
 
-  /* ===== REMAINING ORIGINAL STYLES (UNTOUCHED) ===== */
-  .carousel-item {
-    transition: transform 0.8s ease-in-out;
+  /* ===========================
+     HERO CAROUSEL
+  =========================== */
+  .carousel-item { transition: transform .9s cubic-bezier(.4,0,.2,1); }
+
+  .hero-slide {
+    height: 100vh; min-height: 580px;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    position: relative; overflow: hidden;
   }
+
+  .hero-slide::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(170deg, rgba(7,43,23,.82) 0%, rgba(15,108,62,.7) 55%, rgba(26,168,99,.55) 100%);
+    z-index: 1;
+  }
+
+  .hero-bg {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    transition: transform 8s ease; transform: scale(1.04);
+  }
+  .carousel-item.active .hero-bg { transform: scale(1); }
 
   .hero-content {
-    animation: fadeInUp 1s ease;
-    text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+    position: relative; z-index: 2;
+    animation: heroIn .9s ease both;
+    max-width: 760px; padding: 0 20px;
+  }
+  @keyframes heroIn {
+    from { opacity: 0; transform: translateY(32px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
+  .hero-content h1 {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.6rem);
+    font-weight: 800; line-height: 1.12;
+    text-shadow: 0 3px 20px rgba(0,0,0,.35);
+    letter-spacing: -.5px; color: white;
   }
 
-  .carousel-item .btn {
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  .hero-content p {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    color: rgba(255,255,255,.88);
+    text-shadow: 0 1px 8px rgba(0,0,0,.3);
+    margin-bottom: 2rem; line-height: 1.5;
   }
 
-  .carousel-item .btn:hover {
-    transform: translateY(-5px) scale(1.08);
-    box-shadow: 0 8px 25px rgba(255,193,7,0.6);
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,.15); backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,.25);
+    color: rgba(255,255,255,.95); font-size: .82rem; font-weight: 600;
+    padding: 6px 14px; border-radius: 100px; margin-bottom: 20px;
+    letter-spacing: .3px;
   }
 
-  .btn-outline-light:hover {
-    background: white !important;
-    color: #198754 !important;
+  .hero-btn-primary {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #1a0a00; font-weight: 700; font-size: 1rem;
+    padding: 14px 32px; border-radius: 12px; border: none;
+    box-shadow: 0 6px 24px rgba(251,191,36,.45);
+    transition: all .28s ease; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .hero-btn-primary:hover { transform: translateY(-4px) scale(1.04); box-shadow: 0 10px 32px rgba(251,191,36,.6); color: #1a0a00; }
+
+  .hero-btn-outline {
+    background: rgba(255,255,255,.1); backdrop-filter: blur(10px);
+    color: white; font-weight: 700; font-size: 1rem;
+    padding: 13px 28px; border-radius: 12px; border: 2px solid rgba(255,255,255,.5);
+    transition: all .28s ease; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .hero-btn-outline:hover { background: white; color: #0f6c3e; border-color: white; transform: translateY(-4px); }
+
+  /* ===========================
+     STATS BAR
+  =========================== */
+  .stats-bar {
+    background: var(--bg3, #fff);
+    border-bottom: 1px solid var(--bdr, #d1fae5);
+    padding: 20px 0;
+    box-shadow: 0 2px 12px rgba(15,108,62,.08);
+    transition: background .35s, border-color .35s;
+  }
+  .stat-item { text-align: center; padding: 8px 20px; }
+  .stat-item .num {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.75rem; font-weight: 800;
+    color: #15803d; line-height: 1;
+  }
+  [data-theme="dark"] .stat-item .num { color: #4ade80; }
+  .stat-item .lbl { font-size: .8rem; color: var(--txt3, #6b8070); font-weight: 600; margin-top: 3px; text-transform: uppercase; letter-spacing: .4px; }
+  .stat-divider { width: 1px; background: var(--bdr, #d1fae5); height: 40px; align-self: center; }
+
+  /* ===========================
+     ABOUT SECTION
+  =========================== */
+  #about {
+    padding: 80px 0;
+    background: var(--bg, #fff);
+    transition: background .35s;
   }
 
-  .about-img {
-    transition: all 0.4s ease;
-    border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+  .section-label {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--g50, #f0fdf4); color: #15803d;
+    font-size: .78rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .8px; padding: 5px 14px; border-radius: 100px;
+    border: 1px solid var(--g200, #bbf7d0); margin-bottom: 12px;
+  }
+  [data-theme="dark"] .section-label { background: rgba(34,197,94,.1); border-color: rgba(34,197,94,.2); color: #4ade80; }
+
+  .section-title {
+    font-family: 'Sora', sans-serif;
+    font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+    font-weight: 800; letter-spacing: -.4px; line-height: 1.2;
+    color: var(--txt, #0d1f14);
   }
 
-  .about-img:hover {
-    transform: scale(1.06);
-    box-shadow: 0 15px 40px rgba(25,135,84,0.5);
+  .about-card {
+    background: var(--bg3, #fff);
+    border: 1.5px solid var(--bdr, #d1fae5);
+    border-radius: 20px;
+    padding: 36px 32px;
+    box-shadow: var(--sh2, 0 4px 18px rgba(10,40,20,.11));
+    transition: all .32s ease;
+    height: 100%;
+  }
+  .about-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 50px rgba(21,128,61,.18);
+    border-color: #4ade80;
+  }
+
+  .about-icon {
+    width: 60px; height: 60px; border-radius: 16px;
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.6rem; margin-bottom: 18px;
+    transition: all .28s ease;
+  }
+  [data-theme="dark"] .about-icon { background: rgba(34,197,94,.12); }
+  .about-card:hover .about-icon { transform: scale(1.1) rotate(6deg); }
+
+  .about-card h4 {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.1rem; font-weight: 700; margin-bottom: 12px;
+    color: var(--txt, #0d1f14);
+  }
+
+  .about-list { list-style: none; padding: 0; margin: 0; }
+  .about-list li {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 7px 0; font-size: .9rem; color: var(--txt2, #3d6650);
+    border-bottom: 1px solid var(--bdr, #d1fae5);
+    transition: color .2s, padding-left .2s;
+  }
+  .about-list li:last-child { border-bottom: none; }
+  .about-list li:hover { color: #15803d; padding-left: 4px; }
+  [data-theme="dark"] .about-list li:hover { color: #4ade80; }
+
+  .about-img-wrap {
+    border-radius: 20px; overflow: hidden;
+    box-shadow: 0 12px 40px rgba(21,128,61,.2);
+    transition: all .35s ease;
+    position: relative;
+  }
+  .about-img-wrap::before {
+    content: ''; position: absolute; inset: 0; z-index: 1;
+    background: linear-gradient(to bottom, transparent 60%, rgba(7,43,23,.5));
     border-radius: 20px;
   }
+  .about-img-wrap img { width: 100%; display: block; transition: transform .5s ease; }
+  .about-img-wrap:hover img { transform: scale(1.06); }
+  .about-img-wrap:hover { box-shadow: 0 20px 56px rgba(21,128,61,.32); }
 
-  #about h3 {
-    color: #198754;
-    margin-bottom: 20px;
+  .driver-cta {
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+    border: 1.5px solid #bbf7d0;
+    border-radius: 20px; padding: 40px; text-align: center;
+    margin-top: 48px; transition: background .35s, border-color .35s;
   }
+  [data-theme="dark"] .driver-cta { background: rgba(34,197,94,.06); border-color: rgba(34,197,94,.18); }
 
-  #about ul li {
-    font-size: 1.1rem;
-    padding: 8px 0;
-    transition: all 0.3s ease;
-  }
-
-  #about ul li:hover {
-    transform: translateX(10px);
-    color: #198754;
-  }
-
-  #about .lead {
-    font-size: 1.15rem;
-    line-height: 1.7;
-    color: #555;
-  }
-
+  /* ===========================
+     REVIEWS SECTION
+  =========================== */
   #reviews {
-    background: linear-gradient(135deg, #e8f5e9, #fff3e0);
-    padding: 60px 0;
+    padding: 80px 0;
+    background: var(--bg2, #f0fdf4);
+    transition: background .35s;
   }
 
   .review-card {
-    min-width: 300px;
-    max-width: 320px;
-    min-height: 320px;
-    border-radius: 20px;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    background: white;
-    border: 2px solid #e8e8e8;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
+    min-width: 300px; max-width: 316px; min-height: 240px;
+    border-radius: 18px;
+    background: var(--bg3, #fff);
+    border: 1.5px solid var(--bdr, #d1fae5);
+    box-shadow: var(--sh2, 0 4px 18px rgba(10,40,20,.11));
+    display: flex; flex-direction: column;
+    transition: all .35s cubic-bezier(.175,.885,.32,1.275);
+    flex-shrink: 0; scroll-snap-align: start;
   }
-
-  .review-card .card-body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 30px 20px;
-  }
-
   .review-card:hover {
-    transform: translateY(-15px) scale(1.05);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-    border-color: #198754;
+    transform: translateY(-12px) scale(1.03);
+    box-shadow: 0 24px 50px rgba(21,128,61,.22);
+    border-color: #4ade80;
+  }
+  .review-card .card-body { flex: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 28px 22px; }
+
+  .review-quote {
+    font-size: .92rem; line-height: 1.65;
+    color: var(--txt2, #3d6650); font-style: italic;
+    margin-bottom: 20px;
   }
 
-  .review-card .avatar {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 20px;
-    background: linear-gradient(135deg, #198754, #0f6c3e);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.5rem;
-    box-shadow: 0 5px 15px rgba(25,135,84,0.3);
-    transition: all 0.3s ease;
-    color: white;
+  .review-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: linear-gradient(135deg, #15803d, #0f6c3e);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; font-weight: 700; color: white; flex-shrink: 0;
   }
 
   .review-arrow {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-    background: linear-gradient(135deg, #198754, #0f6c3e);
-    color: white;
-    border: none;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    font-size: 1.5rem;
-    cursor: pointer;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 10;
+    background: linear-gradient(135deg, #15803d, #0f6c3e);
+    color: white; border: none; width: 46px; height: 46px;
+    border-radius: 50%; font-size: 1.2rem; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(21,128,61,.4);
+    transition: all .25s ease;
+  }
+  .review-arrow:hover { transform: translateY(-50%) scale(1.1); }
+  .left-arrow  { left:  -23px; }
+  .right-arrow { right: -23px; }
+
+  #reviewsTrack { scroll-behavior: smooth; padding: 12px 2px; scrollbar-width: none; }
+  #reviewsTrack::-webkit-scrollbar { display: none; }
+
+  .stars { color: #fbbf24; font-size: .82rem; }
+
+  .avg-rating-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--bg3, #fff); border: 1.5px solid var(--bdr, #d1fae5);
+    border-radius: 100px; padding: 8px 20px;
+    box-shadow: var(--sh1, 0 1px 4px rgba(10,40,20,.07));
+    transition: background .35s, border-color .35s;
+  }
+  .avg-rating-badge .big-num {
+    font-family: 'Sora', sans-serif;
+    font-size: 1.5rem; font-weight: 800; color: #15803d;
+  }
+  [data-theme="dark"] .avg-rating-badge .big-num { color: #4ade80; }
+
+  /* ===========================
+     CONTACT SECTION
+  =========================== */
+  #contact {
+    padding: 80px 0;
+    background: var(--bg, #fff);
+    transition: background .35s;
   }
 
-  .left-arrow { left: -25px; }
-  .right-arrow { right: -25px; }
-
-  #reviewsTrack {
-    scroll-behavior: smooth;
-    padding: 10px 0;
+  .contact-panel {
+    border-radius: 22px; overflow: hidden;
+    box-shadow: var(--sh3, 0 14px 44px rgba(10,40,20,.15));
+    border: 1.5px solid var(--bdr, #d1fae5);
+    transition: box-shadow .35s, border-color .35s;
   }
 
-  .contact-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 20px 50px rgba(25,135,84,0.3) !important;
-    border-color: #198754;
+  .contact-info-side {
+    background: linear-gradient(160deg, #0b5e35, #15803d);
+    padding: 44px 36px;
+    position: relative; overflow: hidden;
+  }
+  .contact-info-side::before {
+    content: ''; position: absolute; top: -60px; right: -60px;
+    width: 180px; height: 180px;
+    background: rgba(255,255,255,.07); border-radius: 50%;
+  }
+  .contact-info-side::after {
+    content: ''; position: absolute; bottom: -40px; left: -40px;
+    width: 130px; height: 130px;
+    background: rgba(255,255,255,.05); border-radius: 50%;
   }
 
-  .contact-btn {
-    background: linear-gradient(135deg, #198754, #0f6c3e);
-    border: none;
-    color: white;
+  .contact-info-side h3 {
+    font-family: 'Sora', sans-serif; font-weight: 800;
+    font-size: 1.5rem; color: white; margin-bottom: 12px;
+  }
+  .contact-info-side p { color: rgba(255,255,255,.72); font-size: .9rem; margin-bottom: 28px; }
+
+  .contact-info-item {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 18px; position: relative; z-index: 1;
+  }
+  .contact-info-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(255,255,255,.14);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; flex-shrink: 0;
+  }
+  .contact-info-text { color: rgba(255,255,255,.88); font-size: .9rem; }
+
+  .contact-form-side {
+    background: var(--bg3, #fff);
+    padding: 44px 40px;
+    transition: background .35s;
   }
 
-  html {
-    scroll-behavior: smooth;
+  .contact-form-side .form-group { margin-bottom: 22px; }
+
+  .contact-form-side label {
+    font-size: .78rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .5px; color: var(--txt2, #3d6650); margin-bottom: 7px; display: block;
   }
+
+  .input-wrap { position: relative; }
+  .input-wrap .icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    color: #15803d; font-size: .9rem; pointer-events: none;
+  }
+  .input-wrap input,
+  .input-wrap textarea {
+    width: 100%; background: var(--inp, #f8fffc);
+    border: 1.5px solid var(--bdr, #d1fae5); color: var(--txt, #0d1f14);
+    border-radius: 12px; padding: 13px 14px 13px 40px;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: .92rem;
+    transition: border-color .22s, box-shadow .22s, background .35s;
+    outline: none;
+  }
+  .input-wrap textarea { padding-top: 14px; padding-left: 14px; resize: vertical; min-height: 110px; }
+  .input-wrap input:focus,
+  .input-wrap textarea:focus {
+    border-color: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34,197,94,.14);
+    background: var(--bg3, #fff);
+  }
+
+  .contact-submit-btn {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, #15803d, #0f6c3e);
+    color: white; font-weight: 700; font-size: 1rem;
+    border: none; border-radius: 12px;
+    box-shadow: 0 6px 24px rgba(21,128,61,.35);
+    cursor: pointer; transition: all .28s ease;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .contact-submit-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(21,128,61,.5); }
 </style>
 
-<section id="home" class="position-relative">
-  <a href="https://wa.me/918928958677?text=Hello%20AgriLink!" target="_blank" class="whatsapp-float" title="Chat on WhatsApp">📱</a>
-  <button id="scrollTopBtn" title="Go to top">↑</button>
+<!-- WhatsApp & Scroll To Top -->
+<a href="https://wa.me/918928958677?text=Hello%20AgriLink!" target="_blank" class="whatsapp-float" title="Chat on WhatsApp">📱</a>
+<button id="scrollTopBtn" title="Back to top">↑</button>
 
-  <div id="homeCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="4000">
+<!-- ===== HERO ===== -->
+<section id="home">
+  <div id="homeCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" data-bs-interval="4500">
     <div class="carousel-inner">
+
       <div class="carousel-item active">
-        <div class="d-flex align-items-center justify-content-center text-center text-white"
-          style="background: linear-gradient(rgba(25,135,84,0.75), rgba(15,108,62,0.75)), url('{% static 'images/agri1.jpeg' %}') center/cover no-repeat; height: 100vh;">
+        <div class="hero-slide">
+          <div class="hero-bg" style="background-image: url('{% static 'images/agri1.jpeg' %}');"></div>
           <div class="hero-content">
-            <h1 class="display-3 fw-bold mb-3">Welcome to AgriLink 🌾</h1>
-            <p class="lead fs-4 mb-4">Connecting Farmers & Retailers with Transparency.</p>
-            <a href="/farmer_register/" class="btn btn-warning btn-lg mt-3 px-5 py-3 me-3"><strong>Join as Farmer</strong></a>
-            <a href="/retailer_register/" class="btn btn-outline-light btn-lg mt-3 px-5 py-3"><strong>Join as Retailer</strong></a>
+            <div class="hero-badge">🌱 Trusted by 5000+ Farmers</div>
+            <h1>Welcome to AgriLink 🌾</h1>
+            <p>Connecting Farmers &amp; Retailers with full Transparency &amp; Fair Pricing.</p>
+            <div class="d-flex flex-wrap gap-3 justify-content-center">
+              <a href="/farmer_register/" class="hero-btn-primary">👨‍🌾 Join as Farmer</a>
+              <a href="/retailer_register/" class="hero-btn-outline">🏪 Join as Retailer</a>
+            </div>
           </div>
         </div>
       </div>
+
       <div class="carousel-item">
-        <div class="d-flex align-items-center justify-content-center text-center text-white"
-          style="background: linear-gradient(rgba(25,135,84,0.75), rgba(15,108,62,0.75)), url('{% static 'images/agri2.jpeg' %}') center/cover no-repeat; height: 100vh;">
+        <div class="hero-slide">
+          <div class="hero-bg" style="background-image: url('{% static 'images/agri2.jpeg' %}');"></div>
           <div class="hero-content">
-            <h1 class="display-3 fw-bold mb-3">Empowering Farmers 👨‍🌾</h1>
-            <p class="lead fs-4">Upload products, set prices, track orders.</p>
+            <div class="hero-badge">💰 No Middlemen, Fair Price</div>
+            <h1>Empowering Farmers 👨‍🌾</h1>
+            <p>Upload products, set your own prices, track orders in real time.</p>
           </div>
         </div>
       </div>
+
     </div>
     <button class="carousel-control-prev" type="button" data-bs-target="#homeCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
     <button class="carousel-control-next" type="button" data-bs-target="#homeCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+
+    <!-- Indicators dots -->
+    <div class="carousel-indicators" style="bottom:20px;">
+      <button type="button" data-bs-target="#homeCarousel" data-bs-slide-to="0" class="active" style="width:10px;height:10px;border-radius:50%;"></button>
+      <button type="button" data-bs-target="#homeCarousel" data-bs-slide-to="1" style="width:10px;height:10px;border-radius:50%;"></button>
+    </div>
+  </div>
+
+  <!-- Stats Bar -->
+  <div class="stats-bar">
+    <div class="container">
+      <div class="d-flex justify-content-center align-items-center flex-wrap gap-0">
+        <div class="stat-item">
+          <div class="num">5000+</div>
+          <div class="lbl">Farmers</div>
+        </div>
+        <div class="stat-divider d-none d-md-block"></div>
+        <div class="stat-item">
+          <div class="num">1200+</div>
+          <div class="lbl">Retailers</div>
+        </div>
+        <div class="stat-divider d-none d-md-block"></div>
+        <div class="stat-item">
+          <div class="num">38K+</div>
+          <div class="lbl">Orders Delivered</div>
+        </div>
+        <div class="stat-divider d-none d-md-block"></div>
+        <div class="stat-item">
+          <div class="num">9</div>
+          <div class="lbl">States Covered</div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
-<section id="about" class="py-5 bg-white">
-  <div class="container">
-
-    <h2 class="text-center fw-bold mb-5">About AgriLink</h2>
-
-    <!-- STEP 1: Farmer -->
-    <div class="row align-items-center mb-5">
-      <div class="col-md-6 text-center mb-4 mb-md-0">
-        <img src="{% static 'images/farmer2.jpg' %}" class="img-fluid rounded shadow w-75 about-img" alt="Farmer">
-      </div>
-      <div class="col-md-6">
-        <h3 class="fw-bold">👨‍🌾 How AgriLink Empowers Farmers</h3>
-        <p class="lead">
-          AgriLink helps farmers sell directly to retailers without middlemen, ensuring fair prices
-          and transparent business.
-        </p>
-        <ul class="list-unstyled">
-          <li>🌾 Upload fresh products easily</li>
-          <li>💰 Set your own fair price</li>
-          <li>📦 Accept & manage retailer orders</li>
-          <li>📍 Track delivery progress live</li>
-          <li>🔔 Get instant notifications</li>
-        </ul>
-      </div>
-    </div>
-
-    <hr class="my-5">
-
-    <!-- STEP 2: Driver Pickup -->
-    <div class="row align-items-center mb-5">
-      <div class="col-md-6 order-md-2 text-center mb-4 mb-md-0">
-        <img src="{% static 'images/driver_pickup2.jpg' %}" class="img-fluid rounded shadow w-75 about-img" alt="Pickup">
-      </div>
-      <div class="col-md-6 order-md-1">
-        <h3 class="fw-bold">🚛 Driver Picks Up Orders</h3>
-        <p class="lead">
-          After a retailer places an order, a verified AgriLink driver collects products from the
-          farmer with complete tracking and status updates.
-        </p>
-        <ul class="list-unstyled">
-          <li>📍 Gets pickup location instantly</li>
-          <li>🧾 Driver receives order details automatically</li>
-          <li>👨‍🔧 Verified & trained delivery partner</li>
-          <li>🔄 Status updates: Picked → On the Way</li>
-          <li>📸 Can upload delivery proof images</li>
-        </ul>
-      </div>
-    </div>
-
-    <hr class="my-5">
-
-    <!-- STEP 3: Driver Delivers to Retailer -->
-    <div class="row align-items-center mb-5">
-      <div class="col-md-6 text-center mb-4 mb-md-0">
-        <img src="{% static 'images/driver_pickup.jpg' %}" class="img-fluid rounded shadow w-75 about-img" alt="Delivery">
-      </div>
-      <div class="col-md-6">
-        <h3 class="fw-bold">🏪 Driver Delivers to Retailer</h3>
-        <p class="lead">
-          The driver safely delivers the product to the retailer with full monitoring, ensuring timely
-          and secure handover.Retailer Can Negotiate With Farmer And Also Do Real Time Payment For Buy A Product.
-
-
-        </p>
-        <ul class="list-unstyled">
-          <li>🛣 Real-time route tracking</li>
-          <li>Do Real Time Payment For Buy A Product</li>
-          <li>✔ Retailer receives live updates</li>
-          <li>📦 Smooth & secure handover</li>
-          <li>📲 Retailer can track driver location</li>
-          <li>🎯 Fast, safe, and reliable delivery</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="text-center mt-4">
-      <a href="/driver/register/" class="btn btn-success px-5 py-3 me-3">Become a Driver</a>
-      <a href="/driver/login/" class="btn btn-outline-success px-5 py-3">Driver Login</a>
-    </div>
-
-  </div>
-</section>
-
-<section id="reviews" class="py-5 position-relative">
+<!-- ===== ABOUT ===== -->
+<section id="about">
   <div class="container">
     <div class="text-center mb-5">
-      <h2 class="fw-bold display-5">🌟 What Retailers Say</h2>
+      <div class="section-label">🌿 How It Works</div>
+      <h2 class="section-title">About AgriLink</h2>
+      <p style="max-width:540px;margin:12px auto 0;color:var(--txt3);font-size:.95rem;line-height:1.65;">
+        A transparent supply chain that connects farmers directly to retailers — no middlemen, fair prices, real-time tracking.
+      </p>
+    </div>
 
-      <div class="mt-2 d-flex justify-content-center align-items-center gap-2">
-        <h4 class="mb-0 fw-bold">{{ avg_rating|default:"0" }}</h4>
-        <div class="text-warning">
-          {% for i in "12345" %}
-            <i class="fa{% if forloop.counter <= avg_rating %}-solid{% else %}-regular{% endif %} fa-star"></i>
-          {% endfor %}
+    <!-- Farmer Card -->
+    <div class="row align-items-center g-4 mb-5">
+      <div class="col-md-6">
+        <div class="about-img-wrap">
+          <img src="{% static 'images/farmer2.jpg' %}" alt="Farmer" loading="lazy">
         </div>
-        <span class="text-muted small">({{ reviews|length }} reviews)</span>
       </div>
-
-      <div class="mt-4">
-        <!-- Correct link -->
-<a href="{% url 'retailer_sample_reviews' %}" class="btn btn-success rounded-pill px-4 shadow-sm">
-  <i class="fas fa-star me-2"></i> View All Reviews
-</a>
-
-
+      <div class="col-md-6">
+        <div class="about-card">
+          <div class="about-icon">👨‍🌾</div>
+          <h4>How AgriLink Empowers Farmers</h4>
+          <p style="color:var(--txt2);font-size:.9rem;line-height:1.6;margin-bottom:16px;">
+            Sell directly to retailers without middlemen, ensuring fair prices and transparent business.
+          </p>
+          <ul class="about-list">
+            <li><span>🌾</span> Upload fresh products easily</li>
+            <li><span>💰</span> Set your own fair price</li>
+            <li><span>📦</span> Accept &amp; manage retailer orders</li>
+            <li><span>📍</span> Track delivery progress live</li>
+            <li><span>🔔</span> Get instant notifications</li>
+          </ul>
+        </div>
       </div>
+    </div>
+
+    <hr style="border-color:var(--bdr);opacity:1;margin:44px 0;">
+
+    <!-- Driver Pickup Card -->
+    <div class="row align-items-center g-4 mb-5">
+      <div class="col-md-6 order-md-2">
+        <div class="about-img-wrap">
+          <img src="{% static 'images/driver_pickup2.jpg' %}" alt="Driver Pickup" loading="lazy">
+        </div>
+      </div>
+      <div class="col-md-6 order-md-1">
+        <div class="about-card">
+          <div class="about-icon">🚛</div>
+          <h4>Driver Picks Up Orders</h4>
+          <p style="color:var(--txt2);font-size:.9rem;line-height:1.6;margin-bottom:16px;">
+            After a retailer places an order, a verified AgriLink driver collects products from the farmer with complete tracking.
+          </p>
+          <ul class="about-list">
+            <li><span>📍</span> Gets pickup location instantly</li>
+            <li><span>🧾</span> Receives order details automatically</li>
+            <li><span>👨‍🔧</span> Verified &amp; trained delivery partner</li>
+            <li><span>🔄</span> Status: Picked → On the Way</li>
+            <li><span>📸</span> Uploads delivery proof images</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <hr style="border-color:var(--bdr);opacity:1;margin:44px 0;">
+
+    <!-- Delivery Card -->
+    <div class="row align-items-center g-4 mb-5">
+      <div class="col-md-6">
+        <div class="about-img-wrap">
+          <img src="{% static 'images/driver_pickup.jpg' %}" alt="Delivery" loading="lazy">
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="about-card">
+          <div class="about-icon">🏪</div>
+          <h4>Driver Delivers to Retailer</h4>
+          <p style="color:var(--txt2);font-size:.9rem;line-height:1.6;margin-bottom:16px;">
+            The driver safely delivers products to the retailer with full monitoring. Retailers can negotiate prices and do real-time payments.
+          </p>
+          <ul class="about-list">
+            <li><span>🛣️</span> Real-time route tracking</li>
+            <li><span>💳</span> Real-time payment support</li>
+            <li><span>✔️</span> Retailer gets live updates</li>
+            <li><span>📦</span> Smooth &amp; secure handover</li>
+            <li><span>🎯</span> Fast, safe, reliable delivery</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Driver CTA -->
+    <div class="driver-cta">
+      <h4 style="font-family:'Sora',sans-serif;font-weight:800;color:var(--txt);margin-bottom:8px;">Want to become a delivery partner?</h4>
+      <p style="color:var(--txt2);font-size:.92rem;margin-bottom:24px;">Join our growing network of verified AgriLink drivers.</p>
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <a href="/driver/register/" class="hero-btn-primary" style="font-size:.92rem;padding:12px 28px;">🚗 Become a Driver</a>
+        <a href="/driver/login/" style="display:inline-flex;align-items:center;gap:6px;padding:11px 24px;border-radius:12px;border:1.5px solid #15803d;color:#15803d;font-weight:700;font-size:.92rem;text-decoration:none;transition:all .25s;">
+          🔐 Driver Login
+        </a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== REVIEWS ===== -->
+<section id="reviews">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="section-label">⭐ Testimonials</div>
+      <h2 class="section-title">What Retailers Say</h2>
+      <div class="d-flex justify-content-center mt-3 mb-4">
+        <div class="avg-rating-badge">
+          <span class="big-num">{{ avg_rating|default:"0" }}</span>
+          <div class="stars">
+            {% for i in "12345" %}
+              <i class="fa{% if forloop.counter <= avg_rating %}-solid{% else %}-regular{% endif %} fa-star"></i>
+            {% endfor %}
+          </div>
+          <span style="color:var(--txt3);font-size:.82rem;">({{ reviews|length }} reviews)</span>
+        </div>
+      </div>
+      <a href="{% url 'retailer_sample_reviews' %}" class="hero-btn-primary" style="font-size:.88rem;padding:11px 22px;">
+        <i class="fas fa-star"></i> View All Reviews
+      </a>
     </div>
 
     <div class="position-relative px-4">
       <button id="prevReview" class="review-arrow left-arrow">❮</button>
-
-      <div class="d-flex overflow-hidden gap-4 py-4" id="reviewsTrack" style="scroll-snap-type: x mandatory; scrollbar-width: none;">
+      <div class="d-flex overflow-hidden gap-4 py-3" id="reviewsTrack" style="scroll-snap-type:x mandatory;">
         {% for r in reviews %}
-        <div class="card review-card border-0 shadow-sm p-4 flex-shrink-0" style="scroll-snap-align: start;">
-          <div class="card-body p-0 d-flex flex-column">
-            <p class="card-text mb-4 text-secondary italic">"{{ r.review }}"</p>
-            <div class="d-flex align-items-center mt-auto border-top pt-3">
-              <div class="avatar m-0 bg-success text-white d-flex align-items-center justify-content-center rounded-circle"
-                   style="width: 50px; height: 50px; font-size: 1.2rem;">
-                {{ r.retailer.name|slice:":1"|upper }}
-              </div>
-              <div class="ms-3 text-start">
-                <h6 class="mb-0 fw-bold text-dark">{{ r.retailer.name }}</h6>
-                <div class="text-warning small">
+        <div class="card review-card border-0">
+          <div class="card-body">
+            <p class="review-quote">"{{ r.review }}"</p>
+            <div class="d-flex align-items-center border-top pt-3" style="border-color:var(--bdr)!important;">
+              <div class="review-avatar">{{ r.retailer.name|slice:":1"|upper }}</div>
+              <div class="ms-3">
+                <div style="font-weight:700;font-size:.9rem;color:var(--txt);">{{ r.retailer.name }}</div>
+                <div class="stars">
                   {% for i in "12345" %}
                     <i class="fa{% if forloop.counter <= r.rating %}-solid{% else %}-regular{% endif %} fa-star"></i>
                   {% endfor %}
@@ -388,75 +619,88 @@
           </div>
         </div>
         {% empty %}
-        <div class="w-100 text-center text-muted py-4">No reviews yet. Be the first to review!</div>
+        <div class="w-100 text-center py-5" style="color:var(--txt3);">
+          No reviews yet. Be the first to review!
+        </div>
         {% endfor %}
       </div>
-
       <button id="nextReview" class="review-arrow right-arrow">❯</button>
     </div>
   </div>
 </section>
-<section id="contact" class="py-5">
+
+<!-- ===== CONTACT ===== -->
+<section id="contact">
   <div class="container">
     <div class="text-center mb-5">
-      <h6 class="text-success fw-bold text-uppercase" style="letter-spacing: 2px;">Reach Out</h6>
-      <h2 class="fw-bold display-5">📩 Get In Touch</h2>
-      <p class="text-muted mx-auto" style="max-width: 500px;">Have questions? Our team is here to help you grow your business with AgriLink.</p>
+      <div class="section-label">📩 Reach Out</div>
+      <h2 class="section-title">Get In Touch</h2>
+      <p style="max-width:440px;margin:12px auto 0;color:var(--txt3);font-size:.92rem;">
+        Have questions? Our team is here to help you grow your business with AgriLink.
+      </p>
     </div>
 
     <div class="row justify-content-center">
       <div class="col-lg-10">
-        <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+        <div class="contact-panel">
           <div class="row g-0">
-            <div class="col-md-5 bg-success p-5 text-white d-flex flex-column justify-content-center">
-              <h3 class="fw-bold mb-4">Contact Information</h3>
-              <p class="mb-4 opacity-75">Fill up the form and our team will get back to you within 24 hours.</p>
-
-              <div class="d-flex align-items-center mb-3">
-                <span class="me-3 fs-4">📍</span>
-                <span>Mumbai, Maharashtra, India</span>
-              </div>
-              <div class="d-flex align-items-center mb-3">
-                <span class="me-3 fs-4">📧</span>
-                <span>support@agrilink.com</span>
-              </div>
-              <div class="d-flex align-items-center">
-                <span class="me-3 fs-4">📞</span>
-                <span>+91 89289 58677</span>
+            <div class="col-md-5">
+              <div class="contact-info-side">
+                <h3>Contact Info</h3>
+                <p>Fill the form and our team will get back to you within 24 hours.</p>
+                <div class="contact-info-item">
+                  <div class="contact-info-icon">📍</div>
+                  <div class="contact-info-text">Pune, Maharashtra, India</div>
+                </div>
+                <div class="contact-info-item">
+                  <div class="contact-info-icon">✉️</div>
+                  <div class="contact-info-text">support@agrilink.com</div>
+                </div>
+                <div class="contact-info-item">
+                  <div class="contact-info-icon">📞</div>
+                  <div class="contact-info-text">+91 89289 58677</div>
+                </div>
+                <div class="contact-info-item">
+                  <div class="contact-info-icon">⏰</div>
+                  <div class="contact-info-text">Mon – Sat: 9 AM – 6 PM</div>
+                </div>
               </div>
             </div>
-
-            <div class="col-md-7 p-5 bg-white">
-              <form method="post" action="{% url 'contact_submit' %}" class="contact-form">
-                {% csrf_token %}
-
-                <div class="row">
-                  <div class="col-md-6 mb-4">
-                    <label class="form-label fw-semibold small text-uppercase">Full Name</label>
-                    <div class="input-group">
-                      <span class="input-group-text bg-light border-0"><i class="fas fa-user text-success"></i></span>
-                      <input type="text" name="name" class="form-control bg-light border-0 p-3 rounded-end" placeholder="John Doe" required>
+            <div class="col-md-7">
+              <div class="contact-form-side">
+                <form method="post" action="{% url 'contact_submit' %}">
+                  {% csrf_token %}
+                  <div class="row">
+                    <div class="col-sm-6">
+                      <div class="form-group">
+                        <label>Full Name</label>
+                        <div class="input-wrap">
+                          <i class="fas fa-user icon"></i>
+                          <input type="text" name="name" placeholder="John Doe" required>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-sm-6">
+                      <div class="form-group">
+                        <label>Email Address</label>
+                        <div class="input-wrap">
+                          <i class="fas fa-envelope icon"></i>
+                          <input type="email" name="email" placeholder="john@example.com" required>
+                        </div>
+                      </div>
                     </div>
                   </div>
-
-                  <div class="col-md-6 mb-4">
-                    <label class="form-label fw-semibold small text-uppercase">Email Address</label>
-                    <div class="input-group">
-                      <span class="input-group-text bg-light border-0"><i class="fas fa-envelope text-success"></i></span>
-                      <input type="email" name="email" class="form-control bg-light border-0 p-3 rounded-end" placeholder="john@example.com" required>
+                  <div class="form-group">
+                    <label>Your Message</label>
+                    <div class="input-wrap">
+                      <textarea name="message" placeholder="How can we help you?" required></textarea>
                     </div>
                   </div>
-                </div>
-
-                <div class="mb-4">
-                  <label class="form-label fw-semibold small text-uppercase">Your Message</label>
-                  <textarea name="message" class="form-control bg-light border-0 p-3" rows="4" placeholder="How can we help you?" style="border-radius: 10px;" required></textarea>
-                </div>
-
-                <button type="submit" class="btn btn-success w-100 py-3 fw-bold shadow-sm transition-all contact-btn" style="border-radius: 10px;">
-                  Send Message <i class="fas fa-paper-plane ms-2"></i>
-                </button>
-              </form>
+                  <button type="submit" class="contact-submit-btn">
+                    Send Message <i class="fas fa-paper-plane"></i>
+                  </button>
+                </form>
+              </div>
             </div>
           </div>
         </div>
@@ -465,40 +709,19 @@
   </div>
 </section>
 
-<style>
-  /* Form Enhancement CSS */
-  .contact-form .form-control:focus {
-    background-color: #fff !important;
-    box-shadow: 0 10px 20px rgba(25, 135, 84, 0.1);
-    border: 1px solid #198754 !important;
-  }
-
-  .input-group-text {
-    border-radius: 10px 0 0 10px;
-  }
-
-  .contact-btn {
-    transition: all 0.3s ease;
-    background: linear-gradient(135deg, #198754, #0f6c3e);
-  }
-
-  .contact-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 25px rgba(25, 135, 84, 0.4) !important;
-  }
-</style>
 <script>
-const track = document.getElementById("reviewsTrack");
-if (track) {
-  document.getElementById("nextReview").onclick = () => track.scrollBy({ left: 320, behavior: "smooth" });
-  document.getElementById("prevReview").onclick = () => track.scrollBy({ left: -320, behavior: "smooth" });
-}
+  /* Reviews carousel */
+  const track = document.getElementById('reviewsTrack');
+  if (track) {
+    document.getElementById('nextReview').onclick = () => track.scrollBy({ left: 330, behavior: 'smooth' });
+    document.getElementById('prevReview').onclick = () => track.scrollBy({ left: -330, behavior: 'smooth' });
+  }
 
-const scrollTopBtn = document.getElementById('scrollTopBtn');
-window.addEventListener('scroll', () => {
-  scrollTopBtn.style.display = (window.pageYOffset > 300) ? 'flex' : 'none';
-});
-scrollTopBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+  /* Scroll to top */
+  const stb = document.getElementById('scrollTopBtn');
+  window.addEventListener('scroll', () => {
+    stb.style.display = window.pageYOffset > 350 ? 'flex' : 'none';
+  });
+  stb.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 </script>
-
 {% endblock %}

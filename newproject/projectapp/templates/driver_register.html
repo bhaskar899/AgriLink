@@ -10,8 +10,6 @@
         --driver-green: #198754;
         --driver-dark: #0f172a;
     }
-
-    /* White Space Fix - Page Layout */
     body {
         display: flex;
         flex-direction: column;
@@ -20,17 +18,15 @@
         font-family: 'Plus Jakarta Sans', sans-serif;
         background-color: #f8fafc;
     }
-
     .driver-wrapper {
         flex-grow: 1;
         background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
         display: flex;
         justify-content: center;
         align-items: center;
-        padding: 140px 20px 80px; /* Navbar aur footer se gap */
+        padding: 140px 20px 80px;
         position: relative;
     }
-
     .driver-card {
         width: 100%;
         max-width: 900px;
@@ -43,8 +39,6 @@
         position: relative;
         z-index: 2;
     }
-
-    /* Back Button - Same as Login Pages */
     .back-btn {
         position: absolute;
         top: 80px;
@@ -63,13 +57,11 @@
         transition: 0.3s ease;
         border: 1px solid #e2e8f0;
     }
-
     .back-btn:hover {
         background: var(--driver-dark);
         color: white;
         transform: translateX(-5px);
     }
-
     .section-title {
         font-size: 0.85rem;
         font-weight: 800;
@@ -83,7 +75,6 @@
         align-items: center;
         gap: 10px;
     }
-
     .form-label {
         font-weight: 700;
         font-size: 0.8rem;
@@ -91,7 +82,6 @@
         margin-bottom: 6px;
         margin-left: 4px;
     }
-
     .form-control, .form-select {
         border-radius: 12px;
         padding: 12px 15px;
@@ -100,14 +90,12 @@
         transition: 0.3s;
         font-size: 0.95rem;
     }
-
     .form-control:focus, .form-select:focus {
         border-color: var(--driver-green);
         box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.1);
         background-color: white;
         outline: none;
     }
-
     .btn-verify {
         background: var(--driver-dark);
         color: white;
@@ -116,11 +104,7 @@
         font-weight: 700;
         transition: 0.3s;
     }
-
-    .btn-verify:hover {
-        background: #1e293b;
-    }
-
+    .btn-verify:hover { background: #1e293b; }
     .registration-btn {
         background: var(--driver-green);
         color: white;
@@ -132,15 +116,27 @@
         transition: 0.3s;
         box-shadow: 0 10px 20px rgba(25, 135, 84, 0.2);
     }
-
     .registration-btn:disabled {
         background: #94a3b8;
         box-shadow: none;
     }
-
     .invalid-feedback { font-weight: 600; font-size: 0.75rem; }
-
     footer { margin-top: 0 !important; }
+
+    /* 🆕 GPS status badge */
+    .gps-badge {
+        font-size: 0.78rem;
+        padding: 6px 12px;
+        border-radius: 10px;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 8px;
+    }
+    .gps-success { background: #d1fae5; color: #065f46; }
+    .gps-error { background: #fee2e2; color: #991b1b; }
+    .gps-loading { background: #fef3c7; color: #92400e; }
 </style>
 
 <div class="driver-wrapper">
@@ -154,54 +150,67 @@
             <p class="text-muted small">Professional driver registration portal</p>
         </div>
 
-        <form id="driverForm" method="post" enctype="multipart/form-data" novalidate>
+        <form id="driverForm" method="POST" enctype="multipart/form-data" novalidate>
             {% csrf_token %}
 
             <div class="row">
+                <!-- Left Column -->
                 <div class="col-md-6 border-end pe-md-4">
-                    <div class="section-title"><i class="fas fa-user-circle"></i> Personal Details</div>
+                    <div class="section-title">
+                        <i class="fas fa-user-circle"></i> Personal Details
+                    </div>
 
                     <div class="mb-3">
                         <label class="form-label">Full Name</label>
-                        <input class="form-control" name="name" id="name" placeholder="Enter your full name" required>
+                        <input class="form-control" name="name" id="name"
+                            placeholder="Enter your full name" required>
                         <div class="invalid-feedback d-block text-danger" id="nameError"></div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Email Address</label>
                         <div class="input-group gap-2">
-                            <input class="form-control" type="email" name="email" id="email" placeholder="email@example.com" required>
-                            <button type="button" class="btn btn-verify px-3" id="sendOTP">Verify</button>
+                            <input class="form-control" type="email" name="email" id="email"
+                                placeholder="email@example.com" required>
+                            <button type="button" class="btn btn-verify px-3" id="sendOTP">
+                                Verify
+                            </button>
                         </div>
                         <div class="invalid-feedback d-block text-danger" id="emailError"></div>
                     </div>
 
                     <div id="otpBox" class="mb-3" style="display:none;">
                         <label class="form-label text-success">Verification OTP</label>
-                        <input class="form-control border-success" id="otp_input" placeholder="Enter 6-digit OTP" maxlength="6">
+                        <input class="form-control border-success" id="otp_input"
+                            placeholder="Enter 6-digit OTP" maxlength="6">
                         <div class="invalid-feedback d-block" id="otpError"></div>
                     </div>
 
                     <div class="row">
                         <div class="col-6">
                             <label class="form-label">Phone</label>
-                            <input class="form-control" name="phone" id="phone" placeholder="10-digit no." required>
+                            <input class="form-control" name="phone" id="phone"
+                                placeholder="10-digit no." required>
                         </div>
                         <div class="col-6">
                             <label class="form-label">Password</label>
-                            <input class="form-control" type="password" name="password" id="password" placeholder="••••••••" required>
+                            <input class="form-control" type="password" name="password"
+                                id="password" placeholder="••••••••" required>
                         </div>
                     </div>
                     <div class="invalid-feedback d-block text-danger" id="phoneError"></div>
                 </div>
 
+                <!-- Right Column -->
                 <div class="col-md-6 ps-md-4">
-                    <div class="section-title"><i class="fas fa-truck"></i> Vehicle Details</div>
+                    <div class="section-title">
+                        <i class="fas fa-truck"></i> Vehicle Details
+                    </div>
 
                     <div class="row g-2 mb-3">
                         <div class="col-6">
                             <label class="form-label">Vehicle Type</label>
-                            <select class="form-select" name="vehicle_type" id="vehicle_type" required>
+                            <select class="form-select" name="vehicle_type" required>
                                 <option value="">Select</option>
                                 <option value="bike">Bike</option>
                                 <option value="tempo">Tempo</option>
@@ -211,22 +220,27 @@
                         </div>
                         <div class="col-6">
                             <label class="form-label">Vehicle Number</label>
-                            <input class="form-control text-uppercase" name="vehicle_number" id="vehicle_number" placeholder="MH12AB1234">
+                            <input class="form-control text-uppercase" name="vehicle_number"
+                                placeholder="MH12AB1234">
                         </div>
                     </div>
 
                     <div class="row g-2 mb-3">
                         <div class="col-6">
                             <label class="form-label">Capacity (kg)</label>
-                            <input class="form-control" type="number" name="capacity" id="capacity" placeholder="e.g. 500">
+                            <input class="form-control" type="number" name="capacity"
+                                placeholder="e.g. 500">
                         </div>
                         <div class="col-6">
                             <label class="form-label">Rate (per KM)</label>
-                            <input class="form-control" type="number" step="0.1" name="rate_per_km" id="rate" placeholder="₹ 15">
+                            <input class="form-control" type="number" step="0.1"
+                                name="rate_per_km" placeholder="₹ 15">
                         </div>
                     </div>
 
-                    <div class="section-title"><i class="fas fa-file-shield"></i> Documents</div>
+                    <div class="section-title">
+                        <i class="fas fa-file-shield"></i> Documents
+                    </div>
                     <div class="row g-2 mb-2">
                         <div class="col-6">
                             <label class="form-label">License Photo</label>
@@ -237,20 +251,47 @@
                             <input type="file" name="vehicle_image" class="form-control" required>
                         </div>
                     </div>
+
                     <div class="row g-2">
                         <div class="col-6">
                             <label class="form-label">License Expiry</label>
-                            <input type="date" name="license_expiry_date" class="form-control" required>
+                            <input type="date" name="license_expiry_date"
+                                class="form-control" required>
                         </div>
                         <div class="col-6">
                             <label class="form-label">Base City</label>
-                            <input class="form-control" name="location" id="location" placeholder="e.g. Pune">
+                            <input class="form-control" name="location"
+                                placeholder="e.g. Pune">
+                        </div>
+                    </div>
+
+                    <!-- 🆕 GPS Status -->
+                    <div class="section-title mt-4">
+                        <i class="fas fa-map-marker-alt"></i> Your Location
+                    </div>
+                    <div id="gpsStatus" class="gps-badge gps-loading">
+                        <i class="fas fa-spinner fa-spin"></i> Detecting location...
+                    </div>
+                    <div class="row g-2 mt-2">
+                        <div class="col-6">
+                            <label class="form-label">Latitude</label>
+                            <input class="form-control" id="latDisplay"
+                                placeholder="Auto detected" readonly>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Longitude</label>
+                            <input class="form-control" id="lngDisplay"
+                                placeholder="Auto detected" readonly>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <button class="btn registration-btn w-100 mt-5" id="registerBtn" disabled>
+            <!-- ✅ Hidden fields — form च्या आत, button च्या आधी -->
+            <input type="hidden" id="latitude" name="latitude">
+            <input type="hidden" id="longitude" name="longitude">
+
+            <button class="btn registration-btn w-100 mt-4" id="registerBtn" disabled>
                 <i class="fas fa-paper-plane me-2"></i>Submit Registration Application
             </button>
         </form>
@@ -258,7 +299,6 @@
 </div>
 
 <script>
-    // JS Logic remains same but with better selectors if needed
     const email = document.getElementById("email");
     const otpInput = document.getElementById("otp_input");
     const sendOTP = document.getElementById("sendOTP");
@@ -298,15 +338,45 @@
     form.onsubmit = (e) => {
         let valid = true;
         const phone = document.getElementById("phone").value;
-        if(phone.length < 10) {
+        if(phone.length < 10){
             document.getElementById("phoneError").innerText = "Invalid 10-digit number";
             valid = false;
         }
-        if(!isVerified) {
+        if(!isVerified){
             alert("Please verify email first");
             valid = false;
         }
         if(!valid) e.preventDefault();
     };
+
+    // 🆕 GPS auto-capture
+    if(navigator.geolocation){
+        navigator.geolocation.getCurrentPosition(function(pos){
+            const lat = pos.coords.latitude;
+            const lng = pos.coords.longitude;
+
+            // Hidden fields — form submit साठी
+            document.getElementById("latitude").value = lat;
+            document.getElementById("longitude").value = lng;
+
+            // Display fields — user ला दिसायला
+            document.getElementById("latDisplay").value = lat.toFixed(6);
+            document.getElementById("lngDisplay").value = lng.toFixed(6);
+
+            // GPS badge update
+            document.getElementById("gpsStatus").className = "gps-badge gps-success";
+            document.getElementById("gpsStatus").innerHTML =
+                '<i class="fas fa-circle-check"></i> Location detected successfully!';
+
+        }, function(err){
+            document.getElementById("gpsStatus").className = "gps-badge gps-error";
+            document.getElementById("gpsStatus").innerHTML =
+                '<i class="fas fa-circle-xmark"></i> Location not available — assign manually later';
+        });
+    } else {
+        document.getElementById("gpsStatus").className = "gps-badge gps-error";
+        document.getElementById("gpsStatus").innerHTML =
+            '<i class="fas fa-circle-xmark"></i> GPS not supported in this browser';
+    }
 </script>
 {% endblock %}

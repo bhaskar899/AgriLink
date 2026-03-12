@@ -278,7 +278,6 @@ def add_product(request):
 
         farmer = get_object_or_404(Farmer, name=farmer_name)
 
-        # Get form data
         product_name = request.POST.get('product', '').strip()
         description = request.POST.get('description', '').strip()
         price = request.POST.get('price')
@@ -288,14 +287,10 @@ def add_product(request):
         longitude = request.POST.get('longitude')
         image = request.FILES.get('image')
 
-        # -------- VALIDATIONS --------
-
-        # Product Name Required
         if not product_name:
             messages.error(request, "Product name is required.")
             return render(request, "add_product.html")
 
-        # Price Validation
         try:
             price = float(price)
             if price <= 0:
@@ -305,32 +300,27 @@ def add_product(request):
             messages.error(request, "Invalid price value.")
             return render(request, "add_product.html")
 
-        # Quantity Validation (Minimum 5kg)
         try:
             quantity = int(quantity)
-
             if quantity < 5:
                 messages.error(request, "Minimum quantity must be 5kg.")
                 return render(request, "add_product.html")
-
             if quantity > 500:
                 messages.error(request, "Maximum quantity allowed is 500kg.")
                 return render(request, "add_product.html")
-
         except:
             messages.error(request, "Invalid quantity value.")
             return render(request, "add_product.html")
-        # Image Required
+
         if not image:
             messages.error(request, "Product image is required.")
             return render(request, "add_product.html")
 
-        # Location Required
         if not location:
             messages.error(request, "Location is required.")
             return render(request, "add_product.html")
 
-        # -------- SAVE FARMER LOCATION (VERY IMPORTANT FOR 100KM RULE) --------
+        # ✅ Farmer location पण save कर (backward compatibility)
         if latitude and longitude:
             try:
                 farmer.latitude = float(latitude)
@@ -339,7 +329,7 @@ def add_product(request):
             except:
                 pass
 
-        # -------- CREATE PRODUCT --------
+        # ✅ Product मध्ये पण location save कर
         Product.objects.create(
             product=product_name,
             description=description,
@@ -347,14 +337,15 @@ def add_product(request):
             quantity=quantity,
             location=location,
             image=image,
-            farmer=farmer
+            farmer=farmer,
+            latitude=float(latitude) if latitude else None,   # 🆕
+            longitude=float(longitude) if longitude else None, # 🆕
         )
 
         messages.success(request, "Product added successfully!")
         return redirect('show_products')
 
     return render(request, "add_product.html")
-
 
 
 
@@ -1247,6 +1238,8 @@ def driver_register(request):
         vehicle_img = request.FILES.get('vehicle_image')
         issue_date = request.POST.get('license_issue_date')
         expiry_date = request.POST.get('license_expiry_date')
+        latitude = request.POST.get('latitude') or None,
+        longitude = request.POST.get('longitude') or None,
 
         try:
             # 🟢 Yahan badlav kiya gaya hai
@@ -2120,12 +2113,10 @@ def driver_dashboard(request):
 
     driver = get_object_or_404(Driver, id=driver_id)
 
-    # Get ALL deliveries
     all_deliveries = Delivery.objects.filter(driver=driver).select_related(
-        'order', 'order__retailer', 'order__farmer'
+        'order', 'order__product', 'order__retailer', 'order__farmer'
     )
 
-    # Separate manually
     delivered = []
     pending = []
     total = 0
@@ -2138,16 +2129,70 @@ def driver_dashboard(request):
         elif d.status.lower() in ["assigned", "picked"]:
             pending.append(d)
 
+    # 🆕 Max distance काढ pending orders मधून
+    max_dist = 0
+    for d in pending:
+        p_lat = getattr(d.order.product, 'latitude', None)
+        p_lng = getattr(d.order.product, 'longitude', None)
+        dr_lat = getattr(driver, 'latitude', None)
+        dr_lng = getattr(driver, 'longitude', None)
+
+        if all([p_lat, p_lng, dr_lat, dr_lng]):
+            dist = haversine_distance(p_lat, p_lng, dr_lat, dr_lng)
+            if dist > max_dist:
+                max_dist = dist
+
+    # 🆕 Distance नुसार max orders ठरव
+    if max_dist <= 50:
+        max_orders = 5
+        dist_label = "Within 50 km"
+        wait_label = "2 hrs"
+    elif max_dist <= 100:
+        max_orders = 2
+        dist_label = "50-100 km"
+        wait_label = "1.5 hrs"
+    elif max_dist <= 200:
+        max_orders = 1
+        dist_label = "100-200 km"
+        wait_label = "1 hr"
+    elif max_dist <= 300:
+        max_orders = 1
+        dist_label = "200-300 km"
+        wait_label = "45 min"
+    elif max_dist <= 400:
+        max_orders = 1
+        dist_label = "300-400 km"
+        wait_label = "30 min"
+    else:
+        max_orders = 1
+        dist_label = "400-500 km"
+        wait_label = "15 min"
+
+    # 🆕 Remaining orders
+    remaining = max(0, max_orders - len(pending))
+
+    # 🆕 Deadline — नसेल तर set कर फक्त pending असतील तर
+    if pending and not driver.waiting_deadline:
+        from datetime import timedelta
+        minutes_map = {5: 120, 2: 90, 1: 60}
+        wait_mins = minutes_map.get(max_orders, 60)
+        driver.waiting_deadline = timezone.now() + timedelta(minutes=wait_mins)
+        driver.save()
+
     context = {
         "driver": driver,
         "total_earnings": round(total, 2),
         "delivery_history": delivered,
         "pending_deliveries": pending,
         "total_deliveries": len(delivered),
+        "max_dist": round(max_dist),
+        "max_orders": max_orders,
+        "dist_label": dist_label,
+        "wait_label": wait_label,
+        "remaining": remaining,
     }
 
     return render(request, "driver_dashboard.html", context)
-
 from django.shortcuts import get_object_or_404, redirect
 from django.utils import timezone
 from django.contrib import messages
@@ -2190,38 +2235,207 @@ def driver_mark_delivered(request, delivery_id):
 
 # --- ADMIN/FARMER VIEWS ---
 
+import math
+from django.utils import timezone
+from datetime import timedelta
+
+# ----------------------------------------
+# 1. Distance calculator
+# ----------------------------------------
+def haversine_distance(lat1, lon1, lat2, lon2):
+    R = 6371
+    phi1, phi2 = math.radians(lat1), math.radians(lat2)
+    dphi = math.radians(lat2 - lat1)
+    dlambda = math.radians(lon2 - lon1)
+    a = math.sin(dphi/2)**2 + math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+
+
+# ----------------------------------------
+# 2. Distance नुसार max orders ठरवणे
+# ----------------------------------------
+def get_max_orders_for_distance(dist_km):
+    if dist_km <= 50:
+        return 5
+    elif dist_km <= 100:
+        return 2
+    elif dist_km <= 500:
+        return 1
+    return 0  # 500km पेक्षा जास्त — assign नाही
+
+
+# ----------------------------------------
+# 3. Driver eligible आहे का check
+# ----------------------------------------
+def is_driver_eligible(driver, dist_km):
+    max_orders = get_max_orders_for_distance(dist_km)
+    if max_orders == 0:
+        return False, 0, 0
+
+    active_count = Delivery.objects.filter(
+        driver=driver,
+        status__in=['assigned', 'picked', 'in_transit']
+    ).count()
+
+    # 50km driver साठी — deadline check
+    if dist_km <= 50:
+        now = timezone.now()
+        deadline = getattr(driver, 'waiting_deadline', None)
+
+        # Deadline नाही — म्हणजे नवीन driver, deadline set करा
+        if not deadline:
+            driver.waiting_deadline = now + timedelta(hours=WAITING_HOURS)
+            driver.save()
+            deadline = driver.waiting_deadline
+
+        # Deadline संपली आणि 5 orders नाहीत — तरी eligible
+        if now >= deadline:
+            return active_count < max_orders, active_count, max_orders
+
+        # Deadline संपली नाही — 5 orders भरले नाहीत तर eligible
+        return active_count < max_orders, active_count, max_orders
+
+    # 50km पेक्षा जास्त — simple check
+    return active_count < max_orders, active_count, max_orders
+
+
+# ----------------------------------------
+# 4. Waiting hours — तू किती तास देणार?
+# ----------------------------------------
+WAITING_HOURS = 4  # 🔧 हे तू बदलू शकतोस
+
+
+# ----------------------------------------
+# 5. मुख्य function — area-wise drivers
+# ----------------------------------------
+def get_nearby_drivers(source_lat, source_lng, max_km=500):
+    from django.db.models import Count
+
+    busy_driver_ids = Delivery.objects.filter(
+        status__in=['assigned', 'picked', 'in_transit']
+    ).values('driver_id').annotate(
+        active_count=Count('id')
+    ).filter(
+        active_count__gte=5
+    ).values_list('driver_id', flat=True)
+
+    all_drivers = Driver.objects.filter(
+        is_available=True
+    ).exclude(id__in=busy_driver_ids)
+
+    # Location नसेल तर सगळे drivers दे
+    if not source_lat or not source_lng:
+        result = []
+        for d in all_drivers:
+            active = Delivery.objects.filter(
+                driver=d,
+                status__in=['assigned', 'picked', 'in_transit']
+            ).count()
+            result.append((0.0, d, active, 5))
+        return result, [], [], [], [], []
+
+    groups = {
+        '50': [],
+        '100': [],
+        '200': [],
+        '300': [],
+        '400': [],
+        '500': [],
+    }
+
+    for driver in all_drivers:
+        driver_lat = getattr(driver, 'latitude', None)
+        driver_lng = getattr(driver, 'longitude', None)
+
+        if not driver_lat or not driver_lng:
+            continue
+
+        dist = round(haversine_distance(
+            source_lat, source_lng,
+            driver_lat, driver_lng
+        ), 1)
+
+        eligible, active, max_ord = is_driver_eligible(driver, dist)
+
+        if not eligible:
+            continue
+
+        entry = (dist, driver, active, max_ord)
+
+        if dist <= 50:        groups['50'].append(entry)
+        elif dist <= 100:     groups['100'].append(entry)
+        elif dist <= 200:     groups['200'].append(entry)
+        elif dist <= 300:     groups['300'].append(entry)
+        elif dist <= 400:     groups['400'].append(entry)
+        elif dist <= 500:     groups['500'].append(entry)
+
+    for key in groups:
+        groups[key].sort(key=lambda x: x[0])
+
+    return (
+        groups['50'], groups['100'], groups['200'],
+        groups['300'], groups['400'], groups['500'],
+    )
+
+# ----------------------------------------
+# 6. update_status view
+# ----------------------------------------
 def update_status(request, order_id):
     order = get_object_or_404(Order, id=order_id)
-    drivers = Driver.objects.filter(is_available=True)
+
+    # 🆕 Product ची location वापर — Farmer ची नाही
+    product = order.product
+    source_lat = getattr(product, 'latitude', None) or getattr(order.farmer, 'latitude', None)
+    source_lng = getattr(product, 'longitude', None) or getattr(order.farmer, 'longitude', None)
+
+    d50, d100, d200, d300, d400, d500 = get_nearby_drivers(source_lat, source_lng)
 
     if request.method == "POST":
         new_status = request.POST.get("status")
         driver_id = request.POST.get("driver")
 
-        # ✅ SAVE STATUS
         order.status = new_status
 
-        # ✅ SAVE GPS LOCATION (THIS WAS MISSING)
         lat = request.POST.get("current_lat")
         lng = request.POST.get("current_lng")
-
         if lat and lng:
             order.current_lat = lat
             order.current_lng = lng
 
-        # ✅ DRIVER ASSIGNMENT
         if driver_id:
             driver = get_object_or_404(Driver, id=driver_id)
+
+            # Distance काढ
+            driver_lat = getattr(driver, 'latitude', None)
+            driver_lng = getattr(driver, 'longitude', None)
+
+            dist = 0
+            if all([source_lat, source_lng, driver_lat, driver_lng]):
+                dist = haversine_distance(source_lat, source_lng, driver_lat, driver_lng)
+
+            eligible, active, max_ord = is_driver_eligible(driver, dist)
+
+            if not eligible:
+                messages.error(
+                    request,
+                    f"⚠️ Driver {driver.name} already has {active}/{max_ord} active orders!"
+                )
+                return render(request, "update_status.html", {
+                    "order": order,
+                    "d50": d50, "d100": d100, "d200": d200,
+                    "d300": d300, "d400": d400, "d500": d500,
+                    "waiting_hours": WAITING_HOURS,
+                })
+
             order.driver = driver
             order.status = "Driver Assigned"
 
-            existing_delivery = Delivery.objects.filter(order=order).first()
-
-            if existing_delivery:
-                existing_delivery.driver = driver
-                existing_delivery.status = "assigned"
-                existing_delivery.assigned_at = timezone.now()
-                existing_delivery.save()
+            existing = Delivery.objects.filter(order=order).first()
+            if existing:
+                existing.driver = driver
+                existing.status = "assigned"
+                existing.assigned_at = timezone.now()
+                existing.save()
             else:
                 Delivery.objects.create(
                     order=order,
@@ -2230,23 +2444,53 @@ def update_status(request, order_id):
                     assigned_at=timezone.now()
                 )
 
-            driver.is_available = False
+            # 🆕 Distance नुसार deadline set कर
+            def get_waiting_minutes(d):
+                if d <= 50:   return 120
+                elif d <= 100: return 90
+                elif d <= 200: return 60
+                elif d <= 300: return 45
+                elif d <= 400: return 30
+                else:          return 15
+
+            wait_mins = get_waiting_minutes(dist)
+            new_deadline = timezone.now() + timedelta(minutes=wait_mins)
+
+            if not driver.waiting_deadline or new_deadline > driver.waiting_deadline:
+                driver.waiting_deadline = new_deadline
+
+            # 50km — 5 orders भरले तर reset
+            if dist <= 50:
+                active_now = Delivery.objects.filter(
+                    driver=driver,
+                    status__in=['assigned', 'picked', 'in_transit']
+                ).count()
+                if active_now >= 5:
+                    driver.waiting_deadline = None
+                    driver.is_available = False
+
             driver.save()
 
             Notification.objects.create(
                 receiver_driver=driver,
-                message=f"You are assigned Order #{order.id}"
+                message=f"Order #{order.id} has been assigned to you!"
             )
+            messages.success(request, f"✅ Driver {driver.name} assigned!")
 
-        # ✅ SAVE ORDER AFTER EVERYTHING
         order.save()
-
         return redirect("farmer_order")
 
     return render(request, "update_status.html", {
         "order": order,
-        "drivers": drivers
+        "d50": d50,
+        "d100": d100,
+        "d200": d200,
+        "d300": d300,
+        "d400": d400,
+        "d500": d500,
+        "waiting_hours": WAITING_HOURS,
     })
+
 
 from django.utils import timezone
 from .models import Delivery, Driver

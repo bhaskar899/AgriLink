@@ -31,6 +31,7 @@ class Farmer(models.Model):
     bank_account_number = models.CharField(max_length=20, blank=True, null=True)
     ifsc_code = models.CharField(max_length=15, blank=True, null=True)
 
+
     def __str__(self):
         return self.name
 
@@ -68,6 +69,8 @@ class Product(models.Model):
     description = models.TextField()
     created_at = models.DateTimeField(default=timezone.now)
     price = models.FloatField()
+    latitude = models.FloatField(null=True, blank=True)  # 🆕
+    longitude = models.FloatField(null=True, blank=True)  # 🆕
     quantity = models.IntegerField()
     location = models.CharField(max_length=50)
     image = models.ImageField(upload_to='product_images/', blank=True, null=True)
@@ -217,7 +220,7 @@ class Driver(models.Model):
     otp = models.CharField(max_length=6, blank=True, null=True)
     otp_created_at = models.DateTimeField(blank=True, null=True)
     email_verified = models.BooleanField(default=False)
-
+    waiting_deadline = models.DateTimeField(null=True, blank=True)  # 🆕 50km timer
     phone = models.CharField(max_length=20, blank=True, null=True)
     password = models.CharField(max_length=128)
 
@@ -254,7 +257,8 @@ class Driver(models.Model):
     phone_verified = models.BooleanField(default=False)
     license_issue_date = models.DateField(blank=True, null=True)
     license_expiry_date = models.DateField(blank=True, null=True)
-
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
