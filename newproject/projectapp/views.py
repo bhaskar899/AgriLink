@@ -578,6 +578,7 @@ from django.contrib import messages
 from django.core.validators import validate_email
 
 def contact_submit(request):
+
     if request.method != "POST":
         return redirect("home")
 
@@ -589,7 +590,6 @@ def contact_submit(request):
         messages.error(request, "⚠ Please fill all fields.")
         return redirect("home")
 
-    # Validate email
     try:
         validate_email(email)
     except:
@@ -622,7 +622,13 @@ Message:
     }
 
     try:
-        response = requests.post(url, json=data, headers=headers)
+        # 👉 YAHI PAR YE LINE LAGANI HAI
+        response = requests.post(
+            url,
+            json=data,
+            headers=headers,
+            timeout=30
+        )
 
         if response.status_code == 201:
             messages.success(request, "✅ Your message has been sent successfully!")
