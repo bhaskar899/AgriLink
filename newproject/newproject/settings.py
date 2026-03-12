@@ -159,19 +159,17 @@ RAZORPAY_KEY_SECRET = "QD36AGTlyzRhuwdLVziqWNUj"
 # ---------------------
 # EMAIL CONFIGURATION (Corrected for Brevo)
 # ---------------------
+# settings.py mein ye lines replace karein
+# settings.py mein ye lines replace karein
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp-relay.brevo.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
-# Match these exactly to your screenshot keys
+# In variables ke naam wahi rakhein jo Render environment mein hain
 EMAIL_HOST_USER = os.environ.get('BREVO_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('BREVO_PASSWORD')
-
-# Brevo REQUIRES the sender to be an authorized email address (usually your BREVO_USER)
-DEFAULT_FROM_EMAIL = os.environ.get('BREVO_USER')
-
-
+DEFAULT_FROM_EMAIL = os.environ.get('BREVO_USER') # Brevo validated email hi allow karta hai
 # ---------------------
 # DEFAULT FIELD TYPE
 # ---------------------
