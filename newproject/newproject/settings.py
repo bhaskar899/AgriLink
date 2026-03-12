@@ -163,6 +163,8 @@ RAZORPAY_KEY_SECRET = "QD36AGTlyzRhuwdLVziqWNUj"
 # settings.py mein ye lines replace karein
 # EMAIL CONFIGURATION
 
+# EMAIL CONFIGURATION
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_HOST = 'smtp-relay.brevo.com'
