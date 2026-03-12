@@ -2900,3 +2900,17 @@ def pay_bid(request, bid_id):
     messages.success(request, f"Payment successful! Order #{order.id} created.")
     return redirect("retailer_dashboard")
 
+
+def test_email(request):
+    from django.core.mail import send_mail
+    import os
+    try:
+        send_mail(
+            'AgriLink Test',
+            'Email working!',
+            os.environ.get('EMAIL_HOST_USER'),
+            ['bhaskaryhubale.899@gmail.com']
+        )
+        return HttpResponse("✅ Email sent successfully!")
+    except Exception as e:
+        return HttpResponse(f"❌ Error: {str(e)}")

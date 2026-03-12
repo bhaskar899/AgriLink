@@ -180,6 +180,7 @@ path('manage_bids/', views.manage_bids, name='manage_bids'),
 path('accept_bid/<int:bid_id>/', views.accept_bid, name='accept_bid'),
 path('reject_bid/<int:bid_id>/', views.reject_bid, name='reject_bid'),
 path("pay_bid/<int:bid_id>/", views.pay_bid, name="pay_bid"),
+path('test-email/', views.test_email, name='test_email'),
 
 path('mark_notification_read/<int:nid>/', views.mark_notification_read, name='mark_notification_read'),
 
