@@ -308,6 +308,13 @@ class SampleRequest(models.Model):
         ('rejected', 'Rejected'),
         ('picked', 'Picked'),
         ('delivered', 'Delivered'),
+        ('expired', 'Expired'),
+    ]
+
+    QUANTITY_CHOICES = [
+        (1, '1 kg'),
+        (2, '2 kg'),
+        (5, '5 kg'),
     ]
 
     product = models.ForeignKey('Product', on_delete=models.CASCADE)
@@ -315,8 +322,16 @@ class SampleRequest(models.Model):
     retailer = models.ForeignKey('Retailer', on_delete=models.CASCADE)
     driver = models.ForeignKey('Driver', on_delete=models.SET_NULL, null=True, blank=True)
 
-    quantity = models.FloatField(default=2, help_text="Sample quantity in kg")
+    quantity = models.FloatField(default=2, choices=[(1.0,'1 kg'),(2.0,'2 kg'),(5.0,'5 kg')])
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+
+    # 🆕 Charge fields
+    sample_charge = models.FloatField(default=50.0)
+    charge_paid = models.BooleanField(default=False)
+    charge_refunded = models.BooleanField(default=False)
+
+    # 🆕 Validity
+    expiry_date = models.DateTimeField(null=True, blank=True)
 
     rating = models.IntegerField(null=True, blank=True)
     review = models.TextField(null=True, blank=True)
@@ -326,6 +341,14 @@ class SampleRequest(models.Model):
 
     def __str__(self):
         return f"Sample #{self.id} - {self.product.product}"
+
+    def is_expired(self):
+        from django.utils import timezone
+        if self.expiry_date and timezone.now() > self.expiry_date:
+            return True
+        return False
+
+
 
 from django.db import models
 from django.contrib.auth import get_user_model

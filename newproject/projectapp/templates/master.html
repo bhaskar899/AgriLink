@@ -367,6 +367,174 @@
        CLICK FEEDBACK
     =========================== */
     a:active, button:active { transform: scale(.96); }
+
+
+    /* 🆕 Dark mode — सगळ्या pages साठी */
+[data-theme="dark"] {
+    --bg2: #0f172a;
+    --bg3: #1e293b;
+    --bdr: rgba(255,255,255,0.08);
+    --txt: #f1f5f9;
+    --txt2: #94a3b8;
+    --txt3: #64748b;
+    --sh1: 0 1px 4px rgba(0,0,0,0.4);
+    --sh2: 0 4px 18px rgba(0,0,0,0.4);
+    --sh3: 0 14px 44px rgba(0,0,0,0.5);
+}
+
+[data-theme="dark"] body {
+    background: #0f172a !important;
+    color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .card,
+[data-theme="dark"] .product-grid-card,
+[data-theme="dark"] .update-card,
+[data-theme="dark"] .custom-table-card,
+[data-theme="dark"] .glass-card,
+[data-theme="dark"] .filter-card,
+[data-theme="dark"] .order-card,
+[data-theme="dark"] .delivery-card,
+[data-theme="dark"] .driver-card,
+[data-theme="dark"] .auth-card,
+[data-theme="dark"] .reg-card,
+[data-theme="dark"] .task-card {
+    background: #1e293b !important;
+    border-color: rgba(255,255,255,0.08) !important;
+    color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select,
+[data-theme="dark"] .form-control-custom {
+    background: #0f172a !important;
+    border-color: rgba(255,255,255,0.1) !important;
+    color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .form-control::placeholder { color: #64748b !important; }
+
+[data-theme="dark"] .table {
+    color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .table-light,
+[data-theme="dark"] thead {
+    background: #0f172a !important;
+    color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .table-hover tbody tr:hover {
+    background: rgba(255,255,255,0.04) !important;
+}
+
+[data-theme="dark"] .table td,
+[data-theme="dark"] .table th {
+    border-color: rgba(255,255,255,0.06) !important;
+}
+
+[data-theme="dark"] .bg-white,
+[data-theme="dark"] .bg-light {
+    background: #1e293b !important;
+}
+
+[data-theme="dark"] .text-dark { color: #f1f5f9 !important; }
+[data-theme="dark"] .text-muted { color: #94a3b8 !important; }
+
+[data-theme="dark"] .border,
+[data-theme="dark"] .border-bottom,
+[data-theme="dark"] .border-top {
+    border-color: rgba(255,255,255,0.08) !important;
+}
+
+[data-theme="dark"] .modal-content {
+    background: #1e293b !important;
+    color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .modal-footer,
+[data-theme="dark"] .modal-body {
+    background: #1e293b !important;
+}
+
+[data-theme="dark"] .navbar {
+    background: #0f172a !important;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+[data-theme="dark"] .dropdown-menu {
+    background: #1e293b !important;
+    border-color: rgba(255,255,255,0.08) !important;
+}
+
+[data-theme="dark"] .dropdown-item {
+    color: #f1f5f9 !important;
+}
+[data-theme="dark"] .dropdown-item:hover {
+    background: rgba(255,255,255,0.06) !important;
+}
+
+[data-theme="dark"] .badge.bg-light {
+    background: #334155 !important;
+    color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .btn-light {
+    background: #334155 !important;
+    color: #f1f5f9 !important;
+    border-color: rgba(255,255,255,0.1) !important;
+}
+
+[data-theme="dark"] .page-header,
+[data-theme="dark"] .notif-header,
+[data-theme="dark"] .filter-card {
+    background: #1e293b !important;
+    border-color: rgba(255,255,255,0.08) !important;
+}
+
+[data-theme="dark"] .notif-card {
+    background: #1e293b !important;
+    border-color: rgba(255,255,255,0.06) !important;
+}
+
+[data-theme="dark"] .notif-card.unread {
+    background: linear-gradient(to right, rgba(34,197,94,0.08), #1e293b) !important;
+}
+
+[data-theme="dark"] .input-group-text {
+    background: #0f172a !important;
+    border-color: rgba(255,255,255,0.1) !important;
+    color: #94a3b8 !important;
+}
+
+[data-theme="dark"] .product-grid-card .card-body { background: transparent !important; }
+
+[data-theme="dark"] .summary-box {
+    background: rgba(25,135,84,0.12) !important;
+    border-color: rgba(25,135,84,0.3) !important;
+}
+
+[data-theme="dark"] .location-badge {
+    background: rgba(25,135,84,0.12) !important;
+    border-color: rgba(25,135,84,0.3) !important;
+}
+
+[data-theme="dark"] .charge-info-box {
+    background: rgba(25,135,84,0.1) !important;
+    border-color: rgba(25,135,84,0.3) !important;
+}
+
+[data-theme="dark"] hr { border-color: rgba(255,255,255,0.08) !important; }
+
+[data-theme="dark"] small.text-muted { color: #64748b !important; }
+
+    <script>
+  // Flash prevent — body दिसण्याआधी theme apply कर
+  (function(){
+    const t = localStorage.getItem('agrilink-theme') || 'light';
+    if(t === 'dark') document.documentElement.setAttribute('data-theme','dark');
+  })();
+</script>
   </style>
 </head>
 <body>
@@ -566,32 +734,46 @@
 </footer>
 
 <!-- JS -->
-<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 <script>
-  /* DARK MODE */
+
+  /* ===========================
+     DARK MODE — FIXED
+  =========================== */
+  const THEME_KEY = 'agrilink-theme'; // एकच key सगळीकडे
+
   const dmBtn  = document.getElementById('darkModeToggle');
   const dmIcon = document.getElementById('dmIcon');
   const dmTip  = document.getElementById('dmTip');
 
   function applyTheme(t) {
     if (t === 'dark') {
-      document.documentElement.setAttribute('data-theme','dark');
-      dmIcon.textContent = '☀️';
-      dmTip.textContent  = 'Light Mode';
+      document.documentElement.setAttribute('data-theme', 'dark');
+      if(dmIcon) dmIcon.textContent = '☀️';
+      if(dmTip)  dmTip.textContent  = 'Light Mode';
     } else {
       document.documentElement.removeAttribute('data-theme');
-      dmIcon.textContent = '🌙';
-      dmTip.textContent  = 'Dark Mode';
+      if(dmIcon) dmIcon.textContent = '🌙';
+      if(dmTip)  dmTip.textContent  = 'Dark Mode';
     }
   }
-  applyTheme(localStorage.getItem('agrilink-theme') || 'light');
-  dmBtn.addEventListener('click', () => {
-    const n = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    localStorage.setItem('agrilink-theme', n);
-    applyTheme(n);
-  });
 
-  /* CLICK SOUND */
+  // Page load वर apply कर
+  applyTheme(localStorage.getItem(THEME_KEY) || 'light');
+
+  // Toggle click
+  if(dmBtn) {
+    dmBtn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      localStorage.setItem(THEME_KEY, next);
+      applyTheme(next);
+    });
+  }
+
+  /* ===========================
+     CLICK SOUND
+  =========================== */
   document.querySelectorAll('a, button').forEach(el => {
     el.addEventListener('click', () => {
       const s = document.getElementById('clickSound');
@@ -599,17 +781,24 @@
     });
   });
 
-  /* TRANSLATE */
+  /* ===========================
+     TRANSLATE
+  =========================== */
   const tBtn = document.getElementById('translate-floating-btn');
   const tPop = document.getElementById('translate-popup');
   if (tBtn && tPop) {
-    tBtn.onclick = () => { tPop.style.display = tPop.style.display === 'block' ? 'none' : 'block'; };
+    tBtn.onclick = () => {
+      tPop.style.display = tPop.style.display === 'block' ? 'none' : 'block';
+    };
     document.addEventListener('click', e => {
-      if (!tBtn.contains(e.target) && !tPop.contains(e.target)) tPop.style.display = 'none';
+      if (!tBtn.contains(e.target) && !tPop.contains(e.target))
+        tPop.style.display = 'none';
     });
   }
 
-  /* NOTIFICATION BADGE */
+  /* ===========================
+     NOTIFICATION BADGE
+  =========================== */
   document.querySelectorAll('.dropdown-menu a[data-nid]').forEach(l => {
     l.addEventListener('click', () => {
       const b = document.getElementById('bellBadge');
@@ -617,9 +806,14 @@
     });
   });
 
-  /* NAVBAR SCROLL */
+  /* ===========================
+     NAVBAR SCROLL
+  =========================== */
   const nav = document.getElementById('mainNavbar');
-  if (nav) window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 50));
+  if (nav) window.addEventListener('scroll', () =>
+    nav.classList.toggle('scrolled', window.scrollY > 50)
+  );
+
 </script>
 
 <!-- Google Translate -->

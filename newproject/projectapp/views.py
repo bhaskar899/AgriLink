@@ -364,15 +364,16 @@ def show_products(request):
     farmer = get_object_or_404(Farmer, name=farmer_name)
 
     # Delete products with quantity 0 along with image file
+    # ✅ Orders नसतील तरच delete कर
     products_to_delete = Product.objects.filter(farmer=farmer, quantity__lte=0)
     for product in products_to_delete:
-        if product.image:
-            # Delete image file from media folder
-            image_path = os.path.join(settings.MEDIA_ROOT, product.image.name)
-            if os.path.exists(image_path):
-                os.remove(image_path)
-        # Delete product from DB
-        product.delete()
+        # Orders आहेत का check कर
+        if not Order.objects.filter(product=product).exists():
+            if product.image:
+                image_path = os.path.join(settings.MEDIA_ROOT, product.image.name)
+                if os.path.exists(image_path):
+                    os.remove(image_path)
+            product.delete()
 
     # Get remaining products
     products = Product.objects.filter(farmer=farmer)
@@ -1137,41 +1138,30 @@ from .models import Order, Notification
 
 
 @csrf_exempt
+@csrf_exempt
 def payment_success(request, order_id):
     order = get_object_or_404(Order, id=order_id)
 
-    # Razorpay कडून येणारा डेटा गोळा करा
     payment_id = request.POST.get('razorpay_payment_id')
-    razorpay_order_id = request.POST.get('razorpay_order_id')
-    signature = request.POST.get('razorpay_signature')
 
-    # जर डेटा मिळत नसेल (उदा. डायरेक्ट URL ओपन केली तर), तर फेल दाखवा
     if not payment_id:
         print("Error: Razorpay payment_id not found in request.")
         return render(request, "payment_failed.html")
 
-    # सिस्टिमला सांगा की पेमेंट झाले आहे (Verification Logic)
-    # टीप: लाइव्ह मोडमध्ये सिग्नचर व्हेरिफिकेशन महत्त्वाचे असते,
-    # पण सध्या तुमची ऑर्डर अपडेट करण्यासाठी आपण थेट स्टेटस 'Paid' करत आहोत.
-
     if order.status != "Paid":
         order.status = "Paid"
 
-        # स्टॉक अपडेट करा
         product = order.product
-        if product.quantity >= order.quantity:
-            product.quantity -= order.quantity
-            product.save()
 
-        # रक्कम अपडेट करा
+        # ✅ Stock आधीच place_order मध्ये कमी झाला — इथे नाही
+        # फक्त total_amount update कर
         total_amount = order.quantity * product.price
         order.total_amount = total_amount
         order.save()
 
-        # शेतकरी रक्कम (९५%)
+        # Farmer amount — default 95% (delivery नंतर adjust होईल)
         farmer_amount = round(total_amount * 0.95, 2)
 
-        # ✅ Updated notification
         Notification.objects.create(
             sender_retailer=order.retailer,
             receiver_farmer=order.farmer,
@@ -1180,7 +1170,6 @@ def payment_success(request, order_id):
         print(f"Order #{order.id} status updated to Paid.")
 
     return render(request, "payment_success.html", {"order": order})
-
 # ------------------------
 # Update Status (Farmer)
 # ------------------------
@@ -1293,7 +1282,10 @@ def driver_register(request):
                 vehicle_photo=vehicle_img,
                 license_issue_date=issue_date or None, # Date agar empty ho toh None
                 license_expiry_date=expiry_date or None,
-                email_verified=True
+                latitude=float(latitude) if latitude else None,  # 🆕
+                longitude=float(longitude) if longitude else None,  # 🆕
+
+            email_verified=True
             )
 
             request.session['id'] = driver.id
@@ -1866,8 +1858,10 @@ def place_order(request, product_id):
 
             # ✅ Stock reduce
             product.quantity -= quantity
+            # ✅ Delete नाही — फक्त quantity 0 ठेव
             if product.quantity <= 0:
-                product.delete()
+                product.quantity = 0
+                product.save()
             else:
                 product.save()
 
@@ -2106,35 +2100,39 @@ def retailer_dashboard(request):
 
     retailer = get_object_or_404(Retailer, name=retailer_name)
 
-    # ✅ Total Orders
+    # Total Orders
     total_orders = Order.objects.filter(retailer=retailer).count()
 
-    # ✅ Delivered / Completed Orders
+    # Delivered / Completed Orders
     completed_statuses = ['Delivered', 'Completed']
     completed_orders = Order.objects.filter(retailer=retailer, status__in=completed_statuses)
 
-    # ✅ Total Amount Spent
+    # ✅ Total Amount Spent — safe calculation
     total_spent = 0
     for order in completed_orders:
-        amount_to_add = order.total_amount
-        if amount_to_add is None or amount_to_add == 0:
-            amount_to_add = order.quantity * order.product.price
+        try:
+            amount_to_add = order.total_amount if order.total_amount else order.quantity * order.product.price
+        except:
+            amount_to_add = order.total_amount or 0
         total_spent += amount_to_add
 
-    # ✅ Pending Orders
+    # Pending Orders
     pending_statuses = ['Pending', 'Paid', 'Accepted', 'Packed', 'Dispatched', 'Driver Assigned', 'Picked', 'Assigned to Driver']
     pending_orders = Order.objects.filter(retailer=retailer, status__in=pending_statuses).count()
 
-    # ✅ Recent Orders
+    # Recent Orders
     recent_orders = Order.objects.filter(retailer=retailer).order_by('-order_date')[:5]
     for order in recent_orders:
-        order.calculated_amount = order.total_amount if order.total_amount is not None else order.quantity * order.product.price
+        try:
+            order.calculated_amount = order.total_amount if order.total_amount else order.quantity * order.product.price
+        except:
+            order.calculated_amount = order.total_amount or 0
 
-    # 🔔 ✅ UPDATED: Only show notifications that have a Payment Link
+    # Notifications
     notifications = Notification.objects.filter(
         receiver_retailer=retailer,
         is_read=False
-    ).exclude(link=None).order_by('-timestamp') # <--- ही ओळ बदलली आहे
+    ).exclude(link=None).order_by('-timestamp')
 
     context = {
         'retailer': retailer,
@@ -2145,7 +2143,6 @@ def retailer_dashboard(request):
         'notifications': notifications,
     }
     return render(request, "retailer_dashboard.html", context)
-
 
 
 # --- DRIVER VIEWS ---
@@ -2417,7 +2414,7 @@ def get_nearby_drivers(source_lat, source_lng, retailer_lat=None, retailer_lng=N
         is_available=True
     ).exclude(id__in=busy_driver_ids)
 
-    # Location नसेल तर सगळे drivers दे
+    # ✅ Location नसेल तर 6-tuple return कर
     if not source_lat or not source_lng:
         result = []
         for d in all_drivers:
@@ -2425,7 +2422,7 @@ def get_nearby_drivers(source_lat, source_lng, retailer_lat=None, retailer_lng=N
                 driver=d,
                 status__in=['assigned', 'picked', 'in_transit']
             ).count()
-            result.append((0.0, d, active, 5))
+            result.append((0.0, 0.0, 0.0, d, active, 5))  # 🆕 6-tuple
         return result, [], [], [], [], []
 
     groups = {
@@ -2446,25 +2443,24 @@ def get_nearby_drivers(source_lat, source_lng, retailer_lat=None, retailer_lng=N
             driver_lat, driver_lng
         ), 1)
 
-        # 🆕 Retailer → Driver distance (असेल तर)
+        # Retailer → Driver distance
         if retailer_lat and retailer_lng:
             retailer_dist = round(haversine_distance(
                 retailer_lat, retailer_lng,
                 driver_lat, driver_lng
             ), 1)
-            # Total score — कमी score = best driver
             total_score = farmer_dist + retailer_dist
         else:
-            retailer_dist = 0
+            retailer_dist = 0.0
             total_score = farmer_dist
 
-        # Eligibility farmer distance वर check करतो
+        # Eligibility check
         eligible, active, max_ord = is_driver_eligible(driver, farmer_dist)
 
         if not eligible:
             continue
 
-        # 🆕 entry मध्ये total_score पण add केला
+        # ✅ 6-tuple
         entry = (total_score, farmer_dist, retailer_dist, driver, active, max_ord)
 
         if farmer_dist <= 50:        groups['50'].append(entry)
@@ -2474,15 +2470,13 @@ def get_nearby_drivers(source_lat, source_lng, retailer_lat=None, retailer_lng=N
         elif farmer_dist <= 400:     groups['400'].append(entry)
         elif farmer_dist <= 500:     groups['500'].append(entry)
 
-    # Score नुसार sort — कमी score आधी
     for key in groups:
         groups[key].sort(key=lambda x: x[0])
 
     return (
         groups['50'], groups['100'], groups['200'],
         groups['300'], groups['400'], groups['500'],
-    )
-# ----------------------------------------
+    )# ----------------------------------------
 # 6. update_status view
 # ----------------------------------------
 def update_status(request, order_id):
@@ -2634,8 +2628,10 @@ from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from .models import Retailer, Product, SampleRequest
 
+from django.utils import timezone
+from datetime import timedelta
+
 def request_sample(request, product_id):
-    # ✅ Get retailer id from session
     retailer_id = request.session.get("id")
     if not retailer_id:
         messages.error(request, "Please login first")
@@ -2644,23 +2640,47 @@ def request_sample(request, product_id):
     retailer = get_object_or_404(Retailer, id=retailer_id)
     product = get_object_or_404(Product, id=product_id)
 
-    # ✅ Create sample request
+    # 🆕 Check: Already requested this product?
+    already_exists = SampleRequest.objects.filter(
+        retailer=retailer,
+        product=product
+    ).exclude(status='rejected').exists()
+
+    if already_exists:
+        messages.warning(request, f"⚠️ You have already requested a sample for '{product.product}'!")
+        return redirect("browse_products")
+
+    # 🆕 Get quantity from POST or default 2kg
+    quantity = float(request.POST.get('sample_quantity', 2))
+    if quantity not in [1.0, 2.0, 5.0]:
+        quantity = 2.0
+
+    # 🆕 Charge based on quantity
+    charge_map = {1.0: 30.0, 2.0: 50.0, 5.0: 100.0}
+    sample_charge = charge_map.get(quantity, 50.0)
+
+    # 🆕 Expiry — 7 days from now
+    expiry_date = timezone.now() + timedelta(days=7)
+
     SampleRequest.objects.create(
         product=product,
         retailer=retailer,
         farmer=product.farmer,
-        quantity=2  # default sample quantity
+        quantity=quantity,
+        sample_charge=sample_charge,
+        expiry_date=expiry_date,
     )
 
-    # SampleRequest.objects.create ke baad add karo
     Notification.objects.create(
         receiver_farmer=product.farmer,
         sender_retailer=retailer,
-        message=f"Sample request received for '{product.product}' from {retailer.name}."
+        message=f"📦 Sample request for '{product.product}' ({quantity}kg) from {retailer.name}. Charge: ₹{sample_charge}"
     )
 
-    messages.success(request, f"Sample request for '{product.product}' sent successfully!")
+    messages.success(request, f"✅ Sample request sent! Charge: ₹{sample_charge} | Valid for 7 days.")
     return redirect("retailer_dashboard")
+
+
 # -------------------------------
 # Farmer: View Sample Requests
 # -------------------------------
@@ -2765,20 +2785,30 @@ def deliver_sample_complete(request, id):
         return redirect("driver_login")
 
     sample = get_object_or_404(SampleRequest, id=id)
+    driver = get_object_or_404(Driver, id=request.session.get("id"))
 
     sample.status = "delivered"
+    sample.delivered_at = timezone.now()
     sample.save()
 
-    # sample.save() ke baad add karo
+    # 🆕 Driver commission — sample charge चा 20%
+    driver_earning = round(sample.sample_charge * 0.20, 2)
+
     Notification.objects.create(
         receiver_retailer=sample.retailer,
-        message=f"Your sample for '{sample.product.product}' has been delivered! Please rate it."
+        message=f"✅ Sample of '{sample.product.product}' ({sample.quantity}kg) delivered! "
+                f"Place an order within 7 days to get ₹{sample.sample_charge} refund."
     )
 
-    messages.success(request, "Sample delivered successfully")
+    Notification.objects.create(
+        receiver_driver=driver,
+        message=f"💰 Sample #{sample.id} delivered! Your earning ₹{driver_earning} will be credited within 24 hours."
+    )
 
-    # 🔥 AFTER DELIVERY → RETAILER CAN REVIEW
+    messages.success(request, "Sample delivered successfully!")
     return redirect("driver_sample_deliveries")
+
+
 # projectapp/views.py
 from django.shortcuts import render, get_object_or_404
 from .models import SampleRequest, Driver
@@ -3061,3 +3091,23 @@ def brevo_test(request):
     r = requests.post(url, headers=headers, json=data, timeout=30)
 
     return HttpResponse(str(r.text))
+
+
+def check_expired_samples():
+    """Expired samples automatically mark करतो"""
+    from django.utils import timezone
+    expired = SampleRequest.objects.filter(
+        status__in=['pending', 'approved'],
+        expiry_date__lt=timezone.now()
+    )
+    for sample in expired:
+        sample.status = 'expired'
+        sample.save()
+        Notification.objects.create(
+            receiver_retailer=sample.retailer,
+            message=f"⏰ Your sample request for '{sample.product.product}' has expired. Please request again."
+        )
+        Notification.objects.create(
+            receiver_farmer=sample.farmer,
+            message=f"⏰ Sample request from {sample.retailer.name} for '{sample.product.product}' has expired."
+        )

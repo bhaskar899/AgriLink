@@ -5,107 +5,75 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
 
 <style>
-:root {
-    --retail-blue: #0d6efd;
-    --glass-bg: rgba(255, 255, 255, 0.9);
-}
-
-body {
-    background: linear-gradient(135deg, #f0f4f8 0%, #e2eafc 100%);
-    min-height: 100vh;
-}
-
-.dashboard-wrapper {
-    margin-top: 110px;
-    padding-bottom: 60px;
-}
-
-/* 🏆 Header Section */
+:root { --retail-blue: #0d6efd; --glass-bg: rgba(255, 255, 255, 0.9); }
+body { background: linear-gradient(135deg, #f0f4f8 0%, #e2eafc 100%); min-height: 100vh; }
+.dashboard-wrapper { margin-top: 110px; padding-bottom: 60px; }
 .page-header {
-    background: white;
-    border-radius: 25px;
-    padding: 30px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-    margin-bottom: 40px;
+    background: white; border-radius: 25px; padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 40px;
     border-left: 8px solid var(--retail-blue);
 }
-
-/* 📊 Modern Table Card */
 .glass-card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(10px);
-    border-radius: 30px;
-    border: 1px solid rgba(255,255,255,0.3);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
-    overflow: hidden;
+    background: var(--glass-bg); backdrop-filter: blur(10px);
+    border-radius: 30px; border: 1px solid rgba(255,255,255,0.3);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05); overflow: hidden;
 }
-
-.custom-table thead {
-    background: #f8f9fa;
-}
-
+.custom-table thead { background: #f8f9fa; }
 .custom-table thead th {
-    padding: 20px;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: #6c757d;
-    border: none;
+    padding: 20px; font-size: 0.8rem; text-transform: uppercase;
+    letter-spacing: 1px; color: #6c757d; border: none;
 }
-
 .custom-table tbody td {
-    padding: 25px 20px;
-    vertical-align: middle;
-    border-bottom: 1px solid #edf2f7;
-    transition: 0.3s;
+    padding: 20px; vertical-align: middle;
+    border-bottom: 1px solid #edf2f7; transition: 0.3s;
 }
-
-/* 🚚 Status Badges */
-.status-pill {
-    padding: 6px 16px;
-    border-radius: 50px;
-    font-size: 0.8rem;
-    font-weight: 700;
-}
-
+.status-pill { padding: 6px 16px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; }
 .status-delivered { background: #dcfce7; color: #166534; }
-.status-pending { background: #fef9c3; color: #854d0e; }
-.status-transit { background: #dbeafe; color: #1e40af; }
+.status-pending   { background: #fef9c3; color: #854d0e; }
+.status-transit   { background: #dbeafe; color: #1e40af; }
+.status-expired   { background: #fee2e2; color: #991b1b; }
 
-/* ⭐ Rating Button */
 .btn-rate-now {
     background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    padding: 8px 18px;
-    font-weight: 700;
-    box-shadow: 0 4px 15px rgba(217, 119, 6, 0.3);
-    transition: 0.3s;
-    text-decoration: none;
-    display: inline-block;
+    color: white; border: none; border-radius: 12px;
+    padding: 8px 18px; font-weight: 700;
+    box-shadow: 0 4px 15px rgba(217,119,6,0.3);
+    transition: 0.3s; text-decoration: none; display: inline-block;
 }
-
-.btn-rate-now:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(217, 119, 6, 0.4);
-    color: white;
-}
+.btn-rate-now:hover { transform: translateY(-3px); color: white; }
 
 .rated-check {
-    color: #10b981;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
+    color: #10b981; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
 }
 
-/* Empty State */
-.empty-state {
-    padding: 80px;
-    text-align: center;
+/* 🆕 Charge badge */
+.charge-tag {
+    background: #d1fae5; color: #065f46;
+    border-radius: 8px; padding: 4px 10px;
+    font-size: 0.75rem; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 4px;
 }
+
+/* 🆕 Expiry tag */
+.expiry-tag {
+    border-radius: 8px; padding: 4px 10px;
+    font-size: 0.72rem; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 4px;
+}
+.expiry-ok      { background: #eff6ff; color: #1d4ed8; }
+.expiry-warning { background: #fff3cd; color: #856404; }
+.expiry-expired { background: #fee2e2; color: #991b1b; }
+
+/* 🆕 Refund badge */
+.refund-badge {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    color: #065f46; border-radius: 8px; padding: 4px 10px;
+    font-size: 0.72rem; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 4px;
+}
+
+.empty-state { padding: 80px; text-align: center; }
 </style>
 
 <div class="container dashboard-wrapper">
@@ -114,7 +82,7 @@ body {
         <div class="row align-items-center">
             <div class="col-md-6">
                 <h2 class="fw-800 mb-1 text-dark">Sample Quality Control</h2>
-                <p class="text-muted mb-0">Rate the samples you've received to help us maintain quality standards.</p>
+                <p class="text-muted mb-0">Rate samples received — place order within 7 days for full refund!</p>
             </div>
             <div class="col-md-6 text-md-end mt-3 mt-md-0">
                 <div class="d-inline-flex align-items-center bg-light p-3 rounded-4">
@@ -135,65 +103,131 @@ body {
                     <tr>
                         <th class="ps-4">Sample Info</th>
                         <th>Source</th>
-                        <th>Stock Details</th>
-                        <th>Current Status</th>
-                        <th class="text-center">Action / Feedback</th>
+                        <th>Qty & Charge</th>
+                        <th>Validity</th>
+                        <th>Status</th>
+                        <th class="text-center">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for s in samples %}
                     <tr>
+                        <!-- Sample Info -->
                         <td class="ps-4">
                             <div class="d-flex align-items-center">
                                 <div class="bg-primary-subtle p-3 rounded-3 me-3 text-primary">
                                     <i class="fas fa-seedling"></i>
                                 </div>
                                 <div>
-                                    <span class="fw-bold d-block text-dark fs-6">{{ s.product.product }}</span>
+                                    <span class="fw-bold d-block text-dark">{{ s.product.product }}</span>
                                     <small class="text-muted">ID: #{{ s.id }}</small>
                                 </div>
                             </div>
                         </td>
+
+                        <!-- Source -->
                         <td>
                             <div class="d-flex align-items-center">
                                 <i class="fas fa-user-circle text-muted me-2"></i>
-                                <span class="small fw-600">{{ s.farmer.name }}</span>
+                                <span class="small fw-bold">{{ s.farmer.name }}</span>
                             </div>
                         </td>
+
+                        <!-- Qty + Charge -->
                         <td>
-                            <span class="badge bg-light text-dark border fw-normal p-2">
-                                <i class="fas fa-weight-hanging me-1 text-muted"></i> {{ s.quantity }} kg Requested
+                            <span class="badge bg-light text-dark border fw-normal p-2 d-block mb-1">
+                                <i class="fas fa-weight-hanging me-1 text-muted"></i>
+                                {{ s.quantity }} kg
+                            </span>
+                            <span class="charge-tag">
+                                <i class="fas fa-rupee-sign"></i>
+                                {% if s.sample_charge %}{{ s.sample_charge }}{% else %}50{% endif %}
+                                {% if s.charge_refunded %}
+                                    <span class="ms-1 text-success">✓ Refunded</span>
+                                {% endif %}
                             </span>
                         </td>
+
+                        <!-- Validity -->
+                        <td>
+                            {% if s.expiry_date %}
+                                {% if s.is_expired %}
+                                    <span class="expiry-tag expiry-expired">
+                                        <i class="fas fa-times-circle"></i> Expired
+                                    </span>
+                                {% else %}
+                                    <span class="expiry-tag expiry-ok">
+                                        <i class="fas fa-clock"></i>
+                                        {{ s.expiry_date|date:"d M Y" }}
+                                    </span>
+                                    {% if s.status == 'delivered' and not s.charge_refunded %}
+                                        <br>
+                                        <span class="refund-badge mt-1">
+                                            <i class="fas fa-undo"></i> Order now for refund!
+                                        </span>
+                                    {% endif %}
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted small">—</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Status -->
                         <td>
                             <span class="status-pill
                                 {% if s.status == 'delivered' %}status-delivered
                                 {% elif s.status == 'picked' %}status-transit
+                                {% elif s.status == 'expired' %}status-expired
                                 {% else %}status-pending{% endif %}">
-                                <i class="fas {% if s.status == 'delivered' %}fa-check-circle{% else %}fa-truck-loading{% endif %} me-1"></i>
+                                <i class="fas
+                                    {% if s.status == 'delivered' %}fa-check-circle
+                                    {% elif s.status == 'picked' %}fa-truck
+                                    {% elif s.status == 'expired' %}fa-times-circle
+                                    {% else %}fa-hourglass-half{% endif %} me-1"></i>
                                 {{ s.status|upper }}
                             </span>
                         </td>
+
+                        <!-- Action -->
                         <td class="text-center">
-                            {% if s.status == "delivered" and not s.retailer_review %}
-                                <a href="{% url 'rate_sample' s.id %}" class="btn-rate-now animate__animated animate__pulse animate__infinite">
-                                    <i class="fas fa-star me-2"></i>Rate Sample
+                            {% if s.status == "delivered" and not s.rating %}
+                                <a href="{% url 'rate_sample' s.id %}"
+                                   class="btn-rate-now animate__animated animate__pulse animate__infinite">
+                                    <i class="fas fa-star me-1"></i> Rate Sample
                                 </a>
-                            {% elif s.retailer_review %}
+                            {% elif s.rating %}
                                 <div class="rated-check">
-                                    <i class="fas fa-check-double"></i> Verified Quality
+                                    <i class="fas fa-check-double"></i> Rated
+                                    <span class="ms-1">
+                                        {% for i in "12345" %}
+                                            {% if forloop.counter <= s.rating %}
+                                                <i class="fas fa-star text-warning" style="font-size:0.7rem;"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </span>
                                 </div>
+                            {% elif s.status == 'expired' %}
+                                <span class="text-danger small fw-bold">
+                                    <i class="fas fa-times me-1"></i> Expired
+                                </span>
                             {% else %}
-                                <span class="text-muted small italic">Action Locked <i class="fas fa-lock ms-1"></i></span>
+                                <span class="text-muted small">
+                                    <i class="fas fa-lock ms-1"></i> Pending Delivery
+                                </span>
                             {% endif %}
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="empty-state">
-                            <img src="https://cdn-icons-png.flaticon.com/512/5058/5058432.png" width="80" class="opacity-25 mb-3">
-                            <h5 class="text-muted">No samples have reached you yet.</h5>
-                            <p class="small text-muted">Delivered samples will appear here for quality feedback.</p>
+                        <td colspan="6" class="empty-state">
+                            <img src="https://cdn-icons-png.flaticon.com/512/5058/5058432.png"
+                                 width="80" class="opacity-25 mb-3">
+                            <h5 class="text-muted">No samples yet.</h5>
+                            <p class="small text-muted">Request samples from the marketplace.</p>
+                            <a href="{% url 'browse_products' %}"
+                               class="btn btn-outline-success rounded-pill px-4 mt-2">
+                                <i class="fas fa-store me-2"></i> Browse Products
+                            </a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -204,14 +238,9 @@ body {
 </div>
 
 <script>
-    // Row hover effect to highlight
-    document.querySelectorAll('.custom-table tbody tr').forEach(row => {
-        row.addEventListener('mouseover', () => {
-            row.style.backgroundColor = 'rgba(13, 110, 253, 0.02)';
-        });
-        row.addEventListener('mouseout', () => {
-            row.style.backgroundColor = 'transparent';
-        });
-    });
+document.querySelectorAll('.custom-table tbody tr').forEach(row => {
+    row.addEventListener('mouseover', () => { row.style.backgroundColor = 'rgba(13,110,253,0.02)'; });
+    row.addEventListener('mouseout',  () => { row.style.backgroundColor = 'transparent'; });
+});
 </script>
 {% endblock %}
