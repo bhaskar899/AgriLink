@@ -50,8 +50,6 @@
         background: #eee; display: block; margin: 0 auto 5px;
     }
     .step.active .step-icon { background: #198754; color: #fff; }
-
-    /* 🆕 GPS Badge */
     .gps-badge {
         font-size: 0.78rem; font-weight: 700;
         padding: 8px 14px; border-radius: 10px;
@@ -61,6 +59,7 @@
     .gps-detecting { background: #fef3c7; color: #92400e; }
     .gps-success   { background: #d1fae5; color: #065f46; }
     .gps-error     { background: #fee2e2; color: #991b1b; }
+    .gps-address   { background: #dbeafe; color: #1e40af; }
 </style>
 
 <div class="back-btn-wrapper">
@@ -126,29 +125,35 @@
                                 placeholder="Enter 10 digit number" required>
                         </div>
 
-                        <div class="mb-4">
-                            <label class="form-label">Delivery Address</label>
-                            <textarea class="form-control" name="address" rows="3"
+                        <!-- 🆕 Delivery Address — blur वर geocoding -->
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Delivery Address
+                                <span class="text-muted" style="font-size:0.75rem; font-weight:400;">
+                                    (location will be auto-detected from address)
+                                </span>
+                            </label>
+                            <textarea class="form-control" name="address" id="addressField" rows="3"
                                 placeholder="Flat No, Street, Landmark, City, Pincode" required></textarea>
                         </div>
 
-                        <!-- 🆕 GPS Location Section -->
+                        <!-- Location Status -->
                         <div class="mb-4 p-3 rounded-3" style="background:#f0fdf4; border:1px dashed #198754;">
                             <div class="d-flex justify-content-between align-items-center">
                                 <span class="fw-bold text-success" style="font-size:0.85rem;">
-                                    <i class="fas fa-map-marker-alt me-1"></i> Your Current Location
+                                    <i class="fas fa-map-marker-alt me-1"></i> Delivery Location
                                 </span>
                                 <button type="button" class="btn btn-sm btn-success rounded-pill px-3"
                                     onclick="refreshLocation()" style="font-size:0.75rem;">
-                                    <i class="fas fa-sync-alt me-1"></i> Refresh
+                                    <i class="fas fa-sync-alt me-1"></i> Use GPS Instead
                                 </button>
                             </div>
                             <div id="gpsStatus" class="gps-badge gps-detecting">
-                                <i class="fas fa-spinner fa-spin"></i> Detecting your location...
+                                <i class="fas fa-spinner fa-spin"></i> Waiting for address...
                             </div>
                         </div>
 
-                        <!-- 🆕 Hidden GPS fields -->
+                        <!-- Hidden GPS fields -->
                         <input type="hidden" id="ret_lat" name="ret_lat">
                         <input type="hidden" id="ret_lng" name="ret_lng">
 
@@ -187,52 +192,80 @@
 
     quantityInput.addEventListener('input', function() {
         const qty = parseFloat(this.value) || 0;
-        const total = (qty * pricePerKg).toFixed(2);
-        totalDisplay.innerText = total;
+        totalDisplay.innerText = (qty * pricePerKg).toFixed(2);
         const maxStock = parseInt("{{ product.quantity }}");
-        if (qty > maxStock) {
-            this.classList.add('is-invalid');
-        } else {
-            this.classList.remove('is-invalid');
-        }
+        this.classList.toggle('is-invalid', qty > maxStock);
     });
 
-    // 🆕 GPS capture function
-    function captureLocation() {
+    // 🆕 Address वरून location काढ (OpenStreetMap — FREE)
+    document.getElementById('addressField').addEventListener('blur', function(){
+        const address = this.value.trim();
+        if(!address || address.length < 5) return;
+
+        const statusEl = document.getElementById('gpsStatus');
+        statusEl.className = 'gps-badge gps-detecting';
+        statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Finding location from address...';
+
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', India')}&limit=1`)
+        .then(r => r.json())
+        .then(data => {
+            if(data && data.length > 0){
+                const lat = parseFloat(data[0].lat);
+                const lng = parseFloat(data[0].lon);
+                const displayName = data[0].display_name;
+
+                document.getElementById('ret_lat').value = lat;
+                document.getElementById('ret_lng').value = lng;
+
+                statusEl.className = 'gps-badge gps-address';
+                statusEl.innerHTML =
+                    '<i class="fas fa-map-pin"></i> ' +
+                    displayName.split(',').slice(0,3).join(',') +
+                    ' (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ')';
+            } else {
+                // Address नाही मिळाला → GPS वापर
+                statusEl.className = 'gps-badge gps-error';
+                statusEl.innerHTML = '<i class="fas fa-circle-xmark"></i> Address not found — using GPS';
+                captureGPS();
+            }
+        })
+        .catch(() => {
+            statusEl.className = 'gps-badge gps-error';
+            statusEl.innerHTML = '<i class="fas fa-circle-xmark"></i> Search failed — using GPS';
+            captureGPS();
+        });
+    });
+
+    // GPS capture
+    function captureGPS() {
         const statusEl = document.getElementById('gpsStatus');
         if(navigator.geolocation){
             navigator.geolocation.getCurrentPosition(function(pos){
                 const lat = pos.coords.latitude;
                 const lng = pos.coords.longitude;
-
                 document.getElementById('ret_lat').value = lat;
                 document.getElementById('ret_lng').value = lng;
-
                 statusEl.className = 'gps-badge gps-success';
                 statusEl.innerHTML =
-                    '<i class="fas fa-circle-check"></i> Location detected — ' +
+                    '<i class="fas fa-circle-check"></i> GPS location detected — ' +
                     lat.toFixed(4) + ', ' + lng.toFixed(4);
-            }, function(err){
+            }, function(){
                 statusEl.className = 'gps-badge gps-error';
                 statusEl.innerHTML =
-                    '<i class="fas fa-circle-xmark"></i> Location not available — driver will be assigned based on farmer location';
+                    '<i class="fas fa-circle-xmark"></i> Location not available — driver assigned by farmer area';
             });
-        } else {
-            statusEl.className = 'gps-badge gps-error';
-            statusEl.innerHTML =
-                '<i class="fas fa-circle-xmark"></i> GPS not supported in this browser';
         }
     }
 
-    // 🆕 Refresh button
+    // "Use GPS Instead" button
     function refreshLocation() {
-        document.getElementById('gpsStatus').className = 'gps-badge gps-detecting';
-        document.getElementById('gpsStatus').innerHTML =
-            '<i class="fas fa-spinner fa-spin"></i> Re-detecting location...';
-        captureLocation();
+        const statusEl = document.getElementById('gpsStatus');
+        statusEl.className = 'gps-badge gps-detecting';
+        statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting GPS location...';
+        captureGPS();
     }
 
-    // Auto capture on page load
-    captureLocation();
+    // Page load वर GPS capture कर
+    captureGPS();
 </script>
 {% endblock %}
