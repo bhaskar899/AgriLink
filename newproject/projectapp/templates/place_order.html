@@ -3,128 +3,64 @@
 {% block body %}
 
 <style>
-    /* Global Background */
-    body {
-        background: #f4f7f6;
-    }
-
-    /* Back Button Styling */
-    .back-btn-wrapper {
-        margin-top: 100px;
-        margin-left: 20px;
-    }
+    body { background: #f4f7f6; }
+    .back-btn-wrapper { margin-top: 100px; margin-left: 20px; }
     .back-btn {
-        border: none;
-        padding: 10px 22px;
-        border-radius: 50px;
-        background: #fff;
-        color: #198754;
-        font-weight: 600;
-        cursor: pointer;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        transition: .3s;
-        border: 1px solid #198754;
+        border: none; padding: 10px 22px; border-radius: 50px;
+        background: #fff; color: #198754; font-weight: 600;
+        cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: .3s; border: 1px solid #198754;
     }
-    .back-btn:hover {
-        background: #198754;
-        color: #fff;
-        transform: translateX(-5px);
-    }
-
-    /* Card Styling */
+    .back-btn:hover { background: #198754; color: #fff; transform: translateX(-5px); }
     .order-card {
-        background: #ffffff;
-        border-radius: 20px;
-        overflow: hidden;
-        border: none;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+        background: #ffffff; border-radius: 20px; overflow: hidden;
+        border: none; box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
     }
-
     .card-header-custom {
         background: linear-gradient(135deg, #198754, #14532d);
-        color: white;
-        padding: 25px;
-        text-align: center;
+        color: white; padding: 25px; text-align: center;
     }
-
-    /* Form Styling */
-    .form-label {
-        font-weight: 600;
-        color: #444;
-        margin-bottom: 8px;
-    }
+    .form-label { font-weight: 600; color: #444; margin-bottom: 8px; }
     .form-control {
-        border-radius: 12px;
-        padding: 12px 15px;
-        border: 1px solid #dee2e6;
-        transition: all 0.3s;
+        border-radius: 12px; padding: 12px 15px;
+        border: 1px solid #dee2e6; transition: all 0.3s;
     }
     .form-control:focus {
         border-color: #198754;
         box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.1);
     }
-    .form-control[readonly] {
-        background-color: #f8f9fa;
-        color: #6c757d;
-    }
-
-    /* Live Summary Box */
+    .form-control[readonly] { background-color: #f8f9fa; color: #6c757d; }
     .summary-box {
-        background: #e8f5e9;
-        border-radius: 15px;
-        padding: 20px;
-        margin-top: 20px;
-        border: 1px dashed #198754;
+        background: #e8f5e9; border-radius: 15px; padding: 20px;
+        margin-top: 20px; border: 1px dashed #198754;
     }
-    .total-price-text {
-        font-size: 1.5rem;
-        font-weight: 800;
-        color: #198754;
-    }
-
-    /* Submit Button */
+    .total-price-text { font-size: 1.5rem; font-weight: 800; color: #198754; }
     .btn-proceed {
         background: linear-gradient(135deg, #198754, #2ecc71);
-        border: none;
-        border-radius: 12px;
-        padding: 15px;
-        font-weight: 700;
-        font-size: 1.1rem;
-        transition: 0.3s;
+        border: none; border-radius: 12px; padding: 15px;
+        font-weight: 700; font-size: 1.1rem; transition: 0.3s;
         box-shadow: 0 8px 20px rgba(25, 135, 84, 0.3);
     }
-    .btn-proceed:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 25px rgba(25, 135, 84, 0.4);
-    }
-
-    /* Progress Indicator */
-    .order-steps {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 30px;
-    }
-    .step {
-        text-align: center;
-        flex: 1;
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #ccc;
-    }
+    .btn-proceed:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(25, 135, 84, 0.4); }
+    .order-steps { display: flex; justify-content: space-between; margin-bottom: 30px; }
+    .step { text-align: center; flex: 1; font-size: 0.85rem; font-weight: 600; color: #ccc; }
     .step.active { color: #198754; }
     .step-icon {
-        width: 30px;
-        height: 30px;
-        line-height: 30px;
-        border-radius: 50%;
-        background: #eee;
-        display: block;
-        margin: 0 auto 5px;
+        width: 30px; height: 30px; line-height: 30px; border-radius: 50%;
+        background: #eee; display: block; margin: 0 auto 5px;
     }
-    .step.active .step-icon {
-        background: #198754;
-        color: #fff;
+    .step.active .step-icon { background: #198754; color: #fff; }
+
+    /* 🆕 GPS Badge */
+    .gps-badge {
+        font-size: 0.78rem; font-weight: 700;
+        padding: 8px 14px; border-radius: 10px;
+        display: inline-flex; align-items: center; gap: 6px;
+        margin-top: 8px;
     }
+    .gps-detecting { background: #fef3c7; color: #92400e; }
+    .gps-success   { background: #d1fae5; color: #065f46; }
+    .gps-error     { background: #fee2e2; color: #991b1b; }
 </style>
 
 <div class="back-btn-wrapper">
@@ -173,8 +109,10 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Quantity to Buy</label>
                                 <div class="input-group">
-                                    <input type="number" class="form-control border-success" name="quantity" id="buyQuantity"
-                                           min="1" max="{{ product.quantity }}" placeholder="0" required>
+                                    <input type="number" class="form-control border-success"
+                                        name="quantity" id="buyQuantity"
+                                        min="1" max="{{ product.quantity }}"
+                                        placeholder="0" required>
                                     <span class="input-group-text bg-success text-white">kg</span>
                                 </div>
                             </div>
@@ -184,13 +122,35 @@
 
                         <div class="mb-3">
                             <label class="form-label">Contact Number</label>
-                            <input type="tel" class="form-control" name="contact" placeholder="Enter 10 digit number" required>
+                            <input type="tel" class="form-control" name="contact"
+                                placeholder="Enter 10 digit number" required>
                         </div>
 
                         <div class="mb-4">
                             <label class="form-label">Delivery Address</label>
-                            <textarea class="form-control" name="address" rows="3" placeholder="Flat No, Street, Landmark, City, Pincode" required></textarea>
+                            <textarea class="form-control" name="address" rows="3"
+                                placeholder="Flat No, Street, Landmark, City, Pincode" required></textarea>
                         </div>
+
+                        <!-- 🆕 GPS Location Section -->
+                        <div class="mb-4 p-3 rounded-3" style="background:#f0fdf4; border:1px dashed #198754;">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-success" style="font-size:0.85rem;">
+                                    <i class="fas fa-map-marker-alt me-1"></i> Your Current Location
+                                </span>
+                                <button type="button" class="btn btn-sm btn-success rounded-pill px-3"
+                                    onclick="refreshLocation()" style="font-size:0.75rem;">
+                                    <i class="fas fa-sync-alt me-1"></i> Refresh
+                                </button>
+                            </div>
+                            <div id="gpsStatus" class="gps-badge gps-detecting">
+                                <i class="fas fa-spinner fa-spin"></i> Detecting your location...
+                            </div>
+                        </div>
+
+                        <!-- 🆕 Hidden GPS fields -->
+                        <input type="hidden" id="ret_lat" name="ret_lat">
+                        <input type="hidden" id="ret_lng" name="ret_lng">
 
                         <div class="summary-box d-flex justify-content-between align-items-center">
                             <div>
@@ -218,9 +178,7 @@
 </div>
 
 <script>
-    function goBack() {
-        window.history.back();
-    }
+    function goBack() { window.history.back(); }
 
     // Live Total Calculation
     const pricePerKg = parseFloat("{{ product.price }}");
@@ -231,8 +189,6 @@
         const qty = parseFloat(this.value) || 0;
         const total = (qty * pricePerKg).toFixed(2);
         totalDisplay.innerText = total;
-
-        // Visual feedback if quantity exceeds stock
         const maxStock = parseInt("{{ product.quantity }}");
         if (qty > maxStock) {
             this.classList.add('is-invalid');
@@ -240,6 +196,43 @@
             this.classList.remove('is-invalid');
         }
     });
-</script>
 
+    // 🆕 GPS capture function
+    function captureLocation() {
+        const statusEl = document.getElementById('gpsStatus');
+        if(navigator.geolocation){
+            navigator.geolocation.getCurrentPosition(function(pos){
+                const lat = pos.coords.latitude;
+                const lng = pos.coords.longitude;
+
+                document.getElementById('ret_lat').value = lat;
+                document.getElementById('ret_lng').value = lng;
+
+                statusEl.className = 'gps-badge gps-success';
+                statusEl.innerHTML =
+                    '<i class="fas fa-circle-check"></i> Location detected — ' +
+                    lat.toFixed(4) + ', ' + lng.toFixed(4);
+            }, function(err){
+                statusEl.className = 'gps-badge gps-error';
+                statusEl.innerHTML =
+                    '<i class="fas fa-circle-xmark"></i> Location not available — driver will be assigned based on farmer location';
+            });
+        } else {
+            statusEl.className = 'gps-badge gps-error';
+            statusEl.innerHTML =
+                '<i class="fas fa-circle-xmark"></i> GPS not supported in this browser';
+        }
+    }
+
+    // 🆕 Refresh button
+    function refreshLocation() {
+        document.getElementById('gpsStatus').className = 'gps-badge gps-detecting';
+        document.getElementById('gpsStatus').innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Re-detecting location...';
+        captureLocation();
+    }
+
+    // Auto capture on page load
+    captureLocation();
+</script>
 {% endblock %}

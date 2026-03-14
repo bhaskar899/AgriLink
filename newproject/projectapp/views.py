@@ -1785,8 +1785,6 @@ from django.db import transaction
 
 def place_order(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-
-    # ✅ Retailer login check
     retailer_name = request.session.get('name')
     if not retailer_name or request.session.get('user_type') != 'retailer':
         messages.error(request, "Please login as Retailer to place an order.")
@@ -1795,7 +1793,6 @@ def place_order(request, product_id):
     retailer = get_object_or_404(Retailer, name=retailer_name)
 
     if request.method == "POST":
-        # ✅ Quantity validation
         try:
             quantity = int(request.POST.get('quantity', '1'))
             if quantity <= 0:
@@ -1805,7 +1802,6 @@ def place_order(request, product_id):
             messages.error(request, "Invalid quantity.")
             return redirect('place_order', product_id=product.id)
 
-        # ✅ Stock check
         if product.quantity < quantity:
             messages.error(request, "Insufficient stock available.")
             return redirect('place_order', product_id=product.id)
@@ -1817,17 +1813,23 @@ def place_order(request, product_id):
             messages.error(request, "Please provide address and contact.")
             return redirect('place_order', product_id=product.id)
 
-        # ✅ Price calculation
+        # 🆕 Retailer ची current location update कर
+        ret_lat = request.POST.get('ret_lat')
+        ret_lng = request.POST.get('ret_lng')
+        if ret_lat and ret_lng:
+            try:
+                retailer.latitude = float(ret_lat)
+                retailer.longitude = float(ret_lng)
+                retailer.save()
+            except:
+                pass
+
         unit_price = product.price
         total_amount = unit_price * quantity
-
         COMMISSION_RATE = 0.05
         calculated_profit = total_amount * (1 - COMMISSION_RATE)
 
-        # 🔥🔥 ATOMIC BLOCK (MOST IMPORTANT)
         with transaction.atomic():
-
-            # ✅ Create Order
             order = Order.objects.create(
                 product=product,
                 quantity=quantity,
@@ -1838,14 +1840,12 @@ def place_order(request, product_id):
                 status='Pending'
             )
 
-            # Order.objects.create ke baad add karo
             Notification.objects.create(
                 receiver_farmer=product.farmer,
                 sender_retailer=retailer,
                 message=f"New order placed for {product.product} x{quantity} by {retailer.name}!"
             )
 
-            # ✅ Create Sale
             Sale.objects.create(
                 product=product,
                 amount=total_amount,
@@ -1854,24 +1854,16 @@ def place_order(request, product_id):
                 status='Pending'
             )
 
-            # ✅ REDUCE STOCK
             product.quantity -= quantity
-
-            # ✅ AUTO DELETE WHEN STOCK 0
             if product.quantity <= 0:
                 product.delete()
             else:
                 product.save()
 
-        messages.success(
-            request,
-            f"Order placed successfully! Total amount: ₹{total_amount:.2f}"
-        )
-
+        messages.success(request, f"Order placed successfully! Total amount: ₹{total_amount:.2f}")
         return redirect('payment_page', order_id=order.id)
 
     return render(request, "place_order.html", {"product": product})
-
 
 # ================== API FOR LIVE UPDATES IN DASHBOARD ==================
 
