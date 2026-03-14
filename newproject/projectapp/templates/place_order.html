@@ -198,61 +198,96 @@
         this.classList.toggle('is-invalid', qty > maxStock);
     });
 
-    // Address blur → Geocoding
+    // 🆕 Smart Address Search — Pincode → City → Full address
+    function searchLocation(query, statusEl, callback) {
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+        .then(r => r.json())
+        .then(data => {
+            if(data && data.length > 0){
+                callback(parseFloat(data[0].lat), parseFloat(data[0].lon), data[0].display_name);
+            } else {
+                callback(null, null, null);
+            }
+        })
+        .catch(() => callback(null, null, null));
+    }
+
+    // Address blur → Smart Geocoding
     document.getElementById('addressField').addEventListener('blur', function(){
         const address = this.value.trim();
         if(!address || address.length < 5) return;
 
         const statusEl = document.getElementById('gpsStatus');
         statusEl.className = 'gps-badge gps-detecting';
-        statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Finding location from address...';
+        statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Finding location...';
 
-        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', India')}&limit=1`)
-        .then(r => r.json())
-        .then(data => {
-            if(data && data.length > 0){
-                const lat = parseFloat(data[0].lat);
-                const lng = parseFloat(data[0].lon);
-                const displayName = data[0].display_name;
+        // Step 1 — Pincode काढ
+        const pincodeMatch = address.match(/\b\d{6}\b/);
+        const pincode = pincodeMatch ? pincodeMatch[0] : null;
 
-                document.getElementById('ret_lat').value = lat;
-                document.getElementById('ret_lng').value = lng;
+        // Step 2 — City काढ (comma separated parts मधून)
+        const parts = address.split(',').map(p => p.trim()).filter(Boolean);
+        const cityPart = parts.length >= 2 ? parts.slice(-3).join(', ') : address;
 
-                statusEl.className = 'gps-badge gps-address';
-                statusEl.innerHTML =
-                    '<i class="fas fa-map-pin"></i> ' +
-                    displayName.split(',').slice(0,3).join(',') +
-                    ' (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ')';
-            } else {
-                statusEl.className = 'gps-badge gps-error';
-                statusEl.innerHTML =
-                    '<i class="fas fa-circle-xmark"></i> Address not found — click "Use My Location"';
-            }
-        })
-        .catch(() => {
+        function showSuccess(lat, lng, displayName) {
+            document.getElementById('ret_lat').value = lat;
+            document.getElementById('ret_lng').value = lng;
+            statusEl.className = 'gps-badge gps-address';
+            statusEl.innerHTML =
+                '<i class="fas fa-map-pin"></i> ' +
+                displayName.split(',').slice(0,3).join(',') +
+                ' (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ')';
+        }
+
+        function showError() {
             statusEl.className = 'gps-badge gps-error';
             statusEl.innerHTML =
-                '<i class="fas fa-circle-xmark"></i> Search failed — click "Use My Location"';
-        });
+                '<i class="fas fa-circle-xmark"></i> Location not found — click "Use My Location"';
+        }
+
+        // 🆕 Try 1: Pincode + India
+        if(pincode){
+            searchLocation(pincode + ', India', statusEl, function(lat, lng, name){
+                if(lat){
+                    showSuccess(lat, lng, name);
+                } else {
+                    // Try 2: City part
+                    searchLocation(cityPart + ', India', statusEl, function(lat2, lng2, name2){
+                        if(lat2) showSuccess(lat2, lng2, name2);
+                        else showError();
+                    });
+                }
+            });
+        } else {
+            // Try 2: City part directly
+            searchLocation(cityPart + ', India', statusEl, function(lat, lng, name){
+                if(lat){
+                    showSuccess(lat, lng, name);
+                } else {
+                    // Try 3: Full address
+                    searchLocation(address + ', India', statusEl, function(lat3, lng3, name3){
+                        if(lat3) showSuccess(lat3, lng3, name3);
+                        else showError();
+                    });
+                }
+            });
+        }
     });
 
-    // Address field fill + blur trigger
+    // Address field fill + geocoding trigger
     function fillAddress(address) {
         const field = document.getElementById('addressField');
         field.value = address;
         field.style.borderColor = '#198754';
         field.style.boxShadow = '0 0 0 0.25rem rgba(25,135,84,0.2)';
-
         setTimeout(() => {
             field.style.borderColor = '';
             field.style.boxShadow = '';
         }, 2000);
-
-        // Geocoding trigger
         field.dispatchEvent(new Event('blur'));
     }
 
-    // GPS → Coordinates + Reverse Geocoding → City pre-fill
+    // GPS → Exact coordinates + City name
     function captureGPS() {
         const statusEl = document.getElementById('gpsStatus');
         if(!navigator.geolocation){
@@ -265,25 +300,21 @@
             const lat = pos.coords.latitude;
             const lng = pos.coords.longitude;
 
-            // ✅ Exact GPS coordinates save — driver assignment साठी
+            // ✅ Exact GPS coordinates save
             document.getElementById('ret_lat').value = lat;
             document.getElementById('ret_lng').value = lng;
 
             statusEl.className = 'gps-badge gps-detecting';
             statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting area name...';
 
-            // Reverse Geocoding — फक्त City/Area काढ
             fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
             .then(r => r.json())
             .then(data => {
                 if(data && data.address){
                     const addr = data.address;
-
-                    // फक्त City + State + Pincode
                     const city = addr.city || addr.town || addr.village || addr.suburb || '';
                     const state = addr.state || '';
                     const pincode = addr.postcode || '';
-
                     const cityArea = [city, state, pincode].filter(Boolean).join(', ');
 
                     statusEl.className = 'gps-badge gps-success';
@@ -301,21 +332,20 @@
                 } else {
                     statusEl.className = 'gps-badge gps-success';
                     statusEl.innerHTML =
-                        '<i class="fas fa-circle-check"></i> GPS detected — ' +
+                        '<i class="fas fa-circle-check"></i> GPS — ' +
                         lat.toFixed(4) + ', ' + lng.toFixed(4);
                 }
             })
             .catch(() => {
                 statusEl.className = 'gps-badge gps-success';
                 statusEl.innerHTML =
-                    '<i class="fas fa-circle-check"></i> GPS detected — ' +
+                    '<i class="fas fa-circle-check"></i> GPS — ' +
                     lat.toFixed(4) + ', ' + lng.toFixed(4);
             });
 
         }, function(){
             statusEl.className = 'gps-badge gps-error';
-            statusEl.innerHTML =
-                '<i class="fas fa-circle-xmark"></i> Location not available';
+            statusEl.innerHTML = '<i class="fas fa-circle-xmark"></i> Location not available';
         });
     }
 
@@ -327,4 +357,7 @@
         captureGPS();
     }
 </script>
+
+
+
 {% endblock %}
