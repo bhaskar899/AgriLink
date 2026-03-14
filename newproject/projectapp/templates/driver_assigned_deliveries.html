@@ -12,117 +12,91 @@
     --delivery-warning: #f59e0b;
     --dark-slate: #0f172a;
 }
-
-body {
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    font-family: 'Plus Jakarta Sans', sans-serif;
-}
-
+body { background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); font-family: 'Plus Jakarta Sans', sans-serif; }
 .delivery-wrapper { margin-top: 110px; padding-bottom: 60px; }
-
-/* Back Button Styling */
-.back-btn-wrapper { margin-bottom: 25px; }
 .custom-back-btn {
-    border: none;
-    padding: 10px 22px;
-    border-radius: 15px;
-    background: white;
-    color: var(--dark-slate);
-    font-weight: 700;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    transition: 0.3s;
+    border: none; padding: 10px 22px; border-radius: 15px;
+    background: white; color: var(--dark-slate); font-weight: 700;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s;
 }
 .custom-back-btn:hover { background: var(--dark-slate); color: white; transform: translateX(-5px); }
-
-/* Task Card Design */
 .delivery-card {
-    background: white;
-    border-radius: 28px;
-    border: none;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.04);
-    transition: 0.3s;
-    overflow: hidden;
-    margin-bottom: 25px;
+    background: white; border-radius: 28px; border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.04); transition: 0.3s;
+    overflow: hidden; margin-bottom: 25px;
 }
-.delivery-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
-
-/* Status Bar */
+.delivery-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
 .status-bar {
-    padding: 12px 25px;
-    font-weight: 800;
-    font-size: 0.75rem;
-    letter-spacing: 1px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 12px 25px; font-weight: 800; font-size: 0.75rem;
+    letter-spacing: 1px; display: flex; justify-content: space-between; align-items: center;
 }
 .status-assigned { background: #fef3c7; color: #92400e; }
 .status-picked { background: #e0f2fe; color: #075985; }
 .status-delivered { background: #dcfce7; color: #166534; }
-
-/* Navigation Timeline */
-.nav-timeline {
-    position: relative;
-    padding-left: 35px;
-}
-.nav-step {
-    position: relative;
-    padding-bottom: 30px;
-}
+.nav-timeline { position: relative; padding-left: 35px; }
+.nav-step { position: relative; padding-bottom: 20px; }
 .nav-step::before {
-    content: '';
-    position: absolute;
-    left: -24px;
-    top: 5px;
-    width: 2px;
-    height: 100%;
-    background: #e2e8f0;
+    content: ''; position: absolute; left: -24px; top: 5px;
+    width: 2px; height: 100%; background: #e2e8f0;
 }
 .nav-step:last-child::before { display: none; }
-
 .nav-dot {
-    position: absolute;
-    left: -32px;
-    top: 0;
-    width: 18px;
-    height: 18px;
-    background: white;
-    border: 3px solid #cbd5e1;
-    border-radius: 50%;
+    position: absolute; left: -32px; top: 0;
+    width: 18px; height: 18px; background: white;
+    border: 3px solid #cbd5e1; border-radius: 50%;
 }
 .dot-pickup { border-color: var(--delivery-warning); }
 .dot-drop { border-color: var(--delivery-success); }
-
-/* Buttons */
 .btn-delivery-action {
-    border-radius: 18px;
-    padding: 15px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-size: 0.85rem;
-    width: 100%;
-    border: none;
-    transition: 0.3s;
+    border-radius: 18px; padding: 15px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;
+    width: 100%; border: none; transition: 0.3s;
 }
 .btn-pickup { background: var(--delivery-primary); color: white; }
 .btn-drop { background: var(--delivery-success); color: white; }
 .btn-pickup:hover, .btn-drop:hover { opacity: 0.9; transform: scale(1.02); }
-
 .maps-link {
-    font-size: 0.8rem;
-    color: var(--delivery-primary);
-    text-decoration: none;
-    font-weight: 600;
-    display: inline-block;
-    margin-top: 5px;
+    font-size: 0.8rem; color: var(--delivery-primary);
+    text-decoration: none; font-weight: 600; display: inline-block; margin-top: 5px;
+}
+
+/* 🆕 Contact Info Card */
+.contact-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    border-radius: 10px; padding: 6px 12px;
+    font-size: 0.78rem; font-weight: 700; color: #475569;
+    text-decoration: none; transition: 0.2s;
+    margin-top: 6px; margin-right: 4px;
+}
+.contact-chip:hover { background: #0ea5e9; color: white; border-color: #0ea5e9; }
+.contact-chip.call { color: #059669; border-color: #6ee7b7; background: #f0fdf4; }
+.contact-chip.call:hover { background: #059669; color: white; }
+.contact-chip.whatsapp { color: #16a34a; border-color: #86efac; background: #f0fdf4; }
+.contact-chip.whatsapp:hover { background: #16a34a; color: white; }
+
+/* 🆕 Info Row */
+.info-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; border-radius: 10px;
+    background: #f8fafc; margin-bottom: 6px;
+    font-size: 0.82rem;
+}
+.info-row i { width: 16px; text-align: center; }
+
+/* 🆕 Order amount badge */
+.amount-badge {
+    background: linear-gradient(135deg, #059669, #10b981);
+    color: white; border-radius: 12px; padding: 8px 16px;
+    font-weight: 800; font-size: 0.9rem; text-align: center;
+    margin-bottom: 16px;
 }
 </style>
 
 <div class="container delivery-wrapper">
     <div class="row align-items-center mb-4">
         <div class="col-md-6">
-            <div class="back-btn-wrapper">
+            <div class="mb-3">
                 <button class="custom-back-btn" onclick="window.history.back()">
                     <i class="fas fa-arrow-left me-2"></i>Dashboard
                 </button>
@@ -142,6 +116,8 @@ body {
         {% for d in deliveries %}
         <div class="col-lg-4 col-md-6">
             <div class="delivery-card">
+
+                <!-- Status Bar -->
                 <div class="status-bar
                     {% if d.status == 'assigned' %}status-assigned
                     {% elif d.status == 'picked' %}status-picked
@@ -151,33 +127,116 @@ body {
                 </div>
 
                 <div class="p-4">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div class="text-muted small">Quantity: <span class="text-dark fw-bold">{{ d.order.quantity }} kg</span></div>
-                        <div class="badge bg-light text-dark border">Order Ref: {{ d.id }}</div>
+
+                    <!-- 🆕 Amount + Quantity -->
+                    <div class="amount-badge">
+                        ₹ {{ d.order.total_amount|floatformat:2 }}
+                        <span style="font-size:0.75rem; opacity:0.85; margin-left:8px;">
+                            {{ d.order.quantity }} kg
+                        </span>
                     </div>
 
+                    <!-- Timeline -->
                     <div class="nav-timeline">
+
+                        <!-- Pickup — Farmer -->
                         <div class="nav-step">
                             <div class="nav-dot dot-pickup"></div>
-                            <small class="text-uppercase text-muted fw-bold" style="font-size: 0.6rem;">Pickup Point</small>
-                            <h6 class="fw-bold mb-1">{{ d.order.farmer.name }}</h6>
-                            <p class="text-muted small mb-1"><i class="fas fa-map-marker-alt me-1 text-danger"></i> {{ d.order.farmer.address }}</p>
-                            <a href="https://www.google.com/maps/search/?api=1&query={{ d.order.farmer.address|urlencode }}" target="_blank" class="maps-link">
-                                <i class="fas fa-directions me-1"></i> Start Pickup Navigation
+                            <small class="text-uppercase text-muted fw-bold" style="font-size:0.6rem;">
+                                📦 Pickup Point
+                            </small>
+                            <h6 class="fw-bold mb-1 mt-1">{{ d.order.farmer.name }}</h6>
+
+                            <div class="info-row">
+                                <i class="fas fa-map-marker-alt text-danger"></i>
+                                <span class="text-muted">{{ d.order.farmer.address }}</span>
+                            </div>
+
+                            <div class="info-row">
+                                <i class="fas fa-phone text-success"></i>
+                                <span class="fw-bold text-dark">{{ d.order.farmer.contact }}</span>
+                            </div>
+
+                            <!-- Farmer contact chips -->
+                            <a href="tel:{{ d.order.farmer.contact }}" class="contact-chip call">
+                                <i class="fas fa-phone"></i> Call Farmer
+                            </a>
+                            <a href="https://wa.me/91{{ d.order.farmer.contact }}" target="_blank" class="contact-chip whatsapp">
+                                <i class="fab fa-whatsapp"></i> WhatsApp
+                            </a>
+
+                            <br>
+                            <a href="https://www.google.com/maps/search/?api=1&query={{ d.order.farmer.address|urlencode }}"
+                                target="_blank" class="maps-link mt-2">
+                                <i class="fas fa-directions me-1"></i> Pickup Navigation
                             </a>
                         </div>
 
+                        <!-- Delivery — Retailer -->
                         <div class="nav-step">
                             <div class="nav-dot dot-drop"></div>
-                            <small class="text-uppercase text-muted fw-bold" style="font-size: 0.6rem;">Delivery Point</small>
-                            <h6 class="fw-bold mb-1">{{ d.order.retailer.name }}</h6>
-                            <p class="text-muted small mb-1"><i class="fas fa-map-marker-alt me-1 text-success"></i> {{ d.order.retailer.address }}</p>
-                            <a href="https://www.google.com/maps/search/?api=1&query={{ d.order.retailer.address|urlencode }}" target="_blank" class="maps-link text-success">
-                                <i class="fas fa-location-arrow me-1"></i> Start Delivery Navigation
+                            <small class="text-uppercase text-muted fw-bold" style="font-size:0.6rem;">
+                                🏪 Delivery Point
+                            </small>
+                            <h6 class="fw-bold mb-1 mt-1">{{ d.order.retailer.name }}</h6>
+
+                            <div class="info-row">
+                                <i class="fas fa-map-marker-alt text-success"></i>
+                                <span class="text-muted">{{ d.order.retailer.address }}</span>
+                            </div>
+
+                            <!-- 🆕 Retailer Mobile -->
+                            <div class="info-row">
+                                <i class="fas fa-phone text-success"></i>
+                                <span class="fw-bold text-dark">{{ d.order.retailer.contact }}</span>
+                            </div>
+
+                            <!-- 🆕 Retailer Shop Info -->
+                            <div class="info-row">
+                                <i class="fas fa-store text-primary"></i>
+                                <span class="text-muted">{{ d.order.retailer.shop_number }}</span>
+                            </div>
+
+                            {% if d.order.retailer.city %}
+                            <div class="info-row">
+                                <i class="fas fa-city text-info"></i>
+                                <span class="text-muted">
+                                    {{ d.order.retailer.city }}
+                                    {% if d.order.retailer.pincode %}
+                                        — {{ d.order.retailer.pincode }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            {% endif %}
+
+                            <!-- Retailer contact chips -->
+                            <a href="tel:{{ d.order.retailer.contact }}" class="contact-chip call">
+                                <i class="fas fa-phone"></i> Call Retailer
+                            </a>
+                            <a href="https://wa.me/91{{ d.order.retailer.contact }}" target="_blank" class="contact-chip whatsapp">
+                                <i class="fab fa-whatsapp"></i> WhatsApp
+                            </a>
+
+                            <br>
+                            <a href="https://www.google.com/maps/search/?api=1&query={{ d.order.retailer.address|urlencode }}+{{ d.order.retailer.city|urlencode }}"
+                                target="_blank" class="maps-link text-success mt-2">
+                                <i class="fas fa-location-arrow me-1"></i> Delivery Navigation
                             </a>
                         </div>
                     </div>
 
+                    <!-- 🆕 Order Contact (Delivery address contact) -->
+                    {% if d.order.contact %}
+                    <div class="info-row mb-3">
+                        <i class="fas fa-phone-volume text-warning"></i>
+                        <span class="text-muted small">Order Contact:</span>
+                        <a href="tel:{{ d.order.contact }}" class="fw-bold text-dark" style="text-decoration:none;">
+                            {{ d.order.contact }}
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- Action Buttons -->
                     <div class="mt-2">
                         {% if d.status == "assigned" %}
                         <form method="post" action="{% url 'driver_mark_picked' d.id %}">
@@ -196,11 +255,14 @@ body {
                         </form>
 
                         {% else %}
-                        <div class="text-center p-3 rounded-4 bg-light border border-success border-dashed">
-                            <span class="text-success fw-bold"><i class="fas fa-check-circle me-2"></i>Shipment Completed</span>
+                        <div class="text-center p-3 rounded-4 bg-light">
+                            <span class="text-success fw-bold">
+                                <i class="fas fa-check-circle me-2"></i>Shipment Completed
+                            </span>
                         </div>
                         {% endif %}
                     </div>
+
                 </div>
             </div>
         </div>
@@ -215,5 +277,4 @@ body {
         {% endfor %}
     </div>
 </div>
-
 {% endblock %}

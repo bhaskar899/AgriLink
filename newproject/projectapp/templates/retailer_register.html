@@ -363,6 +363,18 @@
           </div>
         </div>
 
+        <!-- 🆕 GPS hidden fields -->
+<input type="hidden" id="ret_latitude" name="latitude">
+<input type="hidden" id="ret_longitude" name="longitude">
+
+<!-- GPS Status -->
+<div id="gpsStatus" style="font-size:0.8rem; font-weight:700; margin-top:10px; padding:8px 14px; border-radius:10px; background:#fef3c7; color:#92400e; display:inline-flex; align-items:center; gap:6px;">
+    <i class="fas fa-spinner fa-spin"></i> Detecting your location...
+</div>
+
+<button type="submit" class="reg-submit" id="regBtn">
+    <i class="fas fa-store"></i> Register Business
+</button>
         <button type="submit" class="reg-submit" id="regBtn">
           <i class="fas fa-store"></i> Register Business
         </button>
@@ -477,5 +489,24 @@
       status.innerText = "❌ Scanning error. Try JPG/PNG.";
     }
   };
+  // 🆕 GPS auto-capture
+if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(function(pos){
+        document.getElementById("ret_latitude").value = pos.coords.latitude;
+        document.getElementById("ret_longitude").value = pos.coords.longitude;
+        document.getElementById("gpsStatus").style.background = "#d1fae5";
+        document.getElementById("gpsStatus").style.color = "#065f46";
+        document.getElementById("gpsStatus").innerHTML =
+            '<i class="fas fa-circle-check"></i> Location detected!';
+    }, function(err){
+        document.getElementById("gpsStatus").style.background = "#fee2e2";
+        document.getElementById("gpsStatus").style.color = "#991b1b";
+        document.getElementById("gpsStatus").innerHTML =
+            '<i class="fas fa-circle-xmark"></i> Location not available';
+    });
+} else {
+    document.getElementById("gpsStatus").innerHTML =
+        '<i class="fas fa-circle-xmark"></i> GPS not supported';
+}
 </script>
 {% endblock %}

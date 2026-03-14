@@ -120,31 +120,31 @@ def retailer_register(request):
         password = request.POST.get('password')
         contact = request.POST.get('contact')
         address = request.POST.get('address')
-        gender = request.POST.get('gender')
-        # Added missing fields from HTML template
+        gender = request.POST.get('gender', '')
         shop_number = request.POST.get('shop_number')
         gst_number = request.POST.get('gst_number')
+        latitude = request.POST.get('latitude')   # 🆕
+        longitude = request.POST.get('longitude') # 🆕
 
-        # 1) check if email already used
         if Retailer.objects.filter(email=email).exists():
             messages.error(request, "Email already registered")
             return redirect('retailer_register')
 
-
-        retailer = Retailer.objects.create(
+        Retailer.objects.create(
             name=name,
             email=email,
             password=password,
             contact=contact,
             address=address,
             gender=gender,
-            shop_number=shop_number,  # Add these
-            gst_number=gst_number,  # Add these
-            email_verified=False,  # Keep this False until OTP is confirmed
-            email_otp=None  # OTP should be handled by AJAX, not here
+            shop_number=shop_number,
+            gst_number=gst_number,
+            email_verified=False,
+            email_otp=None,
+            latitude=float(latitude) if latitude else None,   # 🆕
+            longitude=float(longitude) if longitude else None, # 🆕
         )
 
-        # 3) registration successful, send to login
         messages.success(request, "Registration successful. Please log in.")
         return redirect("retailer_login")
 
@@ -2370,7 +2370,7 @@ WAITING_HOURS = 4  # 🔧 हे तू बदलू शकतोस
 # ----------------------------------------
 # 5. मुख्य function — area-wise drivers
 # ----------------------------------------
-def get_nearby_drivers(source_lat, source_lng, max_km=500):
+def get_nearby_drivers(source_lat, source_lng, retailer_lat=None, retailer_lng=None, max_km=500):
     from django.db.models import Count
 
     busy_driver_ids = Delivery.objects.filter(
@@ -2397,12 +2397,8 @@ def get_nearby_drivers(source_lat, source_lng, max_km=500):
         return result, [], [], [], [], []
 
     groups = {
-        '50': [],
-        '100': [],
-        '200': [],
-        '300': [],
-        '400': [],
-        '500': [],
+        '50': [], '100': [], '200': [],
+        '300': [], '400': [], '500': [],
     }
 
     for driver in all_drivers:
@@ -2412,25 +2408,41 @@ def get_nearby_drivers(source_lat, source_lng, max_km=500):
         if not driver_lat or not driver_lng:
             continue
 
-        dist = round(haversine_distance(
+        # Farmer → Driver distance
+        farmer_dist = round(haversine_distance(
             source_lat, source_lng,
             driver_lat, driver_lng
         ), 1)
 
-        eligible, active, max_ord = is_driver_eligible(driver, dist)
+        # 🆕 Retailer → Driver distance (असेल तर)
+        if retailer_lat and retailer_lng:
+            retailer_dist = round(haversine_distance(
+                retailer_lat, retailer_lng,
+                driver_lat, driver_lng
+            ), 1)
+            # Total score — कमी score = best driver
+            total_score = farmer_dist + retailer_dist
+        else:
+            retailer_dist = 0
+            total_score = farmer_dist
+
+        # Eligibility farmer distance वर check करतो
+        eligible, active, max_ord = is_driver_eligible(driver, farmer_dist)
 
         if not eligible:
             continue
 
-        entry = (dist, driver, active, max_ord)
+        # 🆕 entry मध्ये total_score पण add केला
+        entry = (total_score, farmer_dist, retailer_dist, driver, active, max_ord)
 
-        if dist <= 50:        groups['50'].append(entry)
-        elif dist <= 100:     groups['100'].append(entry)
-        elif dist <= 200:     groups['200'].append(entry)
-        elif dist <= 300:     groups['300'].append(entry)
-        elif dist <= 400:     groups['400'].append(entry)
-        elif dist <= 500:     groups['500'].append(entry)
+        if farmer_dist <= 50:        groups['50'].append(entry)
+        elif farmer_dist <= 100:     groups['100'].append(entry)
+        elif farmer_dist <= 200:     groups['200'].append(entry)
+        elif farmer_dist <= 300:     groups['300'].append(entry)
+        elif farmer_dist <= 400:     groups['400'].append(entry)
+        elif farmer_dist <= 500:     groups['500'].append(entry)
 
+    # Score नुसार sort — कमी score आधी
     for key in groups:
         groups[key].sort(key=lambda x: x[0])
 
@@ -2438,19 +2450,24 @@ def get_nearby_drivers(source_lat, source_lng, max_km=500):
         groups['50'], groups['100'], groups['200'],
         groups['300'], groups['400'], groups['500'],
     )
-
 # ----------------------------------------
 # 6. update_status view
 # ----------------------------------------
 def update_status(request, order_id):
     order = get_object_or_404(Order, id=order_id)
 
-    # 🆕 Product ची location वापर — Farmer ची नाही
     product = order.product
     source_lat = getattr(product, 'latitude', None) or getattr(order.farmer, 'latitude', None)
     source_lng = getattr(product, 'longitude', None) or getattr(order.farmer, 'longitude', None)
 
-    d50, d100, d200, d300, d400, d500 = get_nearby_drivers(source_lat, source_lng)
+    # 🆕 Retailer ची location
+    retailer_lat = getattr(order.retailer, 'latitude', None)
+    retailer_lng = getattr(order.retailer, 'longitude', None)
+
+    d50, d100, d200, d300, d400, d500 = get_nearby_drivers(
+        source_lat, source_lng,
+        retailer_lat, retailer_lng  # 🆕
+    )
 
     if request.method == "POST":
         new_status = request.POST.get("status")
@@ -2467,7 +2484,6 @@ def update_status(request, order_id):
         if driver_id:
             driver = get_object_or_404(Driver, id=driver_id)
 
-            # Distance काढ
             driver_lat = getattr(driver, 'latitude', None)
             driver_lng = getattr(driver, 'longitude', None)
 
@@ -2478,10 +2494,8 @@ def update_status(request, order_id):
             eligible, active, max_ord = is_driver_eligible(driver, dist)
 
             if not eligible:
-                messages.error(
-                    request,
-                    f"⚠️ Driver {driver.name} already has {active}/{max_ord} active orders!"
-                )
+                messages.error(request,
+                    f"⚠️ Driver {driver.name} already has {active}/{max_ord} active orders!")
                 return render(request, "update_status.html", {
                     "order": order,
                     "d50": d50, "d100": d100, "d200": d200,
@@ -2500,15 +2514,12 @@ def update_status(request, order_id):
                 existing.save()
             else:
                 Delivery.objects.create(
-                    order=order,
-                    driver=driver,
-                    status="assigned",
-                    assigned_at=timezone.now()
+                    order=order, driver=driver,
+                    status="assigned", assigned_at=timezone.now()
                 )
 
-            # 🆕 Distance नुसार deadline set कर
             def get_waiting_minutes(d):
-                if d <= 50:   return 120
+                if d <= 50:    return 120
                 elif d <= 100: return 90
                 elif d <= 200: return 60
                 elif d <= 300: return 45
@@ -2521,7 +2532,6 @@ def update_status(request, order_id):
             if not driver.waiting_deadline or new_deadline > driver.waiting_deadline:
                 driver.waiting_deadline = new_deadline
 
-            # 50km — 5 orders भरले तर reset
             if dist <= 50:
                 active_now = Delivery.objects.filter(
                     driver=driver,
@@ -2544,15 +2554,10 @@ def update_status(request, order_id):
 
     return render(request, "update_status.html", {
         "order": order,
-        "d50": d50,
-        "d100": d100,
-        "d200": d200,
-        "d300": d300,
-        "d400": d400,
-        "d500": d500,
+        "d50": d50, "d100": d100, "d200": d200,
+        "d300": d300, "d400": d400, "d500": d500,
         "waiting_hours": WAITING_HOURS,
     })
-
 
 from django.utils import timezone
 from .models import Delivery, Driver

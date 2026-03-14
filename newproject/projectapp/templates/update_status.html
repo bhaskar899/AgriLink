@@ -1,210 +1,59 @@
-{% extends 'master.html' %}
-{% block title %}Update Status | AgriLink{% endblock %}
-{% block body %}
+{% if drivers_50 %}
+    <optgroup label="✅ Within 50 km (max 5 orders)">
+        {% for score, f_dist, r_dist, d, active, max_ord in d50 %}
+            <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
+                🚚 {{ d.name }} ({{ d.vehicle_type }}) — F:{{ f_dist }}km R:{{ r_dist }}km | Score:{{ score }} | {{ active }}/{{ max_ord }}
+            </option>
+        {% endfor %}
+    </optgroup>
+{% endif %}
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+{% if d100 %}
+    <optgroup label="⚠️ 50-100 km (max 2 orders)">
+        {% for score, f_dist, r_dist, d, active, max_ord in d100 %}
+            <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
+                🚚 {{ d.name }} ({{ d.vehicle_type }}) — F:{{ f_dist }}km R:{{ r_dist }}km | Score:{{ score }} | {{ active }}/{{ max_ord }}
+            </option>
+        {% endfor %}
+    </optgroup>
+{% endif %}
 
-<style>
-    :root { --primary-green: #198754; --dark-green: #16423C; }
-    body { background: linear-gradient(135deg, #f0f9f4 0%, #e6f0eb 100%); font-family: 'Plus Jakarta Sans', sans-serif; }
-    .main-wrapper { margin-top: 110px; padding-bottom: 80px; }
-    .update-card {
-        background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);
-        border-radius: 30px; border: 1px solid rgba(255,255,255,0.7);
-        padding: 40px; box-shadow: 0 20px 50px rgba(0,0,0,0.05);
-    }
-    .form-label { font-weight: 700; color: var(--dark-green); font-size: 0.9rem; margin-bottom: 8px; }
-    .form-control, .form-select {
-        border-radius: 15px; padding: 12px 20px; border: 1px solid #d1e7dd; background: #f8faf9;
-    }
-    .location-badge {
-        background: #e8f5e9; border-radius: 15px; padding: 20px; border: 1px dashed var(--primary-green);
-    }
-    .btn-update {
-        background: var(--primary-green); color: white; border-radius: 15px;
-        padding: 15px 40px; font-weight: 800; transition: 0.3s; border: none;
-    }
-    .btn-update:hover { background: var(--dark-green); transform: translateY(-3px); }
-    .area-badge {
-        border-radius: 12px; padding: 12px 16px;
-        font-size: 0.85rem; font-weight: 700;
-        display: flex; align-items: center; gap: 8px;
-        margin-bottom: 10px;
-    }
-    .area-50 { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
-    .area-100 { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
-    .area-none { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-</style>
+{% if d200 %}
+    <optgroup label="📍 100-200 km (max 1 order)">
+        {% for score, f_dist, r_dist, d, active, max_ord in d200 %}
+            <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
+                🚚 {{ d.name }} — F:{{ f_dist }}km R:{{ r_dist }}km | Score:{{ score }} | {{ active }}/{{ max_ord }}
+            </option>
+        {% endfor %}
+    </optgroup>
+{% endif %}
 
-<div class="container main-wrapper">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="update-card">
-                <div class="text-center mb-5">
-                    <div class="bg-success d-inline-block p-3 rounded-circle mb-3 text-white">
-                        <i class="fas fa-truck-loading fa-2x"></i>
-                    </div>
-                    <h3 class="fw-800" style="color: var(--dark-green);">Update Order Journey</h3>
-                    <p class="text-muted">Modify status and assign logistics for Order #{{ order.id }}</p>
-                </div>
+{% if d300 %}
+    <optgroup label="📍 200-300 km (max 1 order)">
+        {% for score, f_dist, r_dist, d, active, max_ord in d300 %}
+            <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
+                🚚 {{ d.name }} — F:{{ f_dist }}km R:{{ r_dist }}km | Score:{{ score }} | {{ active }}/{{ max_ord }}
+            </option>
+        {% endfor %}
+    </optgroup>
+{% endif %}
 
-                {% if messages %}
-                    {% for msg in messages %}
-                        <div class="alert alert-{{ msg.tags }} rounded-4 mb-4">{{ msg }}</div>
-                    {% endfor %}
-                {% endif %}
+{% if d400 %}
+    <optgroup label="📍 300-400 km (max 1 order)">
+        {% for score, f_dist, r_dist, d, active, max_ord in d400 %}
+            <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
+                🚚 {{ d.name }} — F:{{ f_dist }}km R:{{ r_dist }}km | Score:{{ score }} | {{ active }}/{{ max_ord }}
+            </option>
+        {% endfor %}
+    </optgroup>
+{% endif %}
 
-                <form method="POST">
-                    {% csrf_token %}
-
-                    <div class="row g-3">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Product Name</label>
-                            <input type="text" class="form-control" value="{{ order.product.product }}" readonly>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Current Status</label>
-                            <select class="form-select fw-bold text-success" name="status" required>
-                                {% for s, label in order.STATUS_CHOICES %}
-                                    <option value="{{ s }}" {% if order.status == s %}selected{% endif %}>{{ label }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Driver Section -->
-<!-- Driver Section -->
-<div class="mb-4">
-    <label class="form-label">Assign Delivery Partner</label>
-
-    {% if d50 %}
-        <div class="area-badge area-50">
-            <i class="fas fa-circle-check"></i>
-            {{ d50|length }} driver(s) within 50 km
-            — wait max {{ waiting_hours }} hrs for 5 orders
-        </div>
-    {% elif d100 %}
-        <div class="area-badge area-100">
-            <i class="fas fa-triangle-exclamation"></i>
-            No 50km drivers — {{ d100|length }} within 100 km (max 2 orders)
-        </div>
-    {% elif d200 or d300 or d400 or d500 %}
-        <div class="area-badge area-100">
-            <i class="fas fa-triangle-exclamation"></i>
-            Long distance drivers available (max 1 order each)
-        </div>
-    {% else %}
-        <div class="area-badge area-none">
-            <i class="fas fa-circle-xmark"></i>
-            No available drivers in 500 km range
-        </div>
-    {% endif %}
-
-    <select class="form-select" name="driver">
-        <option value="">-- No Driver Assigned --</option>
-
-        {% if d50 %}
-            <optgroup label="✅ Within 50 km (max 5 orders)">
-                {% for dist, d, active, max_ord in d50 %}
-                    <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
-                        🚚 {{ d.name }} ({{ d.vehicle_type }}) — {{ dist }} km | {{ active }}/{{ max_ord }} orders
-                    </option>
-                {% endfor %}
-            </optgroup>
-        {% endif %}
-
-        {% if d100 %}
-            <optgroup label="⚠️ 50–100 km (max 2 orders)">
-                {% for dist, d, active, max_ord in d100 %}
-                    <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
-                        🚚 {{ d.name }} ({{ d.vehicle_type }}) — {{ dist }} km | {{ active }}/{{ max_ord }} orders
-                    </option>
-                {% endfor %}
-            </optgroup>
-        {% endif %}
-
-        {% if d200 %}
-            <optgroup label="📍 100–200 km (max 1 order)">
-                {% for dist, d, active, max_ord in d200 %}
-                    <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
-                        🚚 {{ d.name }} ({{ d.vehicle_type }}) — {{ dist }} km | {{ active }}/{{ max_ord }} orders
-                    </option>
-                {% endfor %}
-            </optgroup>
-        {% endif %}
-
-        {% if d300 %}
-            <optgroup label="📍 200–300 km (max 1 order)">
-                {% for dist, d, active, max_ord in d300 %}
-                    <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
-                        🚚 {{ d.name }} ({{ d.vehicle_type }}) — {{ dist }} km | {{ active }}/{{ max_ord }} orders
-                    </option>
-                {% endfor %}
-            </optgroup>
-        {% endif %}
-
-        {% if d400 %}
-            <optgroup label="📍 300–400 km (max 1 order)">
-                {% for dist, d, active, max_ord in d400 %}
-                    <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
-                        🚚 {{ d.name }} ({{ d.vehicle_type }}) — {{ dist }} km | {{ active }}/{{ max_ord }} orders
-                    </option>
-                {% endfor %}
-            </optgroup>
-        {% endif %}
-
-        {% if d500 %}
-            <optgroup label="📍 400–500 km (max 1 order)">
-                {% for dist, d, active, max_ord in d500 %}
-                    <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
-                        🚚 {{ d.name }} ({{ d.vehicle_type }}) — {{ dist }} km | {{ active }}/{{ max_ord }} orders
-                    </option>
-                {% endfor %}
-            </optgroup>
-        {% endif %}
-
-    </select>
-</div>
-                    <!-- GPS Location -->
-                    <div class="location-badge mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <span class="fw-bold text-success">
-                                <i class="fas fa-map-marker-alt me-2"></i>Live Coordinates
-                            </span>
-                            <button type="button" class="btn btn-sm btn-success rounded-pill px-3" onclick="getLocation()">
-                                Get Current GPS
-                            </button>
-                        </div>
-                        <div class="row g-2">
-                            <div class="col-6">
-                                <input type="text" class="form-control bg-white" id="lat" name="current_lat"
-                                    value="{{ order.current_lat }}" placeholder="Latitude" readonly>
-                            </div>
-                            <div class="col-6">
-                                <input type="text" class="form-control bg-white" id="lng" name="current_lng"
-                                    value="{{ order.current_lng }}" placeholder="Longitude" readonly>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="d-flex gap-3 mt-4">
-                        <button type="submit" class="btn btn-update flex-grow-1">Update Shipment</button>
-                        <a href="javascript:history.back()" class="btn btn-light rounded-pill px-4 border fw-bold">Cancel</a>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-function getLocation(){
-    if(navigator.geolocation){
-        navigator.geolocation.getCurrentPosition(pos=>{
-            document.getElementById("lat").value = pos.coords.latitude.toFixed(6);
-            document.getElementById("lng").value = pos.coords.longitude.toFixed(6);
-        });
-    }
-}
-</script>
-{% endblock %}
+{% if d500 %}
+    <optgroup label="📍 400-500 km (max 1 order)">
+        {% for score, f_dist, r_dist, d, active, max_ord in d500 %}
+            <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
+                🚚 {{ d.name }} — F:{{ f_dist }}km R:{{ r_dist }}km | Score:{{ score }} | {{ active }}/{{ max_ord }}
+            </option>
+        {% endfor %}
+    </optgroup>
+{% endif %}

@@ -39,24 +39,22 @@ class Retailer(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField(unique=True)
     password = models.CharField(max_length=128)
-
     contact = models.CharField(max_length=15)
     address = models.TextField()
-
     city = models.CharField(max_length=50, blank=True, null=True)
     pincode = models.CharField(max_length=6, blank=True, null=True)
-
     gender = models.CharField(max_length=10)
-
-    shop_number = models.CharField(max_length=50)   # ✔ New field
-    gst_number = models.CharField(max_length=15)    # ✔ New field
-
+    shop_number = models.CharField(max_length=50)
+    gst_number = models.CharField(max_length=15)
     first_login = models.BooleanField(default=True)
     profile_image = models.ImageField(upload_to='profiles/', default='profiles/default.jpg')
-
     email_verified = models.BooleanField(default=False)
     email_otp = models.CharField(max_length=6, blank=True, null=True)
+    latitude = models.FloatField(null=True, blank=True)   # 🆕
+    longitude = models.FloatField(null=True, blank=True)  # 🆕
 
+    def __str__(self):
+        return self.name
 
 def __str__(self):
         return self.name
