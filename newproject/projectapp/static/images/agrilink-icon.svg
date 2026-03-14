@@ -1,0 +1,73 @@
+<svg width="512" height="512" viewBox="0 0 680 680" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background rounded square -->
+  <rect x="90" y="90" width="500" height="500" rx="110" fill="#1a5c2e"/>
+  <rect x="110" y="110" width="460" height="460" rx="96" fill="none" stroke="#2e7d32" stroke-width="2"/>
+
+  <!-- SUN -->
+  <circle cx="340" cy="178" r="34" fill="#fdd835"/>
+  <line x1="340" y1="132" x2="340" y2="122" stroke="#fdd835" stroke-width="4" stroke-linecap="round"/>
+  <line x1="340" y1="224" x2="340" y2="234" stroke="#fdd835" stroke-width="4" stroke-linecap="round"/>
+  <line x1="294" y1="178" x2="284" y2="178" stroke="#fdd835" stroke-width="4" stroke-linecap="round"/>
+  <line x1="386" y1="178" x2="396" y2="178" stroke="#fdd835" stroke-width="4" stroke-linecap="round"/>
+  <line x1="307" y1="145" x2="300" y2="138" stroke="#fdd835" stroke-width="4" stroke-linecap="round"/>
+  <line x1="373" y1="211" x2="380" y2="218" stroke="#fdd835" stroke-width="4" stroke-linecap="round"/>
+  <line x1="373" y1="145" x2="380" y2="138" stroke="#fdd835" stroke-width="4" stroke-linecap="round"/>
+  <line x1="307" y1="211" x2="300" y2="218" stroke="#fdd835" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Farmer circle -->
+  <circle cx="185" cy="370" r="62" fill="#2e7d32" stroke="#66bb6a" stroke-width="3"/>
+  <rect x="163" y="348" width="44" height="8" rx="4" fill="#a5d6a7"/>
+  <rect x="170" y="338" width="30" height="14" rx="7" fill="#81c784"/>
+  <circle cx="185" cy="332" r="12" fill="#c8e6c9"/>
+  <path d="M165 380 Q185 368 205 380 L205 396 Q185 390 165 396 Z" fill="#4caf50"/>
+  <line x1="207" y1="375" x2="220" y2="355" stroke="#a5d6a7" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="220" cy="350" rx="5" ry="9" fill="#c8e6c9"/>
+  <text x="185" y="422" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="13" fill="#a5d6a7">Farmer</text>
+
+  <!-- Retailer circle -->
+  <circle cx="495" cy="370" r="62" fill="#1565c0" stroke="#42a5f5" stroke-width="3"/>
+  <rect x="472" y="352" width="46" height="30" rx="4" fill="#1976d2"/>
+  <rect x="468" y="348" width="54" height="8" rx="3" fill="#42a5f5"/>
+  <rect x="480" y="362" width="12" height="20" rx="2" fill="#90caf9"/>
+  <rect x="498" y="362" width="12" height="12" rx="2" fill="#90caf9"/>
+  <line x1="470" y1="348" x2="470" y2="342" stroke="#42a5f5" stroke-width="2"/>
+  <line x1="480" y1="348" x2="480" y2="342" stroke="#42a5f5" stroke-width="2"/>
+  <line x1="490" y1="348" x2="490" y2="342" stroke="#42a5f5" stroke-width="2"/>
+  <line x1="500" y1="348" x2="500" y2="342" stroke="#42a5f5" stroke-width="2"/>
+  <line x1="510" y1="348" x2="510" y2="342" stroke="#42a5f5" stroke-width="2"/>
+  <text x="495" y="422" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="13" fill="#90caf9">Retailer</text>
+
+  <!-- Driver circle -->
+  <circle cx="340" cy="505" r="62" fill="#e65100" stroke="#ff8a65" stroke-width="3"/>
+  <rect x="308" y="486" width="48" height="26" rx="4" fill="#ef6c00"/>
+  <rect x="356" y="492" width="22" height="20" rx="3" fill="#ff8a65"/>
+  <rect x="358" y="494" width="18" height="12" rx="2" fill="#fff3e0"/>
+  <circle cx="320" cy="514" r="7" fill="#bf360c"/>
+  <circle cx="320" cy="514" r="3" fill="#ff8a65"/>
+  <circle cx="352" cy="514" r="7" fill="#bf360c"/>
+  <circle cx="352" cy="514" r="3" fill="#ff8a65"/>
+  <rect x="313" y="489" width="18" height="12" rx="2" fill="#fff3e0"/>
+  <text x="340" y="567" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="13" fill="#ffccbc">Driver</text>
+
+  <!-- Connection lines -->
+  <path d="M240 340 Q285 300 320 295" fill="none" stroke="#66bb6a" stroke-width="2.5" stroke-dasharray="6 4"/>
+  <path d="M440 340 Q395 300 360 295" fill="none" stroke="#42a5f5" stroke-width="2.5" stroke-dasharray="6 4"/>
+  <path d="M340 442 L340 330" fill="none" stroke="#ff8a65" stroke-width="2.5" stroke-dasharray="6 4"/>
+  <path d="M215 418 Q230 460 278 470" fill="none" stroke="#a5d6a7" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6"/>
+  <path d="M465 418 Q450 460 402 470" fill="none" stroke="#90caf9" stroke-width="1.5" stroke-dasharray="4 4" opacity="0.6"/>
+
+  <!-- Center hub -->
+  <circle cx="340" cy="300" r="36" fill="#fdd835"/>
+  <path d="M328 308 Q328 288 348 288 Q348 308 328 308 Z" fill="#1a5c2e"/>
+  <path d="M352 308 Q352 288 332 288 Q332 308 352 308 Z" fill="#2e7d32"/>
+  <line x1="340" y1="308" x2="340" y2="318" stroke="#1a5c2e" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Dots -->
+  <circle cx="272" cy="316" r="5" fill="#fdd835"/>
+  <circle cx="408" cy="316" r="5" fill="#fdd835"/>
+  <circle cx="340" cy="386" r="5" fill="#fdd835"/>
+
+  <!-- Brand name -->
+  <text x="340" y="618" text-anchor="middle" font-family="sans-serif" font-weight="800" font-size="40" fill="white" letter-spacing="3">AgriLink</text>
+  <text x="340" y="643" text-anchor="middle" font-family="sans-serif" font-weight="400" font-size="15" fill="#a5d6a7" letter-spacing="2">Farm · Drive · Deliver</text>
+</svg>
