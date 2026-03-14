@@ -344,22 +344,23 @@
 
           {% for n in notifications %}
 
-          {% comment %}Determine notification type{% endcomment %}
-          {% if 'earning' in n.message|lower or 'credited' in n.message|lower %}
-            {% with ntype="earning" %}
-          {% elif 'delivered' in n.message|lower or 'picked' in n.message|lower %}
-            {% with ntype="delivery" %}
-          {% elif 'pay' in n.message|lower or 'payment' in n.message|lower %}
-            {% with ntype="payment" %}
-          {% elif 'order' in n.message|lower %}
-            {% with ntype="order" %}
-          {% elif 'sample' in n.message|lower %}
-            {% with ntype="sample" %}
-          {% elif 'approve' in n.message|lower or 'accept' in n.message|lower %}
-            {% with ntype="approve" %}
-          {% else %}
-            {% with ntype="default" %}
-          {% endif %}
+{% comment %}Determine notification type{% endcomment %}
+
+{% with ntype="default" %}
+
+{% if 'earning' in n.message|lower or 'credited' in n.message|lower %}
+    {% with ntype="earning" %}
+{% elif 'delivered' in n.message|lower or 'picked' in n.message|lower %}
+    {% with ntype="delivery" %}
+{% elif 'pay' in n.message|lower or 'payment' in n.message|lower %}
+    {% with ntype="payment" %}
+{% elif 'order' in n.message|lower %}
+    {% with ntype="order" %}
+{% elif 'sample' in n.message|lower %}
+    {% with ntype="sample" %}
+{% elif 'approve' in n.message|lower or 'accept' in n.message|lower %}
+    {% with ntype="approve" %}
+{% endif %}
 
           <div class="notif-card {% if not n.is_read %}unread{% endif %} notif-item"
                data-type="{{ ntype }}"
@@ -412,8 +413,9 @@
             </a>
           </div>
 
-          {% endwith %}
-          {% endfor %}
+         {% endwith %}
+{% endwith %}
+{% endfor %}
 
         {% else %}
         <div class="empty-state">
