@@ -3092,6 +3092,8 @@ def brevo_test(request):
 
     return HttpResponse(str(r.text))
 
+def offline_view(request):
+    return render(request, 'offline.html')
 
 def check_expired_samples():
     """Expired samples automatically mark करतो"""

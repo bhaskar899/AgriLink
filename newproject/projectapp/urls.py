@@ -183,7 +183,7 @@ path("pay_bid/<int:bid_id>/", views.pay_bid, name="pay_bid"),
 path('test-email/', views.test_email, name='test_email'),
 
 path('mark_notification_read/<int:nid>/', views.mark_notification_read, name='mark_notification_read'),
-
+path('offline/', views.offline_view, name='offline'),
 ]
 
 # ---------------- MEDIA & STATIC ----------------

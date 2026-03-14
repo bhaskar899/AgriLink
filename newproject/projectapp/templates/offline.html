@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgriLink - No Internet</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f1f8e9;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; text-align: center; padding: 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 24px;
+      padding: 48px 32px;
+      max-width: 380px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    .emoji { font-size: 72px; margin-bottom: 20px; }
+    h1 { color: #2e7d32; font-size: 24px; margin-bottom: 12px; }
+    p  { color: #666; font-size: 15px; line-height: 1.6; margin-bottom: 28px; }
+    button {
+      background: #2e7d32;
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+    }
+    button:active { transform: scale(0.97); }
+    .tips {
+      margin-top: 24px;
+      background: #f1f8e9;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: left;
+    }
+    .tips p { font-size: 13px; color: #555; margin-bottom: 6px; }
+    .tips strong { color: #2e7d32; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="emoji">🌾</div>
+    <h1>You're Offline</h1>
+    <p>Internet connection नाही. AgriLink ला internet connection लागतो farmers आणि retailers ला connect करण्यासाठी.</p>
+    <button onclick="window.location.reload()">🔄 Try Again</button>
+    <div class="tips">
+      <p><strong>Quick Tips:</strong></p>
+      <p>📶 Check your WiFi or Mobile Data</p>
+      <p>✈️ Airplane Mode बंद करा</p>
+      <p>🔁 Page Reload करा</p>
+    </div>
+  </div>
+</body>
+</html>

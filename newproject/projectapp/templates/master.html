@@ -536,9 +536,15 @@
   })();
 </script>
   </style>
+  <link rel="manifest" href="/static/manifest.json">
+<meta name="theme-color" content="#2e7d32">
 </head>
 <body>
-
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/service-worker.js');
+  }
+</script>
 <!-- Click Sound -->
 <audio id="clickSound" src="{% static 'audio/universfield-computer-mouse-click-352734.mp3' %}" preload="auto"></audio>
 
