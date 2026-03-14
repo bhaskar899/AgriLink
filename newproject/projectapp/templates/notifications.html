@@ -6,9 +6,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-  /* ===========================
-     PAGE BASE
-  =========================== */
   .notif-wrapper {
     margin-top: 90px;
     padding: 36px 0 80px;
@@ -16,10 +13,6 @@
     background: var(--bg2, #f0fdf4);
     transition: background .35s;
   }
-
-  /* ===========================
-     HEADER CARD
-  =========================== */
   .notif-header {
     background: var(--bg3, #fff);
     border: 1.5px solid var(--bdr, #d1fae5);
@@ -34,7 +27,6 @@
     transition: background .35s, border-color .35s;
     flex-wrap: wrap;
   }
-
   .notif-title {
     font-family: 'Sora', sans-serif;
     font-size: 1.55rem;
@@ -46,7 +38,6 @@
     align-items: center;
     gap: 10px;
   }
-
   .notif-count-badge {
     display: inline-flex;
     align-items: center;
@@ -60,7 +51,6 @@
     border-radius: 12px;
     padding: 0 7px;
   }
-
   .btn-back {
     display: inline-flex;
     align-items: center;
@@ -83,7 +73,6 @@
     border-color: #15803d;
     transform: translateX(-4px);
   }
-
   .btn-clear-all {
     display: inline-flex;
     align-items: center;
@@ -105,17 +94,12 @@
     border-color: #ef4444;
     transform: scale(1.03);
   }
-
-  /* ===========================
-     FILTER TABS
-  =========================== */
   .filter-tabs {
     display: flex;
     gap: 8px;
     margin-bottom: 22px;
     flex-wrap: wrap;
   }
-
   .filter-tab {
     padding: 7px 18px;
     border-radius: 100px;
@@ -134,10 +118,6 @@
     color: white;
     border-color: transparent;
   }
-
-  /* ===========================
-     NOTIFICATION CARD
-  =========================== */
   .notif-card {
     background: var(--bg3, #fff);
     border-radius: 16px;
@@ -153,7 +133,6 @@
     position: relative;
     overflow: hidden;
   }
-
   .notif-card::before {
     content: '';
     position: absolute;
@@ -163,33 +142,18 @@
     border-radius: 4px 0 0 4px;
     transition: background .25s;
   }
-
   .notif-card.unread::before {
     background: linear-gradient(to bottom, #22c55e, #15803d);
   }
-
   .notif-card.unread {
     background: linear-gradient(to right, rgba(240,253,244,.8), var(--bg3, #fff));
     border-color: #bbf7d0;
   }
-  [data-theme="dark"] .notif-card.unread {
-    background: linear-gradient(to right, rgba(34,197,94,.07), var(--bg3));
-    border-color: rgba(34,197,94,.2);
-  }
-
   .notif-card:hover {
     transform: translateY(-3px) scale(1.005);
     box-shadow: 0 12px 32px rgba(21,128,61,.14);
     border-color: #4ade80;
   }
-  [data-theme="dark"] .notif-card:hover {
-    box-shadow: 0 12px 32px rgba(0,0,0,.35);
-    border-color: rgba(74,222,128,.35);
-  }
-
-  /* ===========================
-     ICON BOX
-  =========================== */
   .notif-icon {
     width: 48px; height: 48px;
     border-radius: 14px;
@@ -200,21 +164,16 @@
   }
   .notif-card:hover .notif-icon { transform: scale(1.12) rotate(5deg); }
 
-  .icon-order   { background: linear-gradient(135deg,#dcfce7,#bbf7d0); color: #15803d; }
-  .icon-approve { background: linear-gradient(135deg,#dbeafe,#bfdbfe); color: #1d4ed8; }
-  .icon-payment { background: linear-gradient(135deg,#fef3c7,#fde68a); color: #b45309; }
-  .icon-default { background: linear-gradient(135deg,#f0fdf4,#dcfce7);  color: #15803d; }
+  /* 🆕 Updated icon colors */
+  .icon-order    { background: linear-gradient(135deg,#dcfce7,#bbf7d0); color: #15803d; }
+  .icon-approve  { background: linear-gradient(135deg,#dbeafe,#bfdbfe); color: #1d4ed8; }
+  .icon-payment  { background: linear-gradient(135deg,#fef3c7,#fde68a); color: #b45309; }
+  .icon-delivery { background: linear-gradient(135deg,#ede9fe,#ddd6fe); color: #6d28d9; }
+  .icon-earning  { background: linear-gradient(135deg,#d1fae5,#a7f3d0); color: #065f46; }
+  .icon-sample   { background: linear-gradient(135deg,#fce7f3,#fbcfe8); color: #9d174d; }
+  .icon-default  { background: linear-gradient(135deg,#f0fdf4,#dcfce7); color: #15803d; }
 
-  [data-theme="dark"] .icon-order   { background: rgba(34,197,94,.14);  color: #4ade80; }
-  [data-theme="dark"] .icon-approve { background: rgba(59,130,246,.14); color: #93c5fd; }
-  [data-theme="dark"] .icon-payment { background: rgba(245,158,11,.14); color: #fcd34d; }
-  [data-theme="dark"] .icon-default { background: rgba(34,197,94,.1);   color: #4ade80; }
-
-  /* ===========================
-     CONTENT
-  =========================== */
   .notif-body { flex-grow: 1; min-width: 0; }
-
   .notif-msg {
     font-weight: 600;
     font-size: .92rem;
@@ -226,14 +185,12 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-
   .notif-meta {
     display: flex;
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
   }
-
   .notif-time {
     font-size: .76rem;
     color: var(--txt3, #6b8070);
@@ -242,7 +199,6 @@
     align-items: center;
     gap: 4px;
   }
-
   .badge-new {
     display: inline-flex;
     align-items: center;
@@ -261,9 +217,19 @@
     50%      { opacity: .7; }
   }
 
-  /* ===========================
-     DELETE BUTTON
-  =========================== */
+  /* 🆕 Amount badge */
+  .amount-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #d1fae5;
+    color: #065f46;
+    font-size: .72rem;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 8px;
+  }
+
   .notif-delete {
     width: 34px; height: 34px; border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
@@ -279,15 +245,6 @@
     border-color: #fca5a5;
     transform: scale(1.1);
   }
-  [data-theme="dark"] .notif-delete:hover {
-    background: rgba(239,68,68,.12);
-    color: #f87171;
-    border-color: rgba(239,68,68,.25);
-  }
-
-  /* ===========================
-     DATE DIVIDER
-  =========================== */
   .date-divider {
     display: flex;
     align-items: center;
@@ -306,19 +263,13 @@
     height: 1px;
     background: var(--bdr, #d1fae5);
   }
-
-  /* ===========================
-     EMPTY STATE
-  =========================== */
   .empty-state {
     text-align: center;
     padding: 72px 32px;
     background: var(--bg3, #fff);
     border-radius: 22px;
     border: 2px dashed var(--bdr, #d1fae5);
-    transition: background .35s, border-color .35s;
   }
-
   .empty-icon-wrap {
     width: 90px; height: 90px; border-radius: 24px;
     background: linear-gradient(135deg, #dcfce7, #bbf7d0);
@@ -326,24 +277,17 @@
     font-size: 2.4rem; margin: 0 auto 22px;
     animation: floatIcon 3s ease-in-out infinite;
   }
-  [data-theme="dark"] .empty-icon-wrap { background: rgba(34,197,94,.12); }
-
   @keyframes floatIcon {
     0%,100% { transform: translateY(0); }
     50%      { transform: translateY(-8px); }
   }
-
   .empty-state h4 {
     font-family: 'Sora', sans-serif;
     font-size: 1.25rem; font-weight: 800;
     color: var(--txt, #0d1f14); margin-bottom: 8px;
   }
-
   .empty-state p { color: var(--txt3, #6b8070); font-size: .9rem; }
 
-  /* ===========================
-     MOBILE
-  =========================== */
   @media (max-width: 768px) {
     .notif-wrapper { margin-top: 80px; padding: 20px 0 60px; }
     .notif-header  { padding: 18px 20px; }
@@ -381,13 +325,16 @@
           {% endif %}
         </div>
 
-        <!-- Filter Tabs -->
+        <!-- 🆕 Updated Filter Tabs -->
         {% if notifications %}
         <div class="filter-tabs">
-          <div class="filter-tab active" data-filter="all">All</div>
-          <div class="filter-tab" data-filter="unread">Unread</div>
-          <div class="filter-tab" data-filter="order">Orders</div>
-          <div class="filter-tab" data-filter="approve">Approvals</div>
+          <div class="filter-tab active" data-filter="all">🔔 All</div>
+          <div class="filter-tab" data-filter="unread">🟢 Unread</div>
+          <div class="filter-tab" data-filter="order">📦 Orders</div>
+          <div class="filter-tab" data-filter="payment">💳 Payments</div>
+          <div class="filter-tab" data-filter="delivery">🚚 Delivery</div>
+          <div class="filter-tab" data-filter="earning">💰 Earnings</div>
+          <div class="filter-tab" data-filter="sample">🧪 Samples</div>
         </div>
         {% endif %}
 
@@ -396,27 +343,43 @@
           <div class="date-divider">Today</div>
 
           {% for n in notifications %}
+
+          {% comment %}Determine notification type{% endcomment %}
+          {% if 'earning' in n.message|lower or 'credited' in n.message|lower %}
+            {% with ntype="earning" %}
+          {% elif 'delivered' in n.message|lower or 'picked' in n.message|lower %}
+            {% with ntype="delivery" %}
+          {% elif 'pay' in n.message|lower or 'payment' in n.message|lower %}
+            {% with ntype="payment" %}
+          {% elif 'order' in n.message|lower %}
+            {% with ntype="order" %}
+          {% elif 'sample' in n.message|lower %}
+            {% with ntype="sample" %}
+          {% elif 'approve' in n.message|lower or 'accept' in n.message|lower %}
+            {% with ntype="approve" %}
+          {% else %}
+            {% with ntype="default" %}
+          {% endif %}
+
           <div class="notif-card {% if not n.is_read %}unread{% endif %} notif-item"
-               data-type="{% if 'order' in n.message|lower %}order{% elif 'approve' in n.message|lower %}approve{% elif 'pay' in n.message|lower %}payment{% else %}default{% endif %}"
+               data-type="{{ ntype }}"
                data-read="{{ n.is_read|yesno:'read,unread' }}"
                onclick="openNotification('{{ n.id }}')">
 
             <!-- Icon -->
-            <div class="notif-icon
-              {% if 'order' in n.message|lower %}icon-order
-              {% elif 'approve' in n.message|lower %}icon-approve
-              {% elif 'pay' in n.message|lower %}icon-payment
-              {% else %}icon-default{% endif %}">
-              {% if 'order' in n.message|lower %}
-                <i class="fas fa-shopping-bag"></i>
-              {% elif 'approve' in n.message|lower %}
-                <i class="fas fa-check-double"></i>
-              {% elif 'pay' in n.message|lower %}
-                <i class="fas fa-credit-card"></i>
-              {% elif 'deliver' in n.message|lower %}
+            <div class="notif-icon icon-{{ ntype }}">
+              {% if ntype == "earning" %}
+                <i class="fas fa-coins"></i>
+              {% elif ntype == "delivery" %}
                 <i class="fas fa-truck"></i>
-              {% elif 'sample' in n.message|lower %}
+              {% elif ntype == "payment" %}
+                <i class="fas fa-credit-card"></i>
+              {% elif ntype == "order" %}
+                <i class="fas fa-shopping-bag"></i>
+              {% elif ntype == "sample" %}
                 <i class="fas fa-flask"></i>
+              {% elif ntype == "approve" %}
+                <i class="fas fa-check-double"></i>
               {% else %}
                 <i class="fas fa-bell"></i>
               {% endif %}
@@ -430,7 +393,12 @@
                   <i class="far fa-clock"></i> {{ n.timestamp|date:"d M, h:i A" }}
                 </span>
                 {% if not n.is_read %}
-                <span class="badge-new">● NEW</span>
+                  <span class="badge-new">● NEW</span>
+                {% endif %}
+                {% if '₹' in n.message %}
+                  <span class="amount-badge">
+                    <i class="fas fa-rupee-sign" style="font-size:0.65rem;"></i> Amount
+                  </span>
                 {% endif %}
               </div>
             </div>
@@ -443,6 +411,8 @@
               <i class="fas fa-times"></i>
             </a>
           </div>
+
+          {% endwith %}
           {% endfor %}
 
         {% else %}
@@ -459,12 +429,10 @@
 </div>
 
 <script>
-  /* Open notification */
   function openNotification(id) {
     window.location.href = '/notifications/read/' + id + '/';
   }
 
-  /* Filter tabs */
   document.querySelectorAll('.filter-tab').forEach(tab => {
     tab.addEventListener('click', function () {
       document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
@@ -476,13 +444,16 @@
         const isRead = card.dataset.read;
 
         let show = true;
-        if (filter === 'unread')  show = isRead === 'unread';
-        else if (filter === 'order')   show = type === 'order';
-        else if (filter === 'approve') show = type === 'approve';
+        if      (filter === 'unread')   show = isRead === 'unread';
+        else if (filter === 'order')    show = type === 'order';
+        else if (filter === 'payment')  show = type === 'payment';
+        else if (filter === 'delivery') show = type === 'delivery';
+        else if (filter === 'earning')  show = type === 'earning';
+        else if (filter === 'sample')   show = type === 'sample';
 
-        card.style.display    = show ? 'flex' : 'none';
-        card.style.opacity    = show ? '1'    : '0';
-        card.style.transform  = show ? ''     : 'scale(.97)';
+        card.style.display   = show ? 'flex' : 'none';
+        card.style.opacity   = show ? '1'    : '0';
+        card.style.transform = show ? ''     : 'scale(.97)';
       });
     });
   });

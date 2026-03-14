@@ -121,65 +121,65 @@
                         <select class="form-select" name="driver">
                             <option value="">-- No Driver Assigned --</option>
 
-                            {% if d50 %}
-                                <optgroup label="✅ Within 50 km (max 5 orders)">
-                                    {% for score, f_dist, r_dist, d, active, max_ord in d50 %}
-                                        <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
-                                            🚚 {{ d.name }} ({{ d.vehicle_type }}) — F:{{ f_dist }}km R:{{ r_dist }}km | Score:{{ score }} | {{ active }}/{{ max_ord }}
-                                        </option>
-                                    {% endfor %}
-                                </optgroup>
-                            {% endif %}
+                {% if d50 %}
+    <optgroup label="✅ Within 50 km (max 5 orders) | Driver:5% Farmer:95%">
+        {% for score, f_dist, r_dist, d, active, max_ord in d50 %}
+            <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
+                🚚 {{ d.name }} ({{ d.vehicle_type }}) — F:{{ f_dist }}km R:{{ r_dist }}km | Score:{{ score }} | {{ active }}/{{ max_ord }} | 💰5%
+            </option>
+        {% endfor %}
+    </optgroup>
+{% endif %}
 
-                            {% if d100 %}
-                                <optgroup label="⚠️ 50–100 km (max 2 orders)">
-                                    {% for score, f_dist, r_dist, d, active, max_ord in d100 %}
-                                        <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
-                                            🚚 {{ d.name }} ({{ d.vehicle_type }}) — F:{{ f_dist }}km R:{{ r_dist }}km | Score:{{ score }} | {{ active }}/{{ max_ord }}
-                                        </option>
-                                    {% endfor %}
-                                </optgroup>
-                            {% endif %}
+{% if d100 %}
+    <optgroup label="⚠️ 50–100 km (max 2 orders) | Driver:10% Farmer:90%">
+        {% for score, f_dist, r_dist, d, active, max_ord in d100 %}
+            <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
+                🚚 {{ d.name }} ({{ d.vehicle_type }}) — F:{{ f_dist }}km R:{{ r_dist }}km | Score:{{ score }} | {{ active }}/{{ max_ord }} | 💰10%
+            </option>
+        {% endfor %}
+    </optgroup>
+{% endif %}
 
-                            {% if d200 %}
-                                <optgroup label="📍 100–200 km (max 1 order)">
-                                    {% for score, f_dist, r_dist, d, active, max_ord in d200 %}
-                                        <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
-                                            🚚 {{ d.name }} ({{ d.vehicle_type }}) — F:{{ f_dist }}km R:{{ r_dist }}km | Score:{{ score }} | {{ active }}/{{ max_ord }}
-                                        </option>
-                                    {% endfor %}
-                                </optgroup>
-                            {% endif %}
+{% if d200 %}
+    <optgroup label="📍 100–200 km (max 1 order) | Driver:10% Farmer:90%">
+        {% for score, f_dist, r_dist, d, active, max_ord in d200 %}
+            <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
+                🚚 {{ d.name }} ({{ d.vehicle_type }}) — F:{{ f_dist }}km R:{{ r_dist }}km | Score:{{ score }} | {{ active }}/{{ max_ord }} | 💰10%
+            </option>
+        {% endfor %}
+    </optgroup>
+{% endif %}
 
-                            {% if d300 %}
-                                <optgroup label="📍 200–300 km (max 1 order)">
-                                    {% for score, f_dist, r_dist, d, active, max_ord in d300 %}
-                                        <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
-                                            🚚 {{ d.name }} ({{ d.vehicle_type }}) — F:{{ f_dist }}km R:{{ r_dist }}km | Score:{{ score }} | {{ active }}/{{ max_ord }}
-                                        </option>
-                                    {% endfor %}
-                                </optgroup>
-                            {% endif %}
+{% if d300 %}
+    <optgroup label="📍 200–300 km (max 1 order) | Driver:15% Farmer:85%">
+        {% for score, f_dist, r_dist, d, active, max_ord in d300 %}
+            <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
+                🚚 {{ d.name }} ({{ d.vehicle_type }}) — F:{{ f_dist }}km R:{{ r_dist }}km | Score:{{ score }} | {{ active }}/{{ max_ord }} | 💰15%
+            </option>
+        {% endfor %}
+    </optgroup>
+{% endif %}
 
-                            {% if d400 %}
-                                <optgroup label="📍 300–400 km (max 1 order)">
-                                    {% for score, f_dist, r_dist, d, active, max_ord in d400 %}
-                                        <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
-                                            🚚 {{ d.name }} ({{ d.vehicle_type }}) — F:{{ f_dist }}km R:{{ r_dist }}km | Score:{{ score }} | {{ active }}/{{ max_ord }}
-                                        </option>
-                                    {% endfor %}
-                                </optgroup>
-                            {% endif %}
+{% if d400 %}
+    <optgroup label="📍 300–400 km (max 1 order) | Driver:15% Farmer:85%">
+        {% for score, f_dist, r_dist, d, active, max_ord in d400 %}
+            <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
+                🚚 {{ d.name }} ({{ d.vehicle_type }}) — F:{{ f_dist }}km R:{{ r_dist }}km | Score:{{ score }} | {{ active }}/{{ max_ord }} | 💰15%
+            </option>
+        {% endfor %}
+    </optgroup>
+{% endif %}
 
-                            {% if d500 %}
-                                <optgroup label="📍 400–500 km (max 1 order)">
-                                    {% for score, f_dist, r_dist, d, active, max_ord in d500 %}
-                                        <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
-                                            🚚 {{ d.name }} ({{ d.vehicle_type }}) — F:{{ f_dist }}km R:{{ r_dist }}km | Score:{{ score }} | {{ active }}/{{ max_ord }}
-                                        </option>
-                                    {% endfor %}
-                                </optgroup>
-                            {% endif %}
+{% if d500 %}
+    <optgroup label="📍 400–500 km (max 1 order) | Driver:20% Farmer:80%">
+        {% for score, f_dist, r_dist, d, active, max_ord in d500 %}
+            <option value="{{ d.id }}" {% if order.driver.id == d.id %}selected{% endif %}>
+                🚚 {{ d.name }} ({{ d.vehicle_type }}) — F:{{ f_dist }}km R:{{ r_dist }}km | Score:{{ score }} | {{ active }}/{{ max_ord }} | 💰20%
+            </option>
+        {% endfor %}
+    </optgroup>
+{% endif %}
 
                         </select>
                     </div>

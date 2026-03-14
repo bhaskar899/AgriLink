@@ -1171,11 +1171,11 @@ def payment_success(request, order_id):
         # शेतकरी रक्कम (९५%)
         farmer_amount = round(total_amount * 0.95, 2)
 
-        # नोटिफिकेशन पाठवा
+        # ✅ Updated notification
         Notification.objects.create(
             sender_retailer=order.retailer,
             receiver_farmer=order.farmer,
-            message=f"Payment received for Order #{order.id}. Your payment of ₹{farmer_amount} will be credited to your bank account within 24 hours."
+            message=f"🎉 New Order #{order.id} confirmed! {order.retailer.name} has ordered {order.quantity}kg of {order.product.product}. Payment ₹{total_amount:.2f} received. Your amount ₹{farmer_amount} (95%) will be credited to your bank account within 24 hours after delivery."
         )
         print(f"Order #{order.id} status updated to Paid.")
 
@@ -2264,42 +2264,59 @@ def driver_mark_delivered(request, delivery_id):
     delivery = get_object_or_404(Delivery, id=delivery_id)
     order = delivery.order
 
-    # Status check
     if delivery.status.lower() != "picked":
         messages.warning(request, f"Cannot mark delivered. Current status: {delivery.status}")
         return redirect("driver_assigned_deliveries")
 
-    # Calculation - Float ensure karein
-    order_total = float(order.quantity) * float(order.product.price)
-    delivery.driver_earning = order_total * 0.05
+    product = order.product
+    driver = delivery.driver
 
-    # 🚨 Database mein update
-    delivery.status = "delivered"  # lowercase 'd'
+    src_lat = getattr(product, 'latitude', None) or getattr(order.farmer, 'latitude', None)
+    src_lng = getattr(product, 'longitude', None) or getattr(order.farmer, 'longitude', None)
+    dr_lat = getattr(driver, 'latitude', None)
+    dr_lng = getattr(driver, 'longitude', None)
+
+    dist = 0
+    if all([src_lat, src_lng, dr_lat, dr_lng]):
+        dist = haversine_distance(src_lat, src_lng, dr_lat, dr_lng)
+
+    # 🆕 Updated commission rates
+    commission_rate = get_driver_commission(dist)
+    order_total = float(order.quantity) * float(order.product.price)
+    delivery.driver_earning = round(order_total * commission_rate, 2)
+    farmer_amount = round(order_total * (1 - commission_rate), 2)
+
+    delivery.status = "delivered"
     delivery.delivered_at = timezone.now()
     delivery.save()
 
-    # order.save() ke baad add karo
+    # Retailer notification
     Notification.objects.create(
         receiver_retailer=order.retailer,
-        message=f"Order #{order.id} has been delivered successfully!"
-    )
-    Notification.objects.create(
-        receiver_farmer=order.farmer,
-        message=f"Order #{order.id} has been delivered to {order.retailer.name}."
+        message=f"✅ Order #{order.id} ({order.product.product}) delivered by {driver.name}!"
     )
 
-    # Order table update
+    # Farmer notification
+    Notification.objects.create(
+        receiver_farmer=order.farmer,
+        message=f"✅ Order #{order.id} delivered to {order.retailer.name}! Your amount ₹{farmer_amount} ({int((1-commission_rate)*100)}%) will be credited within 24 hours."
+    )
+
+    # Driver notification
+    Notification.objects.create(
+        receiver_driver=driver,
+        message=f"💰 Order #{order.id} delivered! Your earning ₹{delivery.driver_earning} ({int(commission_rate*100)}%) will be credited within 24 hours."
+    )
+
     order.status = "Delivered"
     order.save()
 
-    # Driver availability
-    driver = delivery.driver
     driver.is_available = True
+    driver.waiting_deadline = None
     driver.save()
 
-    messages.success(request, f"Order #{order.id} successfully delivered!")
+    messages.success(request, f"✅ Order #{order.id} delivered! You earned ₹{delivery.driver_earning}")
     return redirect("driver_dashboard")
-
 # --- ADMIN/FARMER VIEWS ---
 
 import math
@@ -2317,7 +2334,17 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     a = math.sin(dphi/2)**2 + math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
 
-
+# 🆕 2. Driver Commission नुसार distance
+# ----------------------------------------
+def get_driver_commission(dist_km):
+    if dist_km <= 50:
+        return 0.05    # 5%
+    elif dist_km <= 200:
+        return 0.10    # 10%
+    elif dist_km <= 400:
+        return 0.15    # 15%
+    else:
+        return 0.20    # 20%
 # ----------------------------------------
 # 2. Distance नुसार max orders ठरवणे
 # ----------------------------------------
