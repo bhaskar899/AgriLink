@@ -507,8 +507,7 @@
 
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/static/service-worker.js');
-    }
+navigator.serviceWorker.register('/static/service-worker.js', { scope: '/' })    }
   </script>
 
   <!-- Click Sound -->
