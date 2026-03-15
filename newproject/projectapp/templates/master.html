@@ -14,6 +14,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet">
   <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+  <!-- ✅ FIX 1: Theme flash prevention — apply before paint -->
+  <script>
+    (function(){
+      const t = localStorage.getItem('agrilink-theme') || 'light';
+      if(t === 'dark') document.documentElement.setAttribute('data-theme','dark');
+    })();
+  </script>
+
   <style>
     /* ===========================
        THEME VARIABLES
@@ -36,6 +45,10 @@
       --sh3:       0 14px 44px rgba(10,40,20,.15);
       --stripe:    #f0fdf4;
     }
+
+    /* ===========================
+       DARK MODE — SINGLE BLOCK (✅ FIX 2: merged, no duplicate)
+    =========================== */
     [data-theme="dark"] {
       --bg:        #080e0a;
       --bg2:       #0d1610;
@@ -75,46 +88,142 @@
     /* ===========================
        DARK MODE GLOBAL OVERRIDES
     =========================== */
-    [data-theme="dark"] .card {
-      background: var(--bg3) !important; border-color: var(--bdr) !important;
-      color: var(--txt) !important; box-shadow: var(--sh2);
+    [data-theme="dark"] body {
+      background: var(--bg) !important;
+      color: var(--txt) !important;
+    }
+    [data-theme="dark"] .card,
+    [data-theme="dark"] .product-grid-card,
+    [data-theme="dark"] .update-card,
+    [data-theme="dark"] .custom-table-card,
+    [data-theme="dark"] .glass-card,
+    [data-theme="dark"] .filter-card,
+    [data-theme="dark"] .order-card,
+    [data-theme="dark"] .delivery-card,
+    [data-theme="dark"] .driver-card,
+    [data-theme="dark"] .auth-card,
+    [data-theme="dark"] .reg-card,
+    [data-theme="dark"] .task-card {
+      background: var(--bg3) !important;
+      border-color: var(--bdr) !important;
+      color: var(--txt) !important;
+      box-shadow: var(--sh2);
     }
     [data-theme="dark"] .card-header,
     [data-theme="dark"] .card-footer {
-      background: var(--bg2) !important; border-color: var(--bdr) !important; color: var(--txt) !important;
+      background: var(--bg2) !important;
+      border-color: var(--bdr) !important;
+      color: var(--txt) !important;
     }
-    [data-theme="dark"] .table { color: var(--txt) !important; border-color: var(--bdr) !important; }
-    [data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) { background: var(--stripe) !important; }
-    [data-theme="dark"] .table thead { background: var(--bg2) !important; }
+    [data-theme="dark"] .table {
+      color: var(--txt) !important;
+      border-color: var(--bdr) !important;
+    }
+    [data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) {
+      background: var(--stripe) !important;
+    }
+    [data-theme="dark"] .table thead,
+    [data-theme="dark"] .table-light {
+      background: var(--bg2) !important;
+      color: var(--txt2) !important;
+    }
+    [data-theme="dark"] .table-hover tbody tr:hover {
+      background: rgba(255,255,255,.04) !important;
+    }
+    [data-theme="dark"] .table td,
+    [data-theme="dark"] .table th {
+      border-color: var(--bdr) !important;
+    }
     [data-theme="dark"] .form-control,
-    [data-theme="dark"] .form-select {
-      background: var(--inp) !important; color: var(--txt) !important; border-color: var(--bdr) !important;
+    [data-theme="dark"] .form-select,
+    [data-theme="dark"] .form-control-custom {
+      background: var(--inp) !important;
+      color: var(--txt) !important;
+      border-color: var(--bdr) !important;
     }
+    [data-theme="dark"] .form-control::placeholder { color: var(--txt3) !important; }
     [data-theme="dark"] .form-control:focus,
     [data-theme="dark"] .form-select:focus {
-      background: var(--inp) !important; color: var(--txt) !important;
-      border-color: #22c55e !important; box-shadow: 0 0 0 3px rgba(34,197,94,.14) !important;
+      background: var(--inp) !important;
+      color: var(--txt) !important;
+      border-color: #22c55e !important;
+      box-shadow: 0 0 0 3px rgba(34,197,94,.14) !important;
     }
     [data-theme="dark"] .form-label { color: var(--txt) !important; }
     [data-theme="dark"] .modal-content {
-      background: var(--bg3) !important; color: var(--txt) !important; border-color: var(--bdr) !important;
+      background: var(--bg3) !important;
+      color: var(--txt) !important;
+      border-color: var(--bdr) !important;
     }
     [data-theme="dark"] .modal-header,
-    [data-theme="dark"] .modal-footer { border-color: var(--bdr) !important; }
-    [data-theme="dark"] .alert { background: var(--bg2) !important; border-color: var(--bdr) !important; color: var(--txt) !important; }
-    [data-theme="dark"] .list-group-item { background: var(--bg3) !important; color: var(--txt) !important; border-color: var(--bdr) !important; }
+    [data-theme="dark"] .modal-footer,
+    [data-theme="dark"] .modal-body {
+      background: var(--bg3) !important;
+      border-color: var(--bdr) !important;
+      color: var(--txt) !important;
+    }
+    [data-theme="dark"] .alert {
+      background: var(--bg2) !important;
+      border-color: var(--bdr) !important;
+      color: var(--txt) !important;
+    }
+    [data-theme="dark"] .list-group-item {
+      background: var(--bg3) !important;
+      color: var(--txt) !important;
+      border-color: var(--bdr) !important;
+    }
     [data-theme="dark"] .text-dark   { color: var(--txt)  !important; }
-    [data-theme="dark"] .text-muted  { color: var(--txt3) !important; }
+    [data-theme="dark"] .text-muted,
+    [data-theme="dark"] small.text-muted { color: var(--txt3) !important; }
     [data-theme="dark"] .bg-white    { background: var(--bg3) !important; }
     [data-theme="dark"] .bg-light    { background: var(--bg2) !important; }
-    [data-theme="dark"] hr           { border-color: var(--bdr); opacity: 1; }
-    [data-theme="dark"] .border      { border-color: var(--bdr) !important; }
+    [data-theme="dark"] hr           { border-color: var(--bdr) !important; opacity: 1; }
+    [data-theme="dark"] .border,
+    [data-theme="dark"] .border-bottom,
+    [data-theme="dark"] .border-top  { border-color: var(--bdr) !important; }
     [data-theme="dark"] .input-group-text {
-      background: var(--bg2) !important; border-color: var(--bdr) !important; color: var(--txt2) !important;
+      background: var(--bg2) !important;
+      border-color: var(--bdr) !important;
+      color: var(--txt2) !important;
     }
+    [data-theme="dark"] .badge.bg-light {
+      background: var(--bg2) !important;
+      color: var(--txt) !important;
+    }
+    [data-theme="dark"] .btn-light {
+      background: var(--bg2) !important;
+      color: var(--txt) !important;
+      border-color: var(--bdr) !important;
+    }
+    [data-theme="dark"] .summary-box {
+      background: rgba(25,135,84,.12) !important;
+      border-color: rgba(25,135,84,.3) !important;
+    }
+    [data-theme="dark"] .location-badge {
+      background: rgba(25,135,84,.12) !important;
+      border-color: rgba(25,135,84,.3) !important;
+    }
+    [data-theme="dark"] .charge-info-box {
+      background: rgba(25,135,84,.1) !important;
+      border-color: rgba(25,135,84,.3) !important;
+    }
+    [data-theme="dark"] .page-header,
+    [data-theme="dark"] .notif-header,
+    [data-theme="dark"] .filter-card {
+      background: var(--bg3) !important;
+      border-color: var(--bdr) !important;
+    }
+    [data-theme="dark"] .notif-card {
+      background: var(--bg3) !important;
+      border-color: var(--bdr) !important;
+    }
+    [data-theme="dark"] .notif-card.unread {
+      background: linear-gradient(to right, rgba(34,197,94,.08), var(--bg3)) !important;
+    }
+    [data-theme="dark"] .product-grid-card .card-body { background: transparent !important; }
 
     /* ===========================
-       NAVBAR
+       NAVBAR  (✅ FIX 3: gradient preserved in dark mode — removed flat #0f172a override)
     =========================== */
     .navbar {
       background: linear-gradient(105deg, #0b5e35 0%, #157a47 45%, #1ea860 100%) !important;
@@ -128,6 +237,11 @@
     .navbar.scrolled {
       min-height: 56px;
       box-shadow: 0 4px 36px rgba(10,80,35,.5);
+    }
+    /* Dark mode navbar keeps the green gradient, just slightly deeper */
+    [data-theme="dark"] .navbar {
+      background: linear-gradient(105deg, #062e1a 0%, #0b4a29 45%, #0f6b3a 100%) !important;
+      box-shadow: 0 2px 28px rgba(0,0,0,.55) !important;
     }
     .navbar-brand {
       font-family: 'Sora', sans-serif;
@@ -193,20 +307,35 @@
       color: white !important;
       transform: translateX(4px);
     }
+    .dropdown-item:hover small { color: white !important; }
     .dropdown-divider { border-color: var(--bdr) !important; }
-    .dropdown-menu a { color: var(--txt) !important; }
-    .dropdown-menu .dropdown-item:hover,
-    .dropdown-menu .dropdown-item:hover small { color: white !important; }
+    [data-theme="dark"] .dropdown-menu {
+      background: var(--bg3) !important;
+      border-color: var(--bdr) !important;
+    }
+    [data-theme="dark"] .dropdown-item { color: var(--txt) !important; }
+    [data-theme="dark"] .dropdown-item:hover {
+      background: linear-gradient(135deg, #15803d, #166534) !important;
+      color: #fff !important;
+    }
 
     /* ===========================
        PROFILE IMAGE
     =========================== */
-    .navbar img {
+    .navbar .nav-profile-img {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      object-fit: cover;
       border: 2.5px solid rgba(255,255,255,.8) !important;
       box-shadow: 0 2px 10px rgba(0,0,0,.2);
       transition: all .28s ease;
+      /* ✅ FIX 4: cache-bust so updated images show immediately */
+      image-rendering: auto;
     }
-    .navbar img:hover { transform: scale(1.12) rotate(4deg); border-color: #fff200 !important; }
+    .navbar .nav-profile-img:hover {
+      transform: scale(1.12) rotate(4deg);
+      border-color: #fff200 !important;
+    }
 
     /* ===========================
        NOTIFICATION BADGE
@@ -233,7 +362,6 @@
       transform: scale(1.14);
       box-shadow: 0 8px 30px rgba(22,163,74,.65);
     }
-
     #translate-popup {
       position: fixed; bottom: 234px; right: 22px;
       background: var(--bg3); padding: 14px 18px;
@@ -329,7 +457,10 @@
     @media (max-width: 768px) {
       .navbar { padding: 0 12px; min-height: 60px; }
       .navbar-brand { font-size: 1.18rem !important; }
-      .navbar-toggler { border: 1.5px solid rgba(255,255,255,.65); padding: 5px 9px; border-radius: 8px; }
+      .navbar-toggler {
+        border: 1.5px solid rgba(255,255,255,.65);
+        padding: 5px 9px; border-radius: 8px;
+      }
       .navbar-toggler:focus { box-shadow: 0 0 0 3px rgba(255,255,255,.22); }
       .navbar-collapse {
         background: linear-gradient(160deg, #0d5c31, #198754);
@@ -356,10 +487,8 @@
     }
     @media (max-width: 576px) {
       .navbar-brand { font-size: 1.02rem !important; }
-      #translate-floating-btn { bottom: 10px; right: 12px; }
     }
     @media (hover: none) {
-      .nav-link, .dropdown-item, .btn { min-height: 44px; }
       .navbar-nav .nav-link:hover::after { width: 0; }
     }
 
@@ -367,472 +496,330 @@
        CLICK FEEDBACK
     =========================== */
     a:active, button:active { transform: scale(.96); }
-
-
-    /* 🆕 Dark mode — सगळ्या pages साठी */
-[data-theme="dark"] {
-    --bg2: #0f172a;
-    --bg3: #1e293b;
-    --bdr: rgba(255,255,255,0.08);
-    --txt: #f1f5f9;
-    --txt2: #94a3b8;
-    --txt3: #64748b;
-    --sh1: 0 1px 4px rgba(0,0,0,0.4);
-    --sh2: 0 4px 18px rgba(0,0,0,0.4);
-    --sh3: 0 14px 44px rgba(0,0,0,0.5);
-}
-
-[data-theme="dark"] body {
-    background: #0f172a !important;
-    color: #f1f5f9 !important;
-}
-
-[data-theme="dark"] .card,
-[data-theme="dark"] .product-grid-card,
-[data-theme="dark"] .update-card,
-[data-theme="dark"] .custom-table-card,
-[data-theme="dark"] .glass-card,
-[data-theme="dark"] .filter-card,
-[data-theme="dark"] .order-card,
-[data-theme="dark"] .delivery-card,
-[data-theme="dark"] .driver-card,
-[data-theme="dark"] .auth-card,
-[data-theme="dark"] .reg-card,
-[data-theme="dark"] .task-card {
-    background: #1e293b !important;
-    border-color: rgba(255,255,255,0.08) !important;
-    color: #f1f5f9 !important;
-}
-
-[data-theme="dark"] .form-control,
-[data-theme="dark"] .form-select,
-[data-theme="dark"] .form-control-custom {
-    background: #0f172a !important;
-    border-color: rgba(255,255,255,0.1) !important;
-    color: #f1f5f9 !important;
-}
-
-[data-theme="dark"] .form-control::placeholder { color: #64748b !important; }
-
-[data-theme="dark"] .table {
-    color: #f1f5f9 !important;
-}
-
-[data-theme="dark"] .table-light,
-[data-theme="dark"] thead {
-    background: #0f172a !important;
-    color: #94a3b8 !important;
-}
-
-[data-theme="dark"] .table-hover tbody tr:hover {
-    background: rgba(255,255,255,0.04) !important;
-}
-
-[data-theme="dark"] .table td,
-[data-theme="dark"] .table th {
-    border-color: rgba(255,255,255,0.06) !important;
-}
-
-[data-theme="dark"] .bg-white,
-[data-theme="dark"] .bg-light {
-    background: #1e293b !important;
-}
-
-[data-theme="dark"] .text-dark { color: #f1f5f9 !important; }
-[data-theme="dark"] .text-muted { color: #94a3b8 !important; }
-
-[data-theme="dark"] .border,
-[data-theme="dark"] .border-bottom,
-[data-theme="dark"] .border-top {
-    border-color: rgba(255,255,255,0.08) !important;
-}
-
-[data-theme="dark"] .modal-content {
-    background: #1e293b !important;
-    color: #f1f5f9 !important;
-}
-
-[data-theme="dark"] .modal-footer,
-[data-theme="dark"] .modal-body {
-    background: #1e293b !important;
-}
-
-[data-theme="dark"] .navbar {
-    background: #0f172a !important;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-}
-
-[data-theme="dark"] .dropdown-menu {
-    background: #1e293b !important;
-    border-color: rgba(255,255,255,0.08) !important;
-}
-
-[data-theme="dark"] .dropdown-item {
-    color: #f1f5f9 !important;
-}
-[data-theme="dark"] .dropdown-item:hover {
-    background: rgba(255,255,255,0.06) !important;
-}
-
-[data-theme="dark"] .badge.bg-light {
-    background: #334155 !important;
-    color: #f1f5f9 !important;
-}
-
-[data-theme="dark"] .btn-light {
-    background: #334155 !important;
-    color: #f1f5f9 !important;
-    border-color: rgba(255,255,255,0.1) !important;
-}
-
-[data-theme="dark"] .page-header,
-[data-theme="dark"] .notif-header,
-[data-theme="dark"] .filter-card {
-    background: #1e293b !important;
-    border-color: rgba(255,255,255,0.08) !important;
-}
-
-[data-theme="dark"] .notif-card {
-    background: #1e293b !important;
-    border-color: rgba(255,255,255,0.06) !important;
-}
-
-[data-theme="dark"] .notif-card.unread {
-    background: linear-gradient(to right, rgba(34,197,94,0.08), #1e293b) !important;
-}
-
-[data-theme="dark"] .input-group-text {
-    background: #0f172a !important;
-    border-color: rgba(255,255,255,0.1) !important;
-    color: #94a3b8 !important;
-}
-
-[data-theme="dark"] .product-grid-card .card-body { background: transparent !important; }
-
-[data-theme="dark"] .summary-box {
-    background: rgba(25,135,84,0.12) !important;
-    border-color: rgba(25,135,84,0.3) !important;
-}
-
-[data-theme="dark"] .location-badge {
-    background: rgba(25,135,84,0.12) !important;
-    border-color: rgba(25,135,84,0.3) !important;
-}
-
-[data-theme="dark"] .charge-info-box {
-    background: rgba(25,135,84,0.1) !important;
-    border-color: rgba(25,135,84,0.3) !important;
-}
-
-[data-theme="dark"] hr { border-color: rgba(255,255,255,0.08) !important; }
-
-[data-theme="dark"] small.text-muted { color: #64748b !important; }
-</style>
-    <script>
-  // Flash prevent — body दिसण्याआधी theme apply कर
-  (function(){
-    const t = localStorage.getItem('agrilink-theme') || 'light';
-    if(t === 'dark') document.documentElement.setAttribute('data-theme','dark');
-  })();
-</script>
+  </style>
 
   <link rel="manifest" href="/static/manifest.json">
-<meta name="theme-color" content="#2e7d32">
 </head>
 <body>
-<script>
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/static/service-worker.js');
-  }
-</script>
-<!-- Click Sound -->
-<audio id="clickSound" src="{% static 'audio/universfield-computer-mouse-click-352734.mp3' %}" preload="auto"></audio>
 
-<!-- Dark Mode Toggle -->
-<button id="darkModeToggle" aria-label="Toggle Dark Mode">
-  <span id="dmIcon">🌙</span>
-  <span class="dm-tip" id="dmTip">Dark Mode</span>
-</button>
+  <!-- ✅ FIX 1: Bootstrap JS loaded FIRST (navbar toggler & dropdowns need this) -->
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Translate Floating Button -->
-<div id="translate-floating-btn" title="Change Language">🌐</div>
-<div id="translate-popup">
-  <div id="google_translate_element"></div>
-</div>
-
-<!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNavbar">
-  <div class="container-fluid">
-    <a class="navbar-brand text-white" href="{% url 'home' %}">🌿 AgriLink</a>
-
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div class="collapse navbar-collapse" id="navMenu">
-      <ul class="navbar-nav ms-auto align-items-center" style="gap:4px;">
-        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#about">About</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#contact">Contact</a></li>
-
-        {% if not request.session.name %}
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Farmer</a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="{% url 'farmer_register' %}">📝 Register</a></li>
-            <li><a class="dropdown-item" href="{% url 'farmer_login' %}">🔐 Login</a></li>
-          </ul>
-        </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Retailer</a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="{% url 'retailer_register' %}">📝 Register</a></li>
-            <li><a class="dropdown-item" href="{% url 'retailer_login' %}">🔐 Login</a></li>
-          </ul>
-        </li>
-        {% endif %}
-
-        {% if request.session.user_type == "farmer" %}
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Farmer</a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="{% url 'farmer_dashboard' %}">📊 Dashboard</a></li>
-            <li><a class="dropdown-item" href="{% url 'add_product' %}">➕ Add Product</a></li>
-            <li><a class="dropdown-item" href="{% url 'show_products' %}">🌾 My Products</a></li>
-            <li><a class="dropdown-item" href="{% url 'manage_bids' %}">📩 Price Offers</a></li>
-            <li><a class="dropdown-item" href="{% url 'farmer_order' %}">📦 Orders</a></li>
-            <li><a class="dropdown-item" href="{% url 'farmer_sample_requests' %}">🧪 Sample Requests</a></li>
-          </ul>
-        </li>
-        {% endif %}
-
-        {% if request.session.user_type == "retailer" %}
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Retailer</a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="{% url 'retailer_dashboard' %}">📊 Dashboard</a></li>
-            <li><a class="dropdown-item" href="{% url 'browse_products' %}">🔍 Browse Products</a></li>
-            <li><a class="dropdown-item" href="{% url 'retailer_products' %}">🛒 My Orders</a></li>
-            <li><a class="dropdown-item" href="{% url 'retailer_samples' %}">⭐ My Sample Ratings</a></li>
-          </ul>
-        </li>
-        {% endif %}
-
-        <!-- Bell -->
-        <li class="nav-item dropdown">
-          {% if user_type %}
-          <a class="nav-link position-relative" href="#" id="navbarDropdown" role="button"
-             data-bs-toggle="dropdown" style="font-size:1.3rem;padding:6px 12px !important;">
-            🔔
-            {% if navbar_notes and navbar_notes|length > 0 %}
-            <span class="badge bg-danger position-absolute top-0 start-100 translate-middle" id="bellBadge"
-                  style="font-size:.62rem;min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;">
-              {{ navbar_notes|length }}
-            </span>
-            {% endif %}
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end" style="width:318px;max-height:400px;overflow-y:auto;">
-            {% if navbar_notes %}
-              {% for n in navbar_notes %}
-              <a class="dropdown-item" href="{% url 'mark_notification_read' n.id %}" data-nid="{{ n.id }}">
-                {{ n.message|truncatechars:50 }}<br>
-                <small style="color:var(--txt3);font-size:.76rem;">{{ n.timestamp|date:"d M, h:i A" }}</small>
-                {% if not n.is_read %}<span class="badge bg-primary ms-1" style="font-size:.68rem;">New</span>{% endif %}
-              </a>
-              {% endfor %}
-            {% else %}
-              <li class="dropdown-item text-center" style="color:var(--txt3);">📭 No new notifications</li>
-            {% endif %}
-          </ul>
-          {% endif %}
-        </li>
-
-        <!-- Profile – Farmer/Retailer -->
-        {% if request.session.user_type in "farmer retailer" %}
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" href="#" data-bs-toggle="dropdown">
-            <img src="{{ request.session.profile_image|default:'/static/images/no-image.jpg' }}"
-                 style="width:36px;height:36px;border-radius:50%;object-fit:cover;" alt="Profile">
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="{% url 'profile' %}">👤 My Profile</a></li>
-            <li><a class="dropdown-item" href="{% url 'profile_update' %}">✏️ Update Profile</a></li>
-            <li><a class="dropdown-item" style="color:#f87171!important;" href="{% url 'profile_delete' %}">🗑️ Delete Profile</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" style="color:#fbbf24!important;" href="{% url 'logout' %}">🚪 Logout</a></li>
-          </ul>
-        </li>
-        {% endif %}
-
-        <!-- Profile – Driver -->
-        {% if request.session.user_type == "driver" %}
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" href="#" data-bs-toggle="dropdown">
-            <img src="{{ request.session.profile_image|default:'/static/images/no-image.jpg' }}"
-                 style="width:36px;height:36px;border-radius:50%;object-fit:cover;" alt="Profile">
-          </a>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="{% url 'driver_dashboard' %}">📊 Dashboard</a></li>
-            <li><a class="dropdown-item" href="{% url 'driver_deliveries' %}">🚚 Assigned Deliveries</a></li>
-            <li><a class="dropdown-item" href="{% url 'driver_sample_deliveries' %}">🧪 Sample Deliveries</a></li>
-            <li><a class="dropdown-item" href="{% url 'driver_profile' %}">👤 Profile</a></li>
-            <li><a class="dropdown-item" href="{% url 'driver_profile_update' %}">✏️ Update Profile</a></li>
-            <li><a class="dropdown-item" style="color:#f87171!important;" href="{% url 'driver_profile_delete' %}">🗑️ Delete Profile</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" style="color:#fbbf24!important;" href="{% url 'logout' %}">🚪 Logout</a></li>
-          </ul>
-        </li>
-        {% endif %}
-      </ul>
-    </div>
-  </div>
-</nav>
-
-{% if messages %}
-<div style="position:fixed; top:75px; right:20px; z-index:99999; min-width:300px; max-width:380px;">
-  {% for message in messages %}
-  <div class="alert alert-dismissible fade show mb-2
-    {% if message.tags == 'success' %}alert-success
-    {% elif message.tags == 'error' %}alert-danger
-    {% else %}alert-info{% endif %}"
-    role="alert"
-    style="border-radius:14px; box-shadow:var(--sh3); font-weight:600; font-size:.9rem; border:none;">
-    {{ message }}
-    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-  </div>
-  {% endfor %}
-</div>
-{% endif %}
-<!-- Main Content -->
-<div class="container-fluid p-0 content-wrapper">
-  {% block body %}{% endblock %}
-</div>
-
-<!-- Footer -->
-<footer>
-  <div class="container" style="position:relative;z-index:1;">
-    <div class="row">
-      <div class="col-md-4 mb-4">
-        <h5>About AgriLink</h5>
-        <p>AgriLink connects farmers and retailers directly, removing middlemen and enabling fair pricing for everyone.</p>
-        <p style="color:rgba(255,255,255,.5);font-size:.82rem;margin-top:8px;">🌾 Farm to Store, Direct &amp; Fair!</p>
-      </div>
-      <div class="col-md-4 mb-4">
-        <h5>Quick Links</h5>
-        <a href="{% url 'home' %}" class="d-block">🏠 Home</a>
-        <a href="{% url 'home' %}#about" class="d-block">ℹ️ About</a>
-        <a href="{% url 'home' %}#contact" class="d-block">📩 Contact</a>
-        <a href="{% url 'farmer_register' %}" class="d-block">👨‍🌾 Farmer Register</a>
-        <a href="{% url 'retailer_register' %}" class="d-block">🏪 Retailer Register</a>
-      </div>
-      <div class="col-md-4 mb-4">
-        <h5>Contact Info</h5>
-        <p>📍 Pune, Maharashtra, India</p>
-        <p>📞 <a href="tel:+918928958677" style="color:rgba(255,255,255,.78)!important;">+91 8928958677</a></p>
-        <p>✉️ <a href="mailto:support@agrilink.com" style="color:rgba(255,255,255,.78)!important;">support@agrilink.com</a></p>
-        <p>⏰ Mon – Sat: 9:00 AM – 6:00 PM</p>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      &copy; 2025 AgriLink. All Rights Reserved. &nbsp;|&nbsp; Made with 💚 for Farmers
-    </div>
-  </div>
-</footer>
-
-<!-- JS -->
-<script>
-
-  /* ===========================
-     DARK MODE — FIXED
-  =========================== */
-  const THEME_KEY = 'agrilink-theme'; // एकच key सगळीकडे
-
-  const dmBtn  = document.getElementById('darkModeToggle');
-  const dmIcon = document.getElementById('dmIcon');
-  const dmTip  = document.getElementById('dmTip');
-
-  function applyTheme(t) {
-    if (t === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-      if(dmIcon) dmIcon.textContent = '☀️';
-      if(dmTip)  dmTip.textContent  = 'Light Mode';
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-      if(dmIcon) dmIcon.textContent = '🌙';
-      if(dmTip)  dmTip.textContent  = 'Dark Mode';
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/static/service-worker.js');
     }
-  }
+  </script>
 
-  // Page load वर apply कर
-  applyTheme(localStorage.getItem(THEME_KEY) || 'light');
+  <!-- Click Sound -->
+  <audio id="clickSound" src="{% static 'audio/universfield-computer-mouse-click-352734.mp3' %}" preload="auto"></audio>
 
-  // Toggle click
-  if(dmBtn) {
-    dmBtn.addEventListener('click', () => {
-      const current = document.documentElement.getAttribute('data-theme');
-      const next = current === 'dark' ? 'light' : 'dark';
-      localStorage.setItem(THEME_KEY, next);
-      applyTheme(next);
+  <!-- Dark Mode Toggle -->
+  <button id="darkModeToggle" aria-label="Toggle Dark Mode">
+    <span id="dmIcon">🌙</span>
+    <span class="dm-tip" id="dmTip">Dark Mode</span>
+  </button>
+
+  <!-- Translate Floating Button -->
+  <div id="translate-floating-btn" title="Change Language">🌐</div>
+  <div id="translate-popup">
+    <div id="google_translate_element"></div>
+  </div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top" id="mainNavbar">
+    <div class="container-fluid">
+      <a class="navbar-brand text-white" href="{% url 'home' %}">🌿 AgriLink</a>
+
+      <!-- ✅ FIX 5: navbar-toggler uses correct data-bs attributes -->
+      <button class="navbar-toggler" type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#navMenu"
+              aria-controls="navMenu"
+              aria-expanded="false"
+              aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navMenu">
+        <ul class="navbar-nav ms-auto align-items-center" style="gap:4px;">
+          <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#about">About</a></li>
+          <li class="nav-item"><a class="nav-link" href="{% url 'home' %}#contact">Contact</a></li>
+
+          {% if not request.session.name %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false">Farmer</a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{% url 'farmer_register' %}">📝 Register</a></li>
+              <li><a class="dropdown-item" href="{% url 'farmer_login' %}">🔐 Login</a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false">Retailer</a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{% url 'retailer_register' %}">📝 Register</a></li>
+              <li><a class="dropdown-item" href="{% url 'retailer_login' %}">🔐 Login</a></li>
+            </ul>
+          </li>
+          {% endif %}
+
+          {% if request.session.user_type == "farmer" %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false">Farmer</a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{% url 'farmer_dashboard' %}">📊 Dashboard</a></li>
+              <li><a class="dropdown-item" href="{% url 'add_product' %}">➕ Add Product</a></li>
+              <li><a class="dropdown-item" href="{% url 'show_products' %}">🌾 My Products</a></li>
+              <li><a class="dropdown-item" href="{% url 'manage_bids' %}">📩 Price Offers</a></li>
+              <li><a class="dropdown-item" href="{% url 'farmer_order' %}">📦 Orders</a></li>
+              <li><a class="dropdown-item" href="{% url 'farmer_sample_requests' %}">🧪 Sample Requests</a></li>
+            </ul>
+          </li>
+          {% endif %}
+
+          {% if request.session.user_type == "retailer" %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false">Retailer</a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{% url 'retailer_dashboard' %}">📊 Dashboard</a></li>
+              <li><a class="dropdown-item" href="{% url 'browse_products' %}">🔍 Browse Products</a></li>
+              <li><a class="dropdown-item" href="{% url 'retailer_products' %}">🛒 My Orders</a></li>
+              <li><a class="dropdown-item" href="{% url 'retailer_samples' %}">⭐ My Sample Ratings</a></li>
+            </ul>
+          </li>
+          {% endif %}
+
+          <!-- Bell Notification -->
+          <li class="nav-item dropdown">
+            {% if user_type %}
+            <a class="nav-link position-relative" href="#" id="navbarBellDropdown" role="button"
+               data-bs-toggle="dropdown" aria-expanded="false"
+               style="font-size:1.3rem;padding:6px 12px !important;">
+              🔔
+              {% if navbar_notes and navbar_notes|length > 0 %}
+              <span class="badge bg-danger position-absolute top-0 start-100 translate-middle" id="bellBadge"
+                    style="font-size:.62rem;min-width:17px;height:17px;border-radius:9px;display:flex;align-items:center;justify-content:center;">
+                {{ navbar_notes|length }}
+              </span>
+              {% endif %}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" style="width:318px;max-height:400px;overflow-y:auto;">
+              {% if navbar_notes %}
+                {% for n in navbar_notes %}
+                <a class="dropdown-item" href="{% url 'mark_notification_read' n.id %}" data-nid="{{ n.id }}">
+                  {{ n.message|truncatechars:50 }}<br>
+                  <small style="color:var(--txt3);font-size:.76rem;">{{ n.timestamp|date:"d M, h:i A" }}</small>
+                  {% if not n.is_read %}<span class="badge bg-primary ms-1" style="font-size:.68rem;">New</span>{% endif %}
+                </a>
+                {% endfor %}
+              {% else %}
+                <li class="dropdown-item text-center" style="color:var(--txt3);">📭 No new notifications</li>
+              {% endif %}
+            </ul>
+            {% endif %}
+          </li>
+
+          <!-- ✅ FIX 4: Profile image — cache-busted with timestamp so updated image shows immediately -->
+          {% if request.session.user_type == "farmer" or request.session.user_type == "retailer" %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" href="#"
+               role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <img src="{{ request.session.profile_image|default:'/static/images/no-image.jpg' }}?v={% now 'U' %}"
+                   class="nav-profile-img" alt="Profile">
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{% url 'profile' %}">👤 My Profile</a></li>
+              <li><a class="dropdown-item" href="{% url 'profile_update' %}">✏️ Update Profile</a></li>
+              <li><a class="dropdown-item" style="color:#f87171!important;" href="{% url 'profile_delete' %}">🗑️ Delete Profile</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" style="color:#fbbf24!important;" href="{% url 'logout' %}">🚪 Logout</a></li>
+            </ul>
+          </li>
+          {% endif %}
+
+          <!-- Profile – Driver -->
+          {% if request.session.user_type == "driver" %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center gap-1" href="#"
+               role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              <img src="{{ request.session.profile_image|default:'/static/images/no-image.jpg' }}?v={% now 'U' %}"
+                   class="nav-profile-img" alt="Profile">
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{% url 'driver_dashboard' %}">📊 Dashboard</a></li>
+              <li><a class="dropdown-item" href="{% url 'driver_deliveries' %}">🚚 Assigned Deliveries</a></li>
+              <li><a class="dropdown-item" href="{% url 'driver_sample_deliveries' %}">🧪 Sample Deliveries</a></li>
+              <li><a class="dropdown-item" href="{% url 'driver_profile' %}">👤 Profile</a></li>
+              <li><a class="dropdown-item" href="{% url 'driver_profile_update' %}">✏️ Update Profile</a></li>
+              <li><a class="dropdown-item" style="color:#f87171!important;" href="{% url 'driver_profile_delete' %}">🗑️ Delete Profile</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" style="color:#fbbf24!important;" href="{% url 'logout' %}">🚪 Logout</a></li>
+            </ul>
+          </li>
+          {% endif %}
+
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  {% if messages %}
+  <div style="position:fixed; top:75px; right:20px; z-index:99999; min-width:300px; max-width:380px;">
+    {% for message in messages %}
+    <div class="alert alert-dismissible fade show mb-2
+      {% if message.tags == 'success' %}alert-success
+      {% elif message.tags == 'error' %}alert-danger
+      {% else %}alert-info{% endif %}"
+      role="alert"
+      style="border-radius:14px; box-shadow:var(--sh3); font-weight:600; font-size:.9rem; border:none;">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Main Content -->
+  <div class="container-fluid p-0 content-wrapper" style="padding-top:66px;">
+    {% block body %}{% endblock %}
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container" style="position:relative;z-index:1;">
+      <div class="row">
+        <div class="col-md-4 mb-4">
+          <h5>About AgriLink</h5>
+          <p>AgriLink connects farmers and retailers directly, removing middlemen and enabling fair pricing for everyone.</p>
+          <p style="color:rgba(255,255,255,.5);font-size:.82rem;margin-top:8px;">🌾 Farm to Store, Direct &amp; Fair!</p>
+        </div>
+        <div class="col-md-4 mb-4">
+          <h5>Quick Links</h5>
+          <a href="{% url 'home' %}" class="d-block">🏠 Home</a>
+          <a href="{% url 'home' %}#about" class="d-block">ℹ️ About</a>
+          <a href="{% url 'home' %}#contact" class="d-block">📩 Contact</a>
+          <a href="{% url 'farmer_register' %}" class="d-block">👨‍🌾 Farmer Register</a>
+          <a href="{% url 'retailer_register' %}" class="d-block">🏪 Retailer Register</a>
+        </div>
+        <div class="col-md-4 mb-4">
+          <h5>Contact Info</h5>
+          <p>📍 Pune, Maharashtra, India</p>
+          <p>📞 <a href="tel:+918928958677" style="color:rgba(255,255,255,.78)!important;">+91 8928958677</a></p>
+          <p>✉️ <a href="mailto:support@agrilink.com" style="color:rgba(255,255,255,.78)!important;">support@agrilink.com</a></p>
+          <p>⏰ Mon – Sat: 9:00 AM – 6:00 PM</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        &copy; 2025 AgriLink. All Rights Reserved. &nbsp;|&nbsp; Made with 💚 for Farmers
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===========================
+       JAVASCRIPT
+  =========================== -->
+  <script>
+    /* ===========================
+       DARK MODE
+    =========================== */
+    const THEME_KEY = 'agrilink-theme';
+    const dmBtn  = document.getElementById('darkModeToggle');
+    const dmIcon = document.getElementById('dmIcon');
+    const dmTip  = document.getElementById('dmTip');
+
+    function applyTheme(t) {
+      if (t === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        if(dmIcon) dmIcon.textContent = '☀️';
+        if(dmTip)  dmTip.textContent  = 'Light Mode';
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        if(dmIcon) dmIcon.textContent = '🌙';
+        if(dmTip)  dmTip.textContent  = 'Dark Mode';
+      }
+    }
+    // ✅ FIX 1: Only call once here (head script already set the attribute to prevent flash)
+    applyTheme(localStorage.getItem(THEME_KEY) || 'light');
+
+    if(dmBtn) {
+      dmBtn.addEventListener('click', () => {
+        const next = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        localStorage.setItem(THEME_KEY, next);
+        applyTheme(next);
+      });
+    }
+
+    /* ===========================
+       CLICK SOUND
+    =========================== */
+    document.querySelectorAll('a, button').forEach(el => {
+      el.addEventListener('click', () => {
+        const s = document.getElementById('clickSound');
+        if (s) { s.currentTime = 0; s.play().catch(()=>{}); }
+      });
     });
-  }
 
-  /* ===========================
-     CLICK SOUND
-  =========================== */
-  document.querySelectorAll('a, button').forEach(el => {
-    el.addEventListener('click', () => {
-      const s = document.getElementById('clickSound');
-      if (s) { s.currentTime = 0; s.play().catch(()=>{}); }
+    /* ===========================
+       TRANSLATE
+    =========================== */
+    const tBtn = document.getElementById('translate-floating-btn');
+    const tPop = document.getElementById('translate-popup');
+    if (tBtn && tPop) {
+      tBtn.onclick = () => {
+        tPop.style.display = tPop.style.display === 'block' ? 'none' : 'block';
+      };
+      document.addEventListener('click', e => {
+        if (!tBtn.contains(e.target) && !tPop.contains(e.target))
+          tPop.style.display = 'none';
+      });
+    }
+
+    /* ===========================
+       NOTIFICATION BADGE
+    =========================== */
+    document.querySelectorAll('.dropdown-menu a[data-nid]').forEach(l => {
+      l.addEventListener('click', () => {
+        const b = document.getElementById('bellBadge');
+        if (b) { +b.textContent > 1 ? b.textContent = +b.textContent - 1 : b.remove(); }
+      });
     });
-  });
 
-  /* ===========================
-     TRANSLATE
-  =========================== */
-  const tBtn = document.getElementById('translate-floating-btn');
-  const tPop = document.getElementById('translate-popup');
-  if (tBtn && tPop) {
-    tBtn.onclick = () => {
-      tPop.style.display = tPop.style.display === 'block' ? 'none' : 'block';
-    };
-    document.addEventListener('click', e => {
-      if (!tBtn.contains(e.target) && !tPop.contains(e.target))
-        tPop.style.display = 'none';
+    /* ===========================
+       NAVBAR SCROLL
+    =========================== */
+    const nav = document.getElementById('mainNavbar');
+    if (nav) window.addEventListener('scroll', () =>
+      nav.classList.toggle('scrolled', window.scrollY > 50)
+    );
+
+    /* ===========================
+       ✅ FIX 4: Profile image — force reload if src has changed
+       (handles cases where session image path updates but browser cache serves old image)
+    =========================== */
+    document.querySelectorAll('.nav-profile-img').forEach(img => {
+      img.addEventListener('error', function() {
+        this.src = '/static/images/no-image.jpg';
+      });
     });
-  }
+  </script>
 
-  /* ===========================
-     NOTIFICATION BADGE
-  =========================== */
-  document.querySelectorAll('.dropdown-menu a[data-nid]').forEach(l => {
-    l.addEventListener('click', () => {
-      const b = document.getElementById('bellBadge');
-      if (b) { +b.textContent > 1 ? b.textContent = +b.textContent - 1 : b.remove(); }
-    });
-  });
-
-  /* ===========================
-     NAVBAR SCROLL
-  =========================== */
-  const nav = document.getElementById('mainNavbar');
-  if (nav) window.addEventListener('scroll', () =>
-    nav.classList.toggle('scrolled', window.scrollY > 50)
-  );
-
-</script>
-
-<!-- Google Translate -->
-<script>
-function googleTranslateElementInit() {
-  new google.translate.TranslateElement({
-    pageLanguage: 'en',
-    includedLanguages: 'en,hi,mr,ta,te,gu,pa,bn,kn',
-    autoDisplay: false,
-    multilanguagePage: false
-  }, 'google_translate_element');
-}
-</script>
-<script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
+  <!-- Google Translate -->
+  <script>
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'en,hi,mr,ta,te,gu,pa,bn,kn',
+        autoDisplay: false,
+        multilanguagePage: false
+      }, 'google_translate_element');
+    }
+  </script>
+  <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
 
 </body>
 </html>
