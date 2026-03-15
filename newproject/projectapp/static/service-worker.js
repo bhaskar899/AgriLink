@@ -1,5 +1,5 @@
 // AgriLink Service Worker v1.0
-const CACHE_NAME = 'agrilink-v1';
+const CACHE_NAME = 'agrilink-v2';
 
 // Pages/assets to cache for offline use
 const STATIC_ASSETS = [
