@@ -289,6 +289,12 @@
     .notif-icon    { width: 42px; height: 42px; font-size: 1rem; border-radius: 12px; }
     .notif-msg     { font-size: .88rem; }
   }
+
+  .notif-msg.expanded {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+}
 </style>
 
 <div class="notif-wrapper">
@@ -450,8 +456,26 @@
     });
   });
 
-  function openNotification(id) {
-    window.location.href = '/notifications/read/' + id + '/';
-  }
+ // CORRECT — existing view ka URL use karo
+function openNotification(id) {
+    const card = document.querySelector(`[onclick="openNotification('${id}')"]`);
+    const msgEl = card ? card.querySelector('.notif-msg') : null;
+
+    if (msgEl) {
+        // Pura message expand karo
+        msgEl.classList.toggle('expanded');
+    }
+
+    // Mark as read bhi karo
+    fetch('/mark_notification_read/' + id + '/', { method: 'GET' })
+        .then(() => {
+            const unreadBadge = card ? card.querySelector('.badge-new') : null;
+            if (unreadBadge) unreadBadge.remove();
+            if (card) {
+                card.classList.remove('unread');
+                card.dataset.read = 'read';
+            }
+        });
+}
 </script>
 {% endblock %}

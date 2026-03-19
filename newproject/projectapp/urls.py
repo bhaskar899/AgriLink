@@ -174,16 +174,18 @@ path('retailer/reviews/', views.all_sample_reviews, name='retailer_sample_review
     path("api/", sales_api, name="sales_api_short"),
 
 path('retailer/samples/', views.retailer_samples, name='retailer_samples'),
-
+path('mark_notification_read/<int:nid>/', views.mark_notification_read, name='mark_notification_read'),
 path('place_bid/<int:product_id>/', views.place_bid, name='place_bid'),
 path('manage_bids/', views.manage_bids, name='manage_bids'),
 path('accept_bid/<int:bid_id>/', views.accept_bid, name='accept_bid'),
 path('reject_bid/<int:bid_id>/', views.reject_bid, name='reject_bid'),
 path("pay_bid/<int:bid_id>/", views.pay_bid, name="pay_bid"),
 path('test-email/', views.test_email, name='test_email'),
-
+path('delete_notification/<int:id>/', views.delete_notification, name='delete_notification'),
 path('mark_notification_read/<int:nid>/', views.mark_notification_read, name='mark_notification_read'),
 path('offline/', views.offline_view, name='offline'),
+path('sample_payment/<int:sample_id>/', views.sample_payment_page, name='sample_payment'),
+path('sample_payment_success/<int:sample_id>/', views.sample_payment_success, name='sample_payment_success'),
 ]
 
 # ---------------- MEDIA & STATIC ----------------

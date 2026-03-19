@@ -26,6 +26,11 @@ body {
     border-radius: 30px 30px 0 0;
 }
 
+/* Retailer header — blue theme */
+.profile-header-strip.retailer {
+    background: linear-gradient(to right, #0c4a6e, #0369a1);
+}
+
 .profile-card {
     background: var(--glass-bg);
     backdrop-filter: blur(10px);
@@ -70,6 +75,8 @@ body {
     margin-bottom: 10px;
 }
 
+.farmer-info-item i.retailer-icon { color: #0369a1; }
+
 .btn-edit-pro {
     background: var(--farmer-dark);
     color: white;
@@ -94,12 +101,22 @@ body {
 
 <div class="container profile-wrapper">
     <div class="mx-auto" style="max-width: 800px;">
-        <a href="/farmer_dashboard/" class="back-btn-custom">
-            <i class="fas fa-arrow-left me-2"></i> Dashboard
-        </a>
+
+        <!-- Dashboard back link — farmer ya retailer ke hisaab se -->
+        {% if request.session.user_type == "farmer" %}
+            <a href="/farmer_dashboard/" class="back-btn-custom">
+                <i class="fas fa-arrow-left me-2"></i> Dashboard
+            </a>
+        {% else %}
+            <a href="/retailer_dashboard/" class="back-btn-custom">
+                <i class="fas fa-arrow-left me-2"></i> Dashboard
+            </a>
+        {% endif %}
 
         <div class="card profile-card">
-            <div class="profile-header-strip"></div>
+
+            <!-- Header strip — farmer=green, retailer=blue -->
+            <div class="profile-header-strip {% if request.session.user_type == 'retailer' %}retailer{% endif %}"></div>
 
             <div class="card-body pt-0 px-4 pb-5">
                 <div class="text-center">
@@ -111,53 +128,80 @@ body {
                         {% endif %}
                     </div>
                     <h2 class="fw-bold mt-3 mb-1 text-dark">{{ user.name }}</h2>
-                    <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">
-                        <i class="fas fa-seedling me-1"></i> Verified AgriLink Farmer
-                    </span>
+
+                    {% if request.session.user_type == "farmer" %}
+                        <span class="badge bg-success-subtle text-success rounded-pill px-3 py-2">
+                            <i class="fas fa-seedling me-1"></i> Verified AgriLink Farmer
+                        </span>
+                    {% else %}
+                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2">
+                            <i class="fas fa-store me-1"></i> Verified AgriLink Retailer
+                        </span>
+                    {% endif %}
                 </div>
 
                 <hr class="my-4 opacity-25">
 
                 <div class="farmer-info-grid">
+
+                    <!-- Common fields — dono ke liye -->
                     <div class="farmer-info-item">
-                        <i class="fas fa-envelope-open-text"></i>
+                        <i class="fas fa-envelope-open-text {% if request.session.user_type == 'retailer' %}retailer-icon{% endif %}"></i>
                         <small class="d-block text-muted">Email Address</small>
                         <span class="fw-bold">{{ user.email }}</span>
                     </div>
                     <div class="farmer-info-item">
-                        <i class="fas fa-phone-alt"></i>
+                        <i class="fas fa-phone-alt {% if request.session.user_type == 'retailer' %}retailer-icon{% endif %}"></i>
                         <small class="d-block text-muted">Contact Number</small>
                         <span class="fw-bold">{{ user.contact }}</span>
                     </div>
                     <div class="farmer-info-item">
-                        <i class="fas fa-venus-mars"></i>
-                        <small class="d-block text-muted">Gender Identity</small>
+                        <i class="fas fa-venus-mars {% if request.session.user_type == 'retailer' %}retailer-icon{% endif %}"></i>
+                        <small class="d-block text-muted">Gender</small>
                         <span class="fw-bold">{{ user.gender }}</span>
                     </div>
                     <div class="farmer-info-item">
-                        <i class="fas fa-map-marked-alt"></i>
-                        <small class="d-block text-muted">Registered Address</small>
+                        <i class="fas fa-map-marked-alt {% if request.session.user_type == 'retailer' %}retailer-icon{% endif %}"></i>
+                        <small class="d-block text-muted">
+                            {% if request.session.user_type == "farmer" %}Registered Address{% else %}Shop Address{% endif %}
+                        </small>
                         <span class="fw-bold">{{ user.address }}</span>
                     </div>
+
+                    <!-- Farmer only: Bank Details -->
+                    {% if request.session.user_type == "farmer" %}
+                    <div class="farmer-info-item">
+                        <i class="fas fa-university"></i>
+                        <small class="d-block text-muted">Bank Account Number</small>
+                        <span class="fw-bold">{{ user.bank_account_number }}</span>
+                    </div>
+                    <div class="farmer-info-item">
+                        <i class="fas fa-code"></i>
+                        <small class="d-block text-muted">IFSC Code</small>
+                        <span class="fw-bold">{{ user.ifsc_code }}</span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Retailer only: Shop + GST -->
+                    {% if request.session.user_type == "retailer" %}
+                    <div class="farmer-info-item">
+                        <i class="fas fa-store retailer-icon"></i>
+                        <small class="d-block text-muted">Shop / Trade Name</small>
+                        <span class="fw-bold">{{ user.shop_number }}</span>
+                    </div>
+                    <div class="farmer-info-item">
+                        <i class="fas fa-file-invoice retailer-icon"></i>
+                        <small class="d-block text-muted">GST Number</small>
+                        <span class="fw-bold">{{ user.gst_number }}</span>
+                    </div>
+                    {% endif %}
+
                 </div>
-                <div class="farmer-info-item">
-    <i class="fas fa-university"></i>
-    <small class="d-block text-muted">Bank Account Number</small>
-    <span class="fw-bold">{{ user.bank_account_number }}</span>
-</div>
-
-<div class="farmer-info-item">
-    <i class="fas fa-code"></i>
-    <small class="d-block text-muted">IFSC Code</small>
-    <span class="fw-bold">{{ user.ifsc_code }}</span>
-</div>
-
 
                 <div class="mt-5 text-center px-md-5">
                     <a href="/profile_update/" class="btn btn-edit-pro text-decoration-none d-block">
                         <i class="fas fa-user-edit me-2"></i> Update Profile Information
                     </a>
-
                     <a href="/profile_delete/" class="text-danger small d-block mt-4 text-decoration-none fw-bold opacity-75">
                         <i class="fas fa-user-slash me-1"></i> Delete Account Permanently
                     </a>

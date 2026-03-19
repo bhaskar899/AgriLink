@@ -11,105 +11,72 @@
     --driver-dark: #0f172a;
     --glass: rgba(255, 255, 255, 0.9);
 }
-
 body {
     background: linear-gradient(135deg, #f0fdf4 0%, #e2e8f0 100%);
     font-family: 'Plus Jakarta Sans', sans-serif;
     min-height: 100vh;
 }
-
 .profile-container { margin-top: 110px; padding-bottom: 60px; }
 
-/* Back Button */
 .back-btn-wrapper { margin-bottom: 20px; }
 .custom-back-btn {
-    border: none;
-    padding: 10px 22px;
-    border-radius: 15px;
-    background: white;
-    color: var(--driver-dark);
-    font-weight: 700;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-    transition: 0.3s;
+    border: none; padding: 10px 22px; border-radius: 15px;
+    background: white; color: var(--driver-dark); font-weight: 700;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: 0.3s;
 }
 .custom-back-btn:hover { background: var(--driver-dark); color: white; transform: translateX(-5px); }
 
-/* Profile Card */
 .profile-card {
-    background: var(--glass);
-    backdrop-filter: blur(10px);
-    border-radius: 30px;
-    border: 1px solid rgba(255,255,255,0.3);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
-    overflow: hidden;
+    background: var(--glass); backdrop-filter: blur(10px);
+    border-radius: 30px; border: 1px solid rgba(255,255,255,0.3);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05); overflow: hidden;
 }
-
 .profile-header-bg {
     background: linear-gradient(to right, #065f46, #10b981);
-    height: 120px;
-    width: 100%;
+    height: 120px; width: 100%;
 }
-
 .profile-img-wrapper {
-    margin-top: -70px;
-    position: relative;
-    display: inline-block;
+    margin-top: -70px; position: relative; display: inline-block;
 }
-
 .profile-main-img {
-    width: 140px;
-    height: 140px;
-    object-fit: cover;
-    border: 5px solid white;
-    border-radius: 40px;
+    width: 140px; height: 140px; object-fit: cover;
+    border: 5px solid white; border-radius: 40px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
-
 .info-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    padding: 20px;
+    gap: 15px; padding: 10px;
 }
-
 .info-item {
-    background: #f8fafc;
-    padding: 15px;
-    border-radius: 20px;
-    border: 1px solid #e2e8f0;
+    background: #f8fafc; padding: 16px;
+    border-radius: 20px; border: 1px solid #e2e8f0;
 }
-
-.info-item i {
-    color: var(--driver-emerald);
-    margin-bottom: 10px;
-    font-size: 1.2rem;
-}
+.info-item i { color: var(--driver-emerald); margin-bottom: 8px; font-size: 1.1rem; display: block; }
 
 .doc-preview {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
-    border-radius: 15px;
-    cursor: pointer;
-    transition: 0.3s;
+    width: 100%; height: 180px; object-fit: cover;
+    border-radius: 15px; cursor: pointer; transition: 0.3s;
 }
 .doc-preview:hover { transform: scale(1.02); }
 
 .btn-update {
-    background: var(--driver-dark);
-    color: white;
-    border-radius: 18px;
-    padding: 15px;
-    font-weight: 700;
-    border: none;
-    transition: 0.3s;
+    background: var(--driver-dark); color: white; border-radius: 18px;
+    padding: 15px; font-weight: 700; border: none; transition: 0.3s;
 }
 .btn-update:hover { background: #1e293b; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); color: white; }
+
+.section-heading {
+    font-size: 1rem; font-weight: 800; color: var(--driver-dark);
+    margin: 28px 0 14px; display: flex; align-items: center; gap: 8px;
+    border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;
+}
+.section-heading i { color: var(--driver-emerald); }
 </style>
 
 <div class="container profile-container">
     <div class="back-btn-wrapper">
-        <button class="custom-back-btn" onclick="window.history.back()">
+        <button class="custom-back-btn" onclick="window.location.href='/driver_dashboard/'">
             <i class="fas fa-arrow-left me-2"></i>Dashboard
         </button>
     </div>
@@ -118,17 +85,23 @@ body {
         <div class="profile-header-bg"></div>
 
         <div class="card-body pt-0 px-4 pb-4">
+
+            <!-- Avatar + Name -->
             <div class="text-center">
                 <div class="profile-img-wrapper">
                     <img src="{% if driver.driver_photo %}{{ driver.driver_photo.url }}{% else %}/static/images/no-image.jpg{% endif %}"
                          class="profile-main-img">
                 </div>
                 <h2 class="fw-bold mt-3 mb-1">{{ driver.name }}</h2>
-                <span class="badge bg-success-subtle text-success rounded-pill px-3">Verified Professional Driver</span>
+                <span class="badge bg-success-subtle text-success rounded-pill px-3">
+                    <i class="fas fa-truck me-1"></i> Verified Professional Driver
+                </span>
             </div>
 
             <hr class="my-4 opacity-50">
 
+            <!-- ===== PERSONAL INFO ===== -->
+            <div class="section-heading"><i class="fas fa-user-circle"></i> Personal Information</div>
             <div class="info-grid">
                 <div class="info-item">
                     <i class="fas fa-envelope"></i>
@@ -138,75 +111,124 @@ body {
                 <div class="info-item">
                     <i class="fas fa-phone"></i>
                     <small class="d-block text-muted">Phone Number</small>
-                    <span class="fw-bold">{{ driver.phone }}</span>
-                </div>
-                <div class="info-item">
-                    <i class="fas fa-truck"></i>
-                    <small class="d-block text-muted">Vehicle Details</small>
-                    <span class="fw-bold text-uppercase">{{ driver.vehicle_type }} ({{ driver.vehicle_number }})</span>
-                </div>
-                <div class="info-item">
-                    <i class="fas fa-weight-hanging"></i>
-                    <small class="d-block text-muted">Load Capacity</small>
-                    <span class="fw-bold">{{ driver.capacity_kg }} kg</span>
+                    <span class="fw-bold">
+                        {{ driver.phone }}
+                        {% if driver.phone_verified %}
+                            <span class="badge bg-success-subtle text-success ms-1" style="font-size:.65rem;">✔ Verified</span>
+                        {% endif %}
+                    </span>
                 </div>
                 <div class="info-item">
                     <i class="fas fa-map-marker-alt"></i>
                     <small class="d-block text-muted">Base Location</small>
-                    <span class="fw-bold">{{ driver.location }}</span>
+                    <span class="fw-bold">{{ driver.location|default:"Not set" }}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-circle {% if driver.is_available %}text-success{% else %}text-danger{% endif %}"></i>
+                    <small class="d-block text-muted">Availability Status</small>
+                    <span class="fw-bold {% if driver.is_available %}text-success{% else %}text-danger{% endif %}">
+                        {% if driver.is_available %}Available{% else %}Unavailable{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <!-- ===== VEHICLE INFO ===== -->
+            <div class="section-heading"><i class="fas fa-truck"></i> Vehicle Details</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <i class="fas fa-truck"></i>
+                    <small class="d-block text-muted">Vehicle Type</small>
+                    <span class="fw-bold text-capitalize">{{ driver.vehicle_type|default:"Not set" }}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-hashtag"></i>
+                    <small class="d-block text-muted">Vehicle Number</small>
+                    <span class="fw-bold text-uppercase">{{ driver.vehicle_number|default:"Not set" }}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-weight-hanging"></i>
+                    <small class="d-block text-muted">Load Capacity</small>
+                    <span class="fw-bold">{{ driver.capacity_kg|default:"—" }} kg</span>
                 </div>
                 <div class="info-item">
                     <i class="fas fa-tag"></i>
-                    <small class="d-block text-muted">Service Rate</small>
-                    <span class="fw-bold text-success">₹{{ driver.rate_per_km }}/km</span>
+                    <small class="d-block text-muted">Rate per KM</small>
+                    <span class="fw-bold text-success">₹{{ driver.rate_per_km|default:"—" }}/km</span>
                 </div>
             </div>
 
-            <h5 class="fw-bold mt-4 mb-3"><i class="fas fa-file-contract me-2 text-primary"></i>Verification Documents</h5>
+            <!-- ===== LICENSE INFO ===== -->
+            <div class="section-heading"><i class="fas fa-id-card"></i> License Details</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <i class="fas fa-calendar-plus"></i>
+                    <small class="d-block text-muted">License Issue Date</small>
+                    <span class="fw-bold">{{ driver.license_issue_date|default:"Not set" }}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-calendar-xmark"></i>
+                    <small class="d-block text-muted">License Expiry Date</small>
+                    <span class="fw-bold">{{ driver.license_expiry_date|default:"Not set" }}</span>
+                </div>
+            </div>
+
+            <!-- ===== DOCUMENTS ===== -->
+            <div class="section-heading"><i class="fas fa-file-contract"></i> Verification Documents</div>
             <div class="row g-3">
                 <div class="col-md-6 text-center">
                     <div class="p-3 border rounded-4 bg-light">
-                        <small class="text-muted d-block mb-2">Driver's License</small>
+                        <small class="text-muted d-block mb-2 fw-bold">Driver's License</small>
                         {% if driver.license_doc %}
                             {% if ".pdf" in driver.license_doc.url|lower %}
-                                <a href="{{ driver.license_doc.url }}" target="_blank" class="btn btn-outline-primary btn-sm w-100 py-3">
+                                <a href="{{ driver.license_doc.url }}" target="_blank"
+                                   class="btn btn-outline-primary btn-sm w-100 py-3">
                                     <i class="fas fa-file-pdf fa-2x d-block mb-2"></i> View License PDF
                                 </a>
                             {% else %}
-                                <img src="{{ driver.license_doc.url }}" class="doc-preview shadow-sm" onclick="window.open(this.src)">
+                                <img src="{{ driver.license_doc.url }}" class="doc-preview shadow-sm"
+                                     onclick="window.open(this.src)">
                             {% endif %}
                         {% else %}
-                            <div class="py-4 text-muted"><i class="fas fa-times-circle"></i> No License</div>
+                            <div class="py-4 text-muted">
+                                <i class="fas fa-times-circle fa-2x mb-2 d-block text-danger"></i> No License Uploaded
+                            </div>
                         {% endif %}
-                        <div class="mt-2 small text-muted">Expires: {{ driver.license_expiry_date }}</div>
+                        <div class="mt-2 small text-muted">
+                            Expires: <strong>{{ driver.license_expiry_date|default:"N/A" }}</strong>
+                        </div>
                     </div>
                 </div>
+
                 <div class="col-md-6 text-center">
                     <div class="p-3 border rounded-4 bg-light">
-                        <small class="text-muted d-block mb-2">Registered Vehicle Photo</small>
+                        <small class="text-muted d-block mb-2 fw-bold">Vehicle Photo</small>
                         {% if driver.vehicle_photo %}
-                            <img src="{{ driver.vehicle_photo.url }}" class="doc-preview shadow-sm" onclick="window.open(this.src)">
+                            <img src="{{ driver.vehicle_photo.url }}" class="doc-preview shadow-sm"
+                                 onclick="window.open(this.src)">
                         {% else %}
-                            <div class="py-4 text-muted"><i class="fas fa-times-circle"></i> No Photo</div>
+                            <div class="py-4 text-muted">
+                                <i class="fas fa-times-circle fa-2x mb-2 d-block text-danger"></i> No Photo Uploaded
+                            </div>
                         {% endif %}
-                        <div class="mt-2 small text-muted">Vehicle ID: Verified</div>
+                        <div class="mt-2 small text-muted">
+                            Vehicle: <strong>{{ driver.vehicle_number|default:"N/A"|upper }}</strong>
+                        </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Update Button -->
             <div class="mt-5">
                 <a href="{% url 'driver_profile_update' %}" class="btn btn-update w-100 shadow">
                     <i class="fas fa-user-edit me-2"></i> Update Profile Information
                 </a>
+                <div class="text-center mt-3">
+                    <a href="{% url 'driver_profile_delete' %}" class="text-danger small fw-bold text-decoration-none opacity-75">
+                        <i class="fas fa-user-slash me-1"></i> Delete Account Permanently
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-// Simple animation on load
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelector('.profile-card').classList.add('animate__animated', 'animate__fadeInUp');
-});
-</script>
 {% endblock %}

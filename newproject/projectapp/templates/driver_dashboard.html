@@ -26,10 +26,11 @@ body {
 .stat-card-main {
     border-radius: 24px; padding: 25px; border: none; transition: 0.3s; color: white;
 }
-.bg-earnings { background: linear-gradient(45deg, #10b981, #059669); }
+.bg-earnings  { background: linear-gradient(45deg, #10b981, #059669); }
 .bg-delivered { background: linear-gradient(45deg, #3b82f6, #2563eb); }
-.bg-pending { background: linear-gradient(45deg, #f59e0b, #d97706); }
+.bg-pending   { background: linear-gradient(45deg, #f59e0b, #d97706); }
 .stat-card-main:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+
 .custom-table-card {
     background: white; border-radius: 28px; border: none;
     box-shadow: 0 10px 30px rgba(0,0,0,0.03); margin-bottom: 30px;
@@ -46,7 +47,7 @@ body {
 }
 .action-btn-circle:hover { background: var(--driver-green); color: white; transform: rotate(15deg); }
 
-/* 🆕 Timer Card */
+/* Timer Card */
 .timer-card {
     background: linear-gradient(135deg, #1e293b, #0f172a);
     border-radius: 24px; padding: 25px; color: white;
@@ -105,120 +106,89 @@ body {
         </div>
     </div>
 
-    <!-- 🆕 Waiting Timer Card — फक्त तेव्हा दिसेल जेव्हा deadline आहे -->
+    <!-- Waiting Timer Card — sirf tab dikhega jab deadline hai -->
     {% if driver.waiting_deadline %}
-<div class="timer-card">
-    <div class="row align-items-center">
-        <div class="col-md-5">
-            <div class="timer-label mb-2">
-                <i class="fas fa-hourglass-half me-1 text-warning"></i>
-                Waiting for Orders — Deadline
-            </div>
-            <div class="timer-display" id="countdown">--:--:--</div>
-            <div class="mt-2 text-white-50 small">
-                Deadline: {{ driver.waiting_deadline|date:"d M Y, h:i A" }}
-            </div>
+    <div class="timer-card">
+        <div class="row align-items-center">
+            <div class="col-md-5">
+                <div class="timer-label mb-2">
+                    <i class="fas fa-hourglass-half me-1 text-warning"></i>
+                    Waiting for Orders — Deadline
+                </div>
+                <div class="timer-display" id="countdown">--:--:--</div>
+                <div class="mt-2 text-white-50 small">
+                    Deadline: {{ driver.waiting_deadline|date:"d M Y, h:i A" }}
+                </div>
 
-            <!-- Distance + Wait label -->
-            <div class="mt-3 d-flex gap-2 flex-wrap">
-                <span style="background:rgba(255,255,255,0.1); border-radius:10px;
-                    padding:6px 14px; font-size:0.8rem; color:#94a3b8;">
-                    <i class="fas fa-location-dot me-1 text-warning"></i>
-                    {{ dist_label }}
-                </span>
-                <span style="background:rgba(16,185,129,0.15); border-radius:10px;
-                    padding:6px 14px; font-size:0.8rem; color:#10b981; font-weight:700;">
-                    ⏳ Wait: {{ wait_label }}
-                </span>
-            </div>
+                <div class="mt-3 d-flex gap-2 flex-wrap">
+                    <span style="background:rgba(255,255,255,0.1); border-radius:10px;
+                        padding:6px 14px; font-size:0.8rem; color:#94a3b8;">
+                        <i class="fas fa-location-dot me-1 text-warning"></i>
+                        {{ dist_label }}
+                    </span>
+                    <span style="background:rgba(16,185,129,0.15); border-radius:10px;
+                        padding:6px 14px; font-size:0.8rem; color:#10b981; font-weight:700;">
+                        ⏳ Wait: {{ wait_label }}
+                    </span>
+                </div>
 
-            <div id="timeUpMsg" style="display:none;" class="mt-3">
-                <span class="time-up-badge">
-                    <i class="fas fa-check-circle"></i>
-                    Time's up! Start delivery now.
-                </span>
-            </div>
-        </div>
-
-        <div class="col-md-7 mt-4 mt-md-0">
-            <div class="timer-label mb-3">Orders Collected</div>
-
-            <!-- Orders count -->
-            <div class="d-flex align-items-center gap-3 mb-2">
-                <span style="font-size:2rem; font-weight:800; color:#f59e0b;">
-                    {{ pending_deliveries|length }}/{{ max_orders }}
-                </span>
-                <span class="text-white-50 small">
-                    orders assigned<br>{{ dist_label }}
-                </span>
-            </div>
-
-            <!-- Progress bar -->
-            <div class="order-progress-bar">
-                <div class="order-progress-fill"
-                    style="width: {% widthratio pending_deliveries|length max_orders 100 %}%">
+                <div id="timeUpMsg" style="display:none;" class="mt-3">
+                    <span class="time-up-badge">
+                        <i class="fas fa-check-circle"></i>
+                        Time's up! Start delivery now.
+                    </span>
                 </div>
             </div>
 
-            <!-- Status message -->
-            <div class="mt-2 text-white-50 small">
-                {% if remaining == 0 %}
-                    ✅ {{ max_orders }} orders collected — Ready to deliver!
-                {% else %}
-                    Waiting for {{ remaining }} more order(s)...
-                {% endif %}
-            </div>
+            <div class="col-md-7 mt-4 mt-md-0">
+                <div class="timer-label mb-3">Orders Collected</div>
 
-            <!-- Distance breakdown -->
-            <div class="mt-3 d-flex gap-2 flex-wrap">
-                <span style="font-size:0.72rem; padding:4px 10px; border-radius:8px; font-weight:700;
-                    background:{% if max_dist <= 50 %}rgba(16,185,129,0.3){% else %}rgba(255,255,255,0.05){% endif %};
-                    color:{% if max_dist <= 50 %}#10b981{% else %}#475569{% endif %};">
-                    50km → 5 orders
-                </span>
-                <span style="font-size:0.72rem; padding:4px 10px; border-radius:8px; font-weight:700;
-                    background:{% if max_dist > 50 and max_dist <= 100 %}rgba(245,158,11,0.3){% else %}rgba(255,255,255,0.05){% endif %};
-                    color:{% if max_dist > 50 and max_dist <= 100 %}#f59e0b{% else %}#475569{% endif %};">
-                    100km → 2 orders
-                </span>
-                <span style="font-size:0.72rem; padding:4px 10px; border-radius:8px; font-weight:700;
-                    background:{% if max_dist > 100 %}rgba(239,68,68,0.2){% else %}rgba(255,255,255,0.05){% endif %};
-                    color:{% if max_dist > 100 %}#ef4444{% else %}#475569{% endif %};">
-                    200-500km → 1 order
-                </span>
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    <span style="font-size:2rem; font-weight:800; color:#f59e0b;">
+                        {{ pending_deliveries|length }}/{{ max_orders }}
+                    </span>
+                    <span class="text-white-50 small">
+                        orders assigned<br>{{ dist_label }}
+                    </span>
+                </div>
+
+                <!-- Progress bar — division by zero fix -->
+                <div class="order-progress-bar">
+                    <div class="order-progress-fill"
+                        style="width: {% if max_orders > 0 %}{% widthratio pending_deliveries|length max_orders 100 %}{% else %}0{% endif %}%">
+                    </div>
+                </div>
+
+                <div class="mt-2 text-white-50 small">
+                    {% if remaining == 0 %}
+                        ✅ {{ max_orders }} orders collected — Ready to deliver!
+                    {% else %}
+                        Waiting for {{ remaining }} more order(s)...
+                    {% endif %}
+                </div>
+
+                <div class="mt-3 d-flex gap-2 flex-wrap">
+                    <span style="font-size:0.72rem; padding:4px 10px; border-radius:8px; font-weight:700;
+                        background:{% if max_dist <= 50 %}rgba(16,185,129,0.3){% else %}rgba(255,255,255,0.05){% endif %};
+                        color:{% if max_dist <= 50 %}#10b981{% else %}#475569{% endif %};">
+                        50km → 5 orders
+                    </span>
+                    <span style="font-size:0.72rem; padding:4px 10px; border-radius:8px; font-weight:700;
+                        background:{% if max_dist > 50 and max_dist <= 100 %}rgba(245,158,11,0.3){% else %}rgba(255,255,255,0.05){% endif %};
+                        color:{% if max_dist > 50 and max_dist <= 100 %}#f59e0b{% else %}#475569{% endif %};">
+                        100km → 2 orders
+                    </span>
+                    <span style="font-size:0.72rem; padding:4px 10px; border-radius:8px; font-weight:700;
+                        background:{% if max_dist > 100 %}rgba(239,68,68,0.2){% else %}rgba(255,255,255,0.05){% endif %};
+                        color:{% if max_dist > 100 %}#ef4444{% else %}#475569{% endif %};">
+                        200-500km → 1 order
+                    </span>
+                </div>
             </div>
         </div>
     </div>
-</div>
+    {% endif %}
 
-<script>
-{% if driver.waiting_deadline %}
-const deadline = new Date("{{ driver.waiting_deadline|date:'Y-m-d' }}T{{ driver.waiting_deadline|date:'H:i:s' }}");
-
-function updateCountdown() {
-    const now = new Date();
-    const diff = deadline - now;
-
-    if (diff <= 0) {
-        document.getElementById("countdown").style.display = "none";
-        document.getElementById("timeUpMsg").style.display = "block";
-        return;
-    }
-
-    const hrs  = Math.floor(diff / 3600000);
-    const mins = Math.floor((diff % 3600000) / 60000);
-    const secs = Math.floor((diff % 60000) / 1000);
-
-    document.getElementById("countdown").innerText =
-        String(hrs).padStart(2,'0') + ':' +
-        String(mins).padStart(2,'0') + ':' +
-        String(secs).padStart(2,'0');
-}
-setInterval(updateCountdown, 1000);
-updateCountdown();
-{% endif %}
-</script>
-{% endif %}
     <!-- Stats -->
     <div class="row g-4 mb-5 text-center">
         <div class="col-md-4">
@@ -367,51 +337,61 @@ updateCountdown();
     </div>
 </div>
 
+<!-- ===== SINGLE SCRIPT BLOCK — no duplicates ===== -->
 <script>
-// Live Clock
+/* ── Live Clock ── */
 function updateClock() {
     const now = new Date();
     document.getElementById('liveClock').innerText = now.toLocaleTimeString('en-GB');
-    document.getElementById('liveDate').innerText = now.toLocaleDateString('en-US', {
+    document.getElementById('liveDate').innerText  = now.toLocaleDateString('en-US', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
     }).toUpperCase();
 }
 setInterval(updateClock, 1000);
 updateClock();
 
-// 🆕 Countdown Timer
+/* ── Countdown Timer — FIXED (single instance, UTC timezone) ── */
 {% if driver.waiting_deadline %}
-const deadline = new Date("{{ driver.waiting_deadline|date:'Y-m-d' }}T{{ driver.waiting_deadline|date:'H:i:s' }}");
+// 'Z' suffix tells JS this is UTC — browser auto-converts to local time
+const deadline = new Date("{{ driver.waiting_deadline|date:'Y-m-d' }}T{{ driver.waiting_deadline|date:'H:i:s' }}Z");
 
 function updateCountdown() {
-    const now = new Date();
-    const diff = deadline - now;
+    const countdownEl = document.getElementById("countdown");
+    const timeUpEl    = document.getElementById("timeUpMsg");
+
+    if (!countdownEl) return;  // safety check
+
+    const diff = deadline - new Date();
 
     if (diff <= 0) {
-        document.getElementById("countdown").style.display = "none";
-        document.getElementById("timeUpMsg").style.display = "block";
+        countdownEl.style.display = "none";
+        if (timeUpEl) timeUpEl.style.display = "block";
         return;
     }
 
     const hrs  = Math.floor(diff / 3600000);
     const mins = Math.floor((diff % 3600000) / 60000);
-    const secs = Math.floor((diff % 60000) / 1000);
+    const secs = Math.floor((diff % 60000)   / 1000);
 
-    document.getElementById("countdown").innerText =
-        String(hrs).padStart(2,'0') + ':' +
-        String(mins).padStart(2,'0') + ':' +
-        String(secs).padStart(2,'0');
+    countdownEl.innerText =
+        String(hrs).padStart(2, '0')  + ':' +
+        String(mins).padStart(2, '0') + ':' +
+        String(secs).padStart(2, '0');
 }
+
 setInterval(updateCountdown, 1000);
-updateCountdown();
+updateCountdown();  // run immediately so no blank flash
 {% endif %}
 
-// My Route
+/* ── My Route ── */
 function openRoute() {
     {% if pending_deliveries %}
-        let address = "{{ pending_deliveries.0.order.retailer.address }}";
-        if(address) {
-            window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, '_blank');
+        const address = "{{ pending_deliveries.0.order.retailer.address }}";
+        if (address) {
+            window.open(
+                'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(address),
+                '_blank'
+            );
         } else {
             alert("No specific address found.");
         }
@@ -420,4 +400,5 @@ function openRoute() {
     {% endif %}
 }
 </script>
+
 {% endblock %}

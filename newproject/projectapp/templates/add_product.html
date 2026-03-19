@@ -135,9 +135,9 @@
                         </div>
                         <div class="col-md-6 mb-4">
                             <label class="form-label">Total Quantity (kg)</label>
-<input type="number" class="form-control" name="quantity" min="5" max="1000" placeholder="5 - 1000kg" required>
-<div class="error-msg">Quantity must be between 5kg and 1000kg.</div>
-                            <div class="error-msg">Minimum quantity must be 5kg.</div>                            <div class="error-msg">Quantity must be at least 1kg.</div>
+<input type="number" class="form-control" name="quantity" min="10" max="1000" placeholder="10 - 1000kg" required>
+<div class="error-msg">Quantity must be between 10kg and 1000kg.</div>
+                            <div class="error-msg">Minimum quantity must be 10kg.</div>                            <div class="error-msg">Quantity must be at least 1kg.</div>
                         </div>
                     </div>
 
@@ -245,9 +245,9 @@ form.addEventListener("submit", e => {
         quantityError.style.display = 'block';
         isValid = false;
     }
-    else if (quantityValue < 5) {
+    else if (quantityValue < 10) {
         quantityInput.classList.add('is-invalid');
-        quantityError.innerText = "Minimum quantity must be 5kg.";
+        quantityError.innerText = "Minimum quantity must be 10kg.";
         quantityError.style.display = 'block';
         isValid = false;
     }

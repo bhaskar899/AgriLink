@@ -7,89 +7,70 @@
 
 <style>
 :root {
-    --farmer-primary: #198754; /* Professional Green */
+    --farmer-primary: #198754;
     --farmer-dark: #0f172a;
 }
-
 body {
-    /* Exact same background as Driver Profile Update */
     background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
     font-family: 'Plus Jakarta Sans', sans-serif;
     min-height: 100vh;
 }
-
 .update-container { margin-top: 110px; padding-bottom: 60px; }
-
-/* Matching Driver Card Style */
 .custom-card {
-    background: white;
-    border-radius: 30px;
-    border: none;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+    background: white; border-radius: 30px;
+    border: none; box-shadow: 0 20px 40px rgba(0,0,0,0.05);
 }
-
 .form-label {
-    font-weight: 700;
-    font-size: 0.85rem;
-    color: var(--farmer-dark);
-    margin-bottom: 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-weight: 700; font-size: 0.85rem; color: var(--farmer-dark);
+    margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
 }
-
 .form-control, .form-select {
-    border-radius: 12px;
-    padding: 12px 15px;
-    border: 1px solid #e2e8f0;
-    transition: 0.3s;
-    background-color: #f8fafc;
+    border-radius: 12px; padding: 12px 15px;
+    border: 1px solid #e2e8f0; transition: 0.3s; background-color: #f8fafc;
 }
-
 .form-control:focus {
     box-shadow: 0 0 0 4px rgba(25, 135, 84, 0.1);
-    border-color: var(--farmer-primary);
-    background-color: white;
+    border-color: var(--farmer-primary); background-color: white;
 }
-
+.form-control.is-valid   { border-color: #22c55e !important; background-color: #f0fdf4 !important; }
+.form-control.is-invalid { border-color: #ef4444 !important; background-color: #fff5f5 !important; }
+.val-msg { font-size: 0.76rem; font-weight: 700; margin-top: 5px; min-height: 18px; }
+.val-msg.ok   { color: #15803d; }
+.val-msg.err  { color: #ef4444; }
+.val-msg.info { color: #f59e0b; }
 .section-title {
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: var(--farmer-primary);
-    margin-bottom: 25px;
-    display: flex;
-    align-items: center;
-    border-bottom: 2px solid #f1f5f9;
-    padding-bottom: 10px;
+    font-size: 1.1rem; font-weight: 800; color: var(--farmer-primary);
+    margin-bottom: 25px; display: flex; align-items: center;
+    border-bottom: 2px solid #f1f5f9; padding-bottom: 10px;
 }
 .section-title i { margin-right: 10px; }
-
-/* Matching Driver Save Button */
+.pass-strength-bar {
+    height: 4px; border-radius: 4px; margin-top: 7px;
+    background: #e5e7eb; overflow: hidden;
+}
+.pass-strength-fill {
+    height: 100%; border-radius: 4px;
+    transition: width .35s ease, background .35s ease; width: 0%;
+}
+.pass-wrap { position: relative; }
+.pass-wrap .form-control { padding-right: 46px; }
+.pass-eye {
+    position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    color: #6b8070; cursor: pointer; font-size: .9rem; transition: color .2s;
+}
+.pass-eye:hover { color: #15803d; }
 .btn-save {
-    background: var(--farmer-dark);
-    color: white;
-    border-radius: 15px;
-    padding: 15px;
-    font-weight: 700;
-    border: none;
-    transition: 0.3s;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    background: var(--farmer-dark); color: white; border-radius: 15px;
+    padding: 15px; font-weight: 700; border: none; transition: 0.3s;
+    text-transform: uppercase; letter-spacing: 1px;
 }
-
 .btn-save:hover {
-    background: #1e293b;
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    color: white;
+    background: #1e293b; transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1); color: white;
 }
-
 .back-link {
-    text-decoration: none;
-    color: #64748b;
-    font-weight: 600;
-    transition: 0.3s;
-    display: inline-flex;
-    align-items: center;
+    text-decoration: none; color: #64748b; font-weight: 600;
+    transition: 0.3s; display: inline-flex; align-items: center;
 }
 .back-link:hover { color: var(--farmer-primary); transform: translateX(-5px); }
 </style>
@@ -107,86 +88,370 @@ body {
             <p class="text-muted">Ensure your contact information is up to date for seamless business</p>
         </div>
 
-        <form method="POST" enctype="multipart/form-data">
+        <form method="POST" enctype="multipart/form-data" id="updateForm" novalidate>
             {% csrf_token %}
 
             <div class="row g-4">
+
+                <!-- ===== IDENTITY ===== -->
                 <div class="col-md-6">
                     <div class="section-title"><i class="fas fa-user-circle"></i> Identity</div>
 
                     <div class="mb-3">
                         <label class="form-label">Full Name</label>
-                        <input type="text" name="name" class="form-control" value="{{ user.name }}" required>
+                        <input type="text" name="name" id="nameField" class="form-control"
+                               value="{{ user.name }}" required>
+                        <div class="val-msg" id="nameMsg"></div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Gender</label>
                         <select name="gender" class="form-select">
-                            <option value="Male" {% if user.gender == "Male" %}selected{% endif %}>Male</option>
+                            <option value="Male"   {% if user.gender == "Male"   %}selected{% endif %}>Male</option>
                             <option value="Female" {% if user.gender == "Female" %}selected{% endif %}>Female</option>
                         </select>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">New Profile Photo</label>
-                        <input type="file" name="profile_image" class="form-control">
+                        <input type="file" name="profile_image" id="photoField"
+                               class="form-control" accept="image/*">
                         <small class="text-muted mt-1 d-block">Leave blank to keep current photo</small>
+                        <div class="val-msg" id="photoMsg"></div>
                     </div>
                 </div>
 
+                <!-- ===== CONTACT DETAILS ===== -->
                 <div class="col-md-6">
                     <div class="section-title"><i class="fas fa-address-book"></i> Contact Details</div>
 
                     <div class="mb-3">
                         <label class="form-label">Email Address</label>
-                        <input type="email" name="email" class="form-control" value="{{ user.email }}" required>
+                        <input type="email" name="email" id="emailField" class="form-control"
+                               value="{{ user.email }}" required>
+                        <div class="val-msg" id="emailMsg"></div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Mobile Number</label>
-                        <input type="text" name="contact" class="form-control" value="{{ user.contact }}">
+                        <input type="text" name="contact" id="contactField" class="form-control"
+                               value="{{ user.contact }}" maxlength="10">
+                        <div class="val-msg" id="contactMsg"></div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Farm Address</label>
-                        <textarea name="address" class="form-control" rows="1">{{ user.address }}</textarea>
+                        <label class="form-label">
+                            {% if request.session.user_type == "farmer" %}Farm Address{% else %}Shop Address{% endif %}
+                        </label>
+                        <textarea name="address" id="addressField" class="form-control"
+                                  rows="1">{{ user.address }}</textarea>
+                        <div class="val-msg" id="addressMsg"></div>
                     </div>
                 </div>
-               {% if request.session.user_type == "farmer" %}
-<div class="col-md-6">
-    <div class="section-title">
-        <i class="fas fa-university"></i> Bank Details
-    </div>
 
-    <div class="mb-3">
-        <label class="form-label">Bank Account Number</label>
-        <input type="text"
-               name="bank_account_number"
-               class="form-control"
-               value="{{ user.bank_account_number }}">
-    </div>
+                <!-- ===== BANK DETAILS (Farmer only) ===== -->
+                {% if request.session.user_type == "farmer" %}
+                <div class="col-md-6">
+                    <div class="section-title"><i class="fas fa-university"></i> Bank Details</div>
 
-    <div class="mb-3">
-        <label class="form-label">IFSC Code</label>
-        <input type="text"
-               name="ifsc_code"
-               class="form-control"
-               value="{{ user.ifsc_code }}">
-    </div>
-</div>
-{% endif %}
+                    <div class="mb-3">
+                        <label class="form-label">Bank Account Number</label>
+                        <input type="text" name="bank_account_number" id="bankField"
+                               class="form-control" value="{{ user.bank_account_number }}">
+                        <div class="val-msg" id="bankMsg"></div>
+                    </div>
 
+                    <div class="mb-3">
+                        <label class="form-label">IFSC Code</label>
+                        <input type="text" name="ifsc_code" id="ifscField"
+                               class="form-control" value="{{ user.ifsc_code }}"
+                               maxlength="11" style="text-transform:uppercase;">
+                        <div class="val-msg" id="ifscMsg"></div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- ===== SHOP DETAILS (Retailer only) ===== -->
+                {% if request.session.user_type == "retailer" %}
+                <div class="col-md-6">
+                    <div class="section-title"><i class="fas fa-store"></i> Business Details</div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Shop / Trade Name</label>
+                        <input type="text" name="shop_number" id="shopField"
+                               class="form-control" value="{{ user.shop_number }}">
+                        <div class="val-msg" id="shopMsg"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">GST Number</label>
+                        <input type="text" name="gst_number" id="gstField"
+                               class="form-control" value="{{ user.gst_number }}"
+                               maxlength="15" style="text-transform:uppercase;">
+                        <div class="val-msg" id="gstMsg"></div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- ===== CHANGE PASSWORD (optional) ===== -->
+                <div class="col-md-6">
+                    <div class="section-title"><i class="fas fa-lock"></i> Change Password</div>
+
+                    <div class="mb-3">
+                        <label class="form-label">New Password
+                            <small class="text-muted fw-normal">(leave blank to keep current)</small>
+                        </label>
+                        <div class="pass-wrap">
+                            <input type="password" name="password" id="passField"
+                                   class="form-control" placeholder="Enter new password">
+                            <i class="fas fa-eye pass-eye" onclick="togglePass('passField', this)"></i>
+                        </div>
+                        <div class="pass-strength-bar"><div class="pass-strength-fill" id="strengthFill"></div></div>
+                        <div class="val-msg" id="passMsg"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Confirm New Password</label>
+                        <div class="pass-wrap">
+                            <input type="password" name="confirm_password" id="confirmPassField"
+                                   class="form-control" placeholder="Re-enter new password">
+                            <i class="fas fa-eye pass-eye" onclick="togglePass('confirmPassField', this)"></i>
+                        </div>
+                        <div class="val-msg" id="confirmPassMsg"></div>
+                    </div>
+                </div>
+
+                <!-- ===== SUBMIT ===== -->
                 <div class="col-12 mt-5">
                     <button type="submit" class="btn btn-save w-100 shadow">
-                        Save Profile Changes
+                        <i class="fas fa-save me-2"></i> Save Profile Changes
                     </button>
                     <div class="text-center mt-4">
                         <p class="small text-muted mb-0">Looking to leave AgriLink?</p>
                         <a href="/profile_delete/" class="text-danger small fw-bold text-decoration-none">Delete My Account</a>
                     </div>
                 </div>
+
             </div>
         </form>
     </div>
 </div>
+
+<script>
+  /* ===========================
+     HELPERS
+  =========================== */
+  function setMsg(id, text, type) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text;
+    el.className = 'val-msg ' + type;
+  }
+  function setField(id, valid) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.toggle('is-valid',   valid === true);
+    el.classList.toggle('is-invalid', valid === false);
+  }
+  function onlyDigits(e) { e.target.value = e.target.value.replace(/\D/g, ''); }
+  function togglePass(id, icon) {
+    const inp = document.getElementById(id);
+    const show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    icon.classList.toggle('fa-eye', !show);
+    icon.classList.toggle('fa-eye-slash', show);
+  }
+
+  /* NAME */
+  document.getElementById('nameField').addEventListener('input', function () {
+    const v = this.value.trim();
+    if (v.length === 0) { setField('nameField', false); setMsg('nameMsg', '⚠ Name is required', 'err'); }
+    else if (!/^[A-Za-z\s]{3,}$/.test(v)) { setField('nameField', false); setMsg('nameMsg', '⚠ Only letters, min 3 characters', 'err'); }
+    else { setField('nameField', true); setMsg('nameMsg', '✔ Looks good', 'ok'); }
+  });
+
+  /* EMAIL */
+  document.getElementById('emailField').addEventListener('input', function () {
+    const v = this.value.trim();
+    const emailRx = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,6}$/;
+    if (v.length === 0) { setField('emailField', false); setMsg('emailMsg', '⚠ Email is required', 'err'); }
+    else if (!emailRx.test(v)) { setField('emailField', false); setMsg('emailMsg', '⚠ Enter valid email like user@domain.com', 'err'); }
+    else { setField('emailField', true); setMsg('emailMsg', '✔ Valid email', 'ok'); }
+  });
+
+  /* MOBILE */
+  const contactF = document.getElementById('contactField');
+  if (contactF) {
+    contactF.addEventListener('input', onlyDigits);
+    contactF.addEventListener('input', function () {
+      const v = this.value;
+      if (v.length === 0) { setField('contactField', null); setMsg('contactMsg', '', ''); }
+      else if (!/^[6-9]\d{9}$/.test(v)) {
+        setField('contactField', false);
+        setMsg('contactMsg', v.length < 10 ? `⚠ ${10 - v.length} more digit(s) needed` : '⚠ Must start with 6, 7, 8 or 9', 'err');
+      } else { setField('contactField', true); setMsg('contactMsg', '✔ Valid mobile number', 'ok'); }
+    });
+  }
+
+  /* ADDRESS */
+  const addressF = document.getElementById('addressField');
+  if (addressF) {
+    addressF.addEventListener('input', function () {
+      const v = this.value.trim();
+      if (v.length > 0 && v.length < 10) { setField('addressField', false); setMsg('addressMsg', '⚠ Min 10 characters', 'err'); }
+      else if (v.length >= 10) { setField('addressField', true); setMsg('addressMsg', '✔ Looks good', 'ok'); }
+      else { setField('addressField', null); setMsg('addressMsg', '', ''); }
+    });
+  }
+
+  /* BANK ACCOUNT (Farmer only) */
+  const bankF = document.getElementById('bankField');
+  if (bankF) {
+    bankF.addEventListener('input', onlyDigits);
+    bankF.addEventListener('input', function () {
+      const v = this.value;
+      if (v.length === 0) { setField('bankField', null); setMsg('bankMsg', '', ''); }
+      else if (!/^\d{9,18}$/.test(v)) {
+        setField('bankField', false);
+        setMsg('bankMsg', v.length < 9 ? '⚠ Too short (min 9 digits)' : '⚠ Too long (max 18 digits)', 'err');
+      } else { setField('bankField', true); setMsg('bankMsg', '✔ Valid account number', 'ok'); }
+    });
+  }
+
+  /* IFSC (Farmer only) */
+  const ifscF = document.getElementById('ifscField');
+  if (ifscF) {
+    ifscF.addEventListener('input', function () {
+      this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      const v = this.value;
+      if (v.length === 0) { setField('ifscField', null); setMsg('ifscMsg', '', ''); }
+      else if (v.length < 11) { setField('ifscField', null); setMsg('ifscMsg', `⚠ ${11 - v.length} more character(s) needed`, 'info'); }
+      else if (!/^[A-Z]{4}0[A-Z0-9]{6}$/.test(v)) { setField('ifscField', false); setMsg('ifscMsg', '⚠ Format: SBIN0012345', 'err'); }
+      else { setField('ifscField', true); setMsg('ifscMsg', '✔ Valid IFSC code', 'ok'); }
+    });
+  }
+
+  /* SHOP NAME (Retailer only) */
+  const shopF = document.getElementById('shopField');
+  if (shopF) {
+    shopF.addEventListener('input', function () {
+      const v = this.value.trim();
+      if (v.length < 2) { setField('shopField', false); setMsg('shopMsg', '⚠ Enter shop/trade name', 'err'); }
+      else { setField('shopField', true); setMsg('shopMsg', '✔ Looks good', 'ok'); }
+    });
+  }
+
+  /* GST (Retailer only) */
+  const gstF = document.getElementById('gstField');
+  if (gstF) {
+    gstF.addEventListener('input', function () {
+      this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      const v = this.value;
+      const gstRx = /^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[A-Z\d]{1}Z[A-Z\d]{1}$/;
+      if (v.length === 0) { setField('gstField', null); setMsg('gstMsg', '', ''); }
+      else if (v.length < 15) { setField('gstField', null); setMsg('gstMsg', `⚠ ${15 - v.length} more character(s) needed`, 'info'); }
+      else if (!gstRx.test(v)) { setField('gstField', false); setMsg('gstMsg', '⚠ Invalid GST format (e.g. 27AAAAA0000A1Z5)', 'err'); }
+      else { setField('gstField', true); setMsg('gstMsg', '✔ Valid GST number', 'ok'); }
+    });
+  }
+
+  /* PROFILE PHOTO */
+  document.getElementById('photoField').addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    const allowed = ['image/jpeg','image/png','image/jpg','image/webp'];
+    if (!allowed.includes(file.type)) { setField('photoField', false); setMsg('photoMsg', '⚠ Only JPG, PNG or WEBP allowed', 'err'); this.value = ''; return; }
+    if (file.size > 2 * 1024 * 1024) { setField('photoField', false); setMsg('photoMsg', '⚠ Image must be under 2MB', 'err'); this.value = ''; return; }
+    setField('photoField', true); setMsg('photoMsg', '✔ Photo ready to upload', 'ok');
+  });
+
+  /* PASSWORD STRENGTH */
+  const passF = document.getElementById('passField');
+  if (passF) {
+    passF.addEventListener('input', function () {
+      const v = this.value;
+      if (v.length === 0) {
+        document.getElementById('strengthFill').style.width = '0%';
+        setMsg('passMsg', '', ''); setField('passField', null); return;
+      }
+      let score = 0;
+      if (v.length >= 8)  score++;
+      if (/[A-Z]/.test(v)) score++;
+      if (/[0-9]/.test(v)) score++;
+      if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(v)) score++;
+      const fill   = document.getElementById('strengthFill');
+      const colors = ['','#ef4444','#f59e0b','#3b82f6','#22c55e'];
+      const labels = ['','⚠ Too weak','⚠ Weak','✔ Fair — add a symbol','✔ Strong password'];
+      const widths = ['0%','25%','50%','75%','100%'];
+      const types  = ['','err','err','ok','ok'];
+      fill.style.width = widths[score]; fill.style.background = colors[score];
+      setField('passField', score >= 3);
+      setMsg('passMsg', labels[score] || '', types[score] || '');
+      if (document.getElementById('confirmPassField').value.length > 0) checkConfirm();
+    });
+  }
+
+  function checkConfirm() {
+    const p = document.getElementById('passField').value;
+    const c = document.getElementById('confirmPassField').value;
+    if (c.length === 0) { setField('confirmPassField', null); setMsg('confirmPassMsg','',''); return; }
+    if (p !== c) { setField('confirmPassField', false); setMsg('confirmPassMsg', '⚠ Passwords do not match', 'err'); }
+    else { setField('confirmPassField', true); setMsg('confirmPassMsg', '✔ Passwords match', 'ok'); }
+  }
+  document.getElementById('confirmPassField').addEventListener('input', checkConfirm);
+
+  /* FORM SUBMIT */
+  document.getElementById('updateForm').onsubmit = function (e) {
+    let valid = true;
+    const errors = [];
+
+    // Name
+    const name = document.getElementById('nameField').value.trim();
+    if (!/^[A-Za-z\s]{3,}$/.test(name)) { errors.push("Full name (only letters, min 3 chars)"); setField('nameField', false); valid = false; }
+
+    // Email
+    const email = document.getElementById('emailField').value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,6}$/.test(email)) { errors.push("Valid email address"); setField('emailField', false); valid = false; }
+
+    // Mobile
+    const contact = document.getElementById('contactField').value;
+    if (contact.length > 0 && !/^[6-9]\d{9}$/.test(contact)) { errors.push("Valid 10-digit mobile (starts with 6-9)"); setField('contactField', false); valid = false; }
+
+    // Bank (Farmer only — optional)
+    const bankEl = document.getElementById('bankField');
+    if (bankEl && bankEl.value.length > 0 && !/^\d{9,18}$/.test(bankEl.value)) {
+      errors.push("Bank account number (9–18 digits)"); setField('bankField', false); valid = false;
+    }
+
+    // IFSC (Farmer only — optional)
+    const ifscEl = document.getElementById('ifscField');
+    if (ifscEl && ifscEl.value.length > 0 && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifscEl.value)) {
+      errors.push("Valid IFSC code (e.g. SBIN0012345)"); setField('ifscField', false); valid = false;
+    }
+
+    // Shop (Retailer only — optional)
+    const shopEl = document.getElementById('shopField');
+    if (shopEl && shopEl.value.trim().length > 0 && shopEl.value.trim().length < 2) {
+      errors.push("Shop/trade name (min 2 characters)"); setField('shopField', false); valid = false;
+    }
+
+    // GST (Retailer only — optional)
+    const gstEl = document.getElementById('gstField');
+    if (gstEl && gstEl.value.length > 0) {
+      const gstRx = /^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[A-Z\d]{1}Z[A-Z\d]{1}$/;
+      if (!gstRx.test(gstEl.value)) { errors.push("Valid 15-digit GST number"); setField('gstField', false); valid = false; }
+    }
+
+    // Password (optional — only validate if filled)
+    const pass    = document.getElementById('passField').value;
+    const confirm = document.getElementById('confirmPassField').value;
+    if (pass.length > 0) {
+      if (pass.length < 8) { errors.push("Password must be at least 8 characters"); setField('passField', false); valid = false; }
+      else if (pass !== confirm) { errors.push("Passwords must match"); setField('confirmPassField', false); valid = false; }
+    }
+
+    if (!valid) { e.preventDefault(); alert("Please fix the following:\n\n• " + errors.join("\n• ")); }
+    return valid;
+  };
+</script>
 {% endblock %}

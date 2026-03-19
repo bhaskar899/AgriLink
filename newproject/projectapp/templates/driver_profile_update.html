@@ -1,5 +1,5 @@
 {% extends "master.html" %}
-{% block title %}AgriLink Pro | Update Profile{% endblock %}
+{% block title %}AgriLink Pro | Update Driver Profile{% endblock %}
 
 {% block body %}
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -15,55 +15,58 @@ body {
     font-family: 'Plus Jakarta Sans', sans-serif;
 }
 .update-container { margin-top: 110px; padding-bottom: 60px; }
-
 .custom-card {
-    background: white;
-    border-radius: 30px;
-    border: none;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+    background: white; border-radius: 30px;
+    border: none; box-shadow: 0 20px 40px rgba(0,0,0,0.05);
 }
-
-.form-label { font-weight: 700; font-size: 0.85rem; color: var(--driver-dark); margin-bottom: 8px; }
-
+.form-label {
+    font-weight: 700; font-size: 0.85rem; color: var(--driver-dark);
+    margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;
+}
 .form-control, .form-select {
-    border-radius: 12px;
-    padding: 12px 15px;
-    border: 1px solid #e2e8f0;
-    transition: 0.3s;
+    border-radius: 12px; padding: 12px 15px;
+    border: 1px solid #e2e8f0; transition: 0.3s; background-color: #f8fafc;
 }
 .form-control:focus {
     box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
-    border-color: var(--driver-green);
+    border-color: var(--driver-green); background-color: white;
 }
+/* Valid / Invalid */
+.form-control.is-valid   { border-color: #22c55e !important; background-color: #f0fdf4 !important; }
+.form-control.is-invalid { border-color: #ef4444 !important; background-color: #fff5f5 !important; }
+.val-msg { font-size: 0.76rem; font-weight: 700; margin-top: 4px; min-height: 18px; display: block; }
+.val-msg.ok   { color: #15803d; }
+.val-msg.err  { color: #ef4444; }
+.val-msg.info { color: #f59e0b; }
 
 .section-title {
-    font-size: 1.1rem;
-    font-weight: 800;
-    color: var(--driver-green);
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
+    font-size: 1.1rem; font-weight: 800; color: var(--driver-green);
+    margin-bottom: 20px; display: flex; align-items: center;
+    border-bottom: 2px solid #f1f5f9; padding-bottom: 8px;
 }
 .section-title i { margin-right: 10px; }
 
 .btn-save {
-    background: var(--driver-dark);
-    color: white;
-    border-radius: 15px;
-    padding: 15px;
-    font-weight: 700;
-    border: none;
-    transition: 0.3s;
+    background: var(--driver-dark); color: white; border-radius: 15px;
+    padding: 15px; font-weight: 700; border: none; transition: 0.3s;
+    text-transform: uppercase; letter-spacing: 1px;
 }
-.btn-save:hover { background: #1e293b; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); color: white; }
-
-.back-link { text-decoration: none; color: #64748b; font-weight: 600; transition: 0.3s; }
-.back-link:hover { color: var(--driver-dark); }
+.btn-save:hover {
+    background: #1e293b; transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1); color: white;
+}
+.back-link {
+    text-decoration: none; color: #64748b; font-weight: 600;
+    transition: 0.3s; display: inline-flex; align-items: center;
+}
+.back-link:hover { color: var(--driver-dark); transform: translateX(-3px); }
 </style>
 
 <div class="container update-container">
     <div class="mb-4">
-        <a href="javascript:history.back()" class="back-link"><i class="fas fa-arrow-left me-2"></i> Back to Profile</a>
+        <a href="/driver_profile/" class="back-link">
+            <i class="fas fa-arrow-left me-2"></i> Back to Profile
+        </a>
     </div>
 
     <div class="custom-card p-4 p-md-5 mx-auto" style="max-width: 850px;">
@@ -72,103 +75,262 @@ body {
             <p class="text-muted">Maintain your information for better shipment assignments</p>
         </div>
 
-        <form method="POST" enctype="multipart/form-data">
+        <form method="POST" enctype="multipart/form-data" id="updateForm" novalidate>
             {% csrf_token %}
 
             <div class="row g-4">
+
+                <!-- ===== PERSONAL DETAILS ===== -->
                 <div class="col-md-6">
                     <div class="section-title"><i class="fas fa-user-circle"></i> Personal Details</div>
 
                     <div class="mb-3">
                         <label class="form-label">Full Name</label>
-                        <input type="text" name="name" class="form-control" value="{{ driver.name }}" required>
+                        <input type="text" name="name" id="nameField" class="form-control"
+                               value="{{ driver.name }}" required>
+                        <span class="val-msg" id="nameMsg"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Email Address (Primary)</label>
-                        <input type="email" class="form-control bg-light" value="{{ driver.email }}" disabled>
+                        <label class="form-label">Email Address</label>
+                        <!-- Email disabled — change nahi hoti -->
+                        <input type="email" class="form-control bg-light"
+                               value="{{ driver.email }}" disabled>
+                        <small class="text-muted">Email cannot be changed</small>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Phone Number</label>
                         <div class="input-group">
-                            <input type="text" name="phone" class="form-control" value="{{ driver.phone }}">
-                            {% if profile.phone_verified %}
-                                <span class="input-group-text bg-success-subtle text-success small"><i class="fas fa-check-circle"></i></span>
+                            <input type="text" name="phone" id="phoneField" class="form-control"
+                                   value="{{ driver.phone }}" maxlength="10">
+                            {% if driver.phone_verified %}
+                                <span class="input-group-text bg-success-subtle text-success small">
+                                    <i class="fas fa-check-circle me-1"></i> Verified
+                                </span>
                             {% endif %}
                         </div>
+                        <span class="val-msg" id="phoneMsg"></span>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Current Location</label>
-                        <input type="text" name="location" class="form-control" value="{{ driver.location }}">
+                        <label class="form-label">Base Location / City</label>
+                        <input type="text" name="location" id="locationField" class="form-control"
+                               value="{{ driver.location }}">
+                        <span class="val-msg" id="locationMsg"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Profile Photo</label>
+                        <input type="file" name="driver_photo" id="photoField"
+                               class="form-control" accept="image/*">
+                        <small class="text-muted d-block mt-1">Leave blank to keep current photo</small>
+                        <span class="val-msg" id="photoMsg"></span>
                     </div>
                 </div>
 
+                <!-- ===== VEHICLE & LICENSE ===== -->
                 <div class="col-md-6">
-                    <div class="section-title"><i class="fas fa-truck"></i> Logistics & License</div>
+                    <div class="section-title"><i class="fas fa-truck"></i> Vehicle & License</div>
 
-                    <div class="row">
-                        <div class="col-6 mb-3">
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
                             <label class="form-label">Vehicle Type</label>
-                            <select name="vehicle_type" class="form-select">
+                            <select name="vehicle_type" id="vehicleTypeField" class="form-select">
+                                <option value="">Select</option>
                                 {% for v, display in driver.VEHICLE_CHOICES %}
-                                    <option value="{{ v }}" {% if driver.vehicle_type == v %}selected{% endif %}>{{ display }}</option>
+                                    <option value="{{ v }}" {% if driver.vehicle_type == v %}selected{% endif %}>
+                                        {{ display }}
+                                    </option>
                                 {% endfor %}
                             </select>
+                            <span class="val-msg" id="vehicleTypeMsg"></span>
                         </div>
-                        <div class="col-6 mb-3">
+                        <div class="col-6">
                             <label class="form-label">Vehicle Number</label>
-                            <input type="text" name="vehicle_number" class="form-control" value="{{ driver.vehicle_number }}">
+                            <input type="text" name="vehicle_number" id="vehicleNoField"
+                                   class="form-control text-uppercase"
+                                   value="{{ driver.vehicle_number }}" maxlength="10">
+                            <span class="val-msg" id="vehicleNoMsg"></span>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-6 mb-3">
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
                             <label class="form-label">Capacity (kg)</label>
-                            <input type="number" name="capacity" class="form-control" value="{{ driver.capacity_kg }}">
+                            <input type="number" name="capacity" id="capacityField"
+                                   class="form-control" value="{{ driver.capacity_kg }}" min="1">
+                            <span class="val-msg" id="capacityMsg"></span>
                         </div>
-                        <div class="col-6 mb-3">
-                            <label class="form-label">Rate per km (₹)</label>
-                            <input type="number" step="0.01" name="rate_per_km" class="form-control" value="{{ driver.rate_per_km }}">
+                        <div class="col-6">
+                            <label class="form-label">Rate per KM (₹)</label>
+                            <input type="number" step="0.1" name="rate_per_km" id="rateField"
+                                   class="form-control" value="{{ driver.rate_per_km }}" min="1">
+                            <span class="val-msg" id="rateMsg"></span>
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-6 mb-3">
-                            <label class="form-label">License Expiry</label>
-                            <input type="date" name="license_expiry_date" class="form-control" value="{{ profile.license_expiry_date|date:'Y-m-d' }}">
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label class="form-label">License Issue Date</label>
+                            <!-- ✅ driver.license_issue_date — profile nahi -->
+                            <input type="date" name="license_issue_date" class="form-control"
+                                   value="{{ driver.license_issue_date|date:'Y-m-d' }}">
                         </div>
-                        <div class="col-6 mb-3">
-                            <label class="form-label">Profile Image</label>
-                            <input type="file" name="driver_photo" class="form-control">
+                        <div class="col-6">
+                            <label class="form-label">License Expiry Date</label>
+                            <!-- ✅ driver.license_expiry_date — profile nahi -->
+                            <input type="date" name="license_expiry_date" id="licenseExpiryField"
+                                   class="form-control"
+                                   value="{{ driver.license_expiry_date|date:'Y-m-d' }}">
+                            <span class="val-msg" id="licenseExpiryMsg"></span>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-12 mt-4">
-                    <div class="p-4 rounded-4" style="background: #f1f5f9; border: 1px dashed #cbd5e1;">
+                <!-- ===== DOCUMENTS ===== -->
+                <div class="col-12">
+                    <div class="p-4 rounded-4" style="background:#f1f5f9; border:1px dashed #cbd5e1;">
+                        <h6 class="fw-bold mb-3"><i class="fas fa-file-contract me-2 text-primary"></i>Update Documents</h6>
                         <div class="row g-3">
                             <div class="col-md-6">
-                                <label class="form-label"><i class="fas fa-id-card me-2"></i>Update License Document</label>
-                                <input type="file" name="license_doc" class="form-control">
+                                <label class="form-label"><i class="fas fa-id-card me-2"></i>License Document</label>
+                                <input type="file" name="license_doc" class="form-control" accept="image/*,.pdf">
+                                <small class="text-muted">Leave blank to keep current document</small>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label"><i class="fas fa-camera me-2"></i>Update Vehicle Photo</label>
-                                <input type="file" name="vehicle_photo" class="form-control">
+                                <label class="form-label"><i class="fas fa-camera me-2"></i>Vehicle Photo</label>
+                                <input type="file" name="vehicle_photo" class="form-control" accept="image/*">
+                                <small class="text-muted">Leave blank to keep current photo</small>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- ===== SUBMIT ===== -->
                 <div class="col-12 mt-5">
-                    <button type="submit" class="btn btn-save w-100 shadow">Update My Fleet Profile</button>
+                    <button type="submit" class="btn btn-save w-100 shadow">
+                        <i class="fas fa-save me-2"></i> Save Profile Changes
+                    </button>
                     <div class="text-center mt-3">
-                        <a href="{% url 'driver_profile_delete' %}" class="text-danger small fw-bold text-decoration-none">Delete My Account?</a>
+                        <a href="{% url 'driver_profile_delete' %}" class="text-danger small fw-bold text-decoration-none">
+                            <i class="fas fa-user-slash me-1"></i> Delete My Account
+                        </a>
                     </div>
                 </div>
+
             </div>
         </form>
     </div>
 </div>
+
+<script>
+  function setMsg(id, text, type) { const el=document.getElementById(id); if(!el)return; el.textContent=text; el.className='val-msg '+type; }
+  function setField(id, valid) { const el=document.getElementById(id); if(!el)return; el.classList.toggle('is-valid',valid===true); el.classList.toggle('is-invalid',valid===false); }
+  function onlyDigits(e) { e.target.value=e.target.value.replace(/\D/g,''); }
+
+  /* NAME */
+  document.getElementById('nameField').addEventListener('input', function(){
+    const v=this.value.trim();
+    if(v.length===0){setField('nameField',false);setMsg('nameMsg','⚠ Name is required','err');}
+    else if(!/^[A-Za-z\s]{3,}$/.test(v)){setField('nameField',false);setMsg('nameMsg','⚠ Only letters, min 3 characters','err');}
+    else{setField('nameField',true);setMsg('nameMsg','✔ Looks good','ok');}
+  });
+
+  /* PHONE */
+  const phoneF=document.getElementById('phoneField');
+  if(phoneF){
+    phoneF.addEventListener('input',onlyDigits);
+    phoneF.addEventListener('input',function(){
+      const v=this.value;
+      if(v.length===0){setField('phoneField',null);setMsg('phoneMsg','','');}
+      else if(!/^[6-9]\d{9}$/.test(v)){setField('phoneField',false);setMsg('phoneMsg',v.length<10?`⚠ ${10-v.length} more digit(s) needed`:'⚠ Must start with 6,7,8 or 9','err');}
+      else{setField('phoneField',true);setMsg('phoneMsg','✔ Valid phone number','ok');}
+    });
+  }
+
+  /* LOCATION */
+  document.getElementById('locationField').addEventListener('input',function(){
+    const v=this.value.trim();
+    if(v.length>0 && v.length<2){setField('locationField',false);setMsg('locationMsg','⚠ Enter valid city name','err');}
+    else if(v.length>=2){setField('locationField',true);setMsg('locationMsg','✔','ok');}
+    else{setField('locationField',null);setMsg('locationMsg','','');}
+  });
+
+  /* VEHICLE NUMBER */
+  const vehicleNoF=document.getElementById('vehicleNoField');
+  if(vehicleNoF){
+    vehicleNoF.addEventListener('input',function(){
+      this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+      const v=this.value;
+      const rx=/^[A-Z]{2}\d{2}[A-Z]{1,2}\d{4}$/;
+      if(v.length===0){setField('vehicleNoField',null);setMsg('vehicleNoMsg','','');}
+      else if(!rx.test(v)){setField('vehicleNoField',false);setMsg('vehicleNoMsg','⚠ Format: MH12AB1234','err');}
+      else{setField('vehicleNoField',true);setMsg('vehicleNoMsg','✔ Valid vehicle number','ok');}
+    });
+  }
+
+  /* CAPACITY */
+  const capacityF=document.getElementById('capacityField');
+  if(capacityF){
+    capacityF.addEventListener('input',function(){
+      const v=parseInt(this.value);
+      if(!this.value){setField('capacityField',null);setMsg('capacityMsg','','');}
+      else if(isNaN(v)||v<1){setField('capacityField',false);setMsg('capacityMsg','⚠ Enter valid capacity','err');}
+      else{setField('capacityField',true);setMsg('capacityMsg','✔','ok');}
+    });
+  }
+
+  /* RATE */
+  const rateF=document.getElementById('rateField');
+  if(rateF){
+    rateF.addEventListener('input',function(){
+      const v=parseFloat(this.value);
+      if(!this.value){setField('rateField',null);setMsg('rateMsg','','');}
+      else if(isNaN(v)||v<1){setField('rateField',false);setMsg('rateMsg','⚠ Min ₹1/km','err');}
+      else{setField('rateField',true);setMsg('rateMsg','✔','ok');}
+    });
+  }
+
+  /* LICENSE EXPIRY */
+  const licExpF=document.getElementById('licenseExpiryField');
+  if(licExpF){
+    licExpF.addEventListener('change',function(){
+      const today=new Date(); today.setHours(0,0,0,0);
+      const chosen=new Date(this.value);
+      if(!this.value){setField('licenseExpiryField',null);setMsg('licenseExpiryMsg','','');}
+      else if(chosen<=today){setField('licenseExpiryField',false);setMsg('licenseExpiryMsg','⚠ License must not be expired','err');}
+      else{setField('licenseExpiryField',true);setMsg('licenseExpiryMsg','✔ Valid expiry date','ok');}
+    });
+  }
+
+  /* PHOTO */
+  document.getElementById('photoField').addEventListener('change',function(){
+    const f=this.files[0]; if(!f) return;
+    const allowed=['image/jpeg','image/png','image/jpg','image/webp'];
+    if(!allowed.includes(f.type)){setField('photoField',false);setMsg('photoMsg','⚠ Only JPG/PNG/WEBP allowed','err');this.value='';return;}
+    if(f.size>2*1024*1024){setField('photoField',false);setMsg('photoMsg','⚠ Max 2MB allowed','err');this.value='';return;}
+    setField('photoField',true);setMsg('photoMsg','✔ Photo ready to upload','ok');
+  });
+
+  /* FORM SUBMIT */
+  document.getElementById('updateForm').onsubmit=function(e){
+    let valid=true; const errors=[];
+
+    const name=document.getElementById('nameField').value.trim();
+    if(!/^[A-Za-z\s]{3,}$/.test(name)){errors.push("Full name (min 3 letters)");setField('nameField',false);valid=false;}
+
+    const phone=document.getElementById('phoneField').value;
+    if(phone.length>0 && !/^[6-9]\d{9}$/.test(phone)){errors.push("Valid 10-digit phone (starts 6-9)");setField('phoneField',false);valid=false;}
+
+    const vNo=document.getElementById('vehicleNoField').value;
+    if(vNo && !/^[A-Z]{2}\d{2}[A-Z]{1,2}\d{4}$/.test(vNo)){errors.push("Valid vehicle number (e.g. MH12AB1234)");setField('vehicleNoField',false);valid=false;}
+
+    const expiry=document.getElementById('licenseExpiryField').value;
+    if(expiry){const today=new Date();today.setHours(0,0,0,0);if(new Date(expiry)<=today){errors.push("License expiry must be a future date");setField('licenseExpiryField',false);valid=false;}}
+
+    if(!valid){e.preventDefault();alert("Please fix the following:\n\n• "+errors.join("\n• "));}
+    return valid;
+  };
+</script>
 {% endblock %}

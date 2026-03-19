@@ -306,8 +306,8 @@ def add_product(request):
 
         try:
             quantity = int(quantity)
-            if quantity < 5:
-                messages.error(request, "Minimum quantity must be 5kg.")
+            if quantity < 10:
+                messages.error(request, "Minimum quantity must be 10kg.")
                 return render(request, "add_product.html")
             if quantity > 500:
                 messages.error(request, "Maximum quantity allowed is 500kg.")
@@ -713,40 +713,50 @@ from .models import Farmer, Retailer
 # ===================== FARMER / RETAILER =====================
 def profile(request):
     user_type = request.session.get("user_type")
-    name = request.session.get("name")
+    user_id = request.session.get("id")  # ✅ id use karo
 
     if user_type == "farmer":
-        user = get_object_or_404(Farmer, name=name)
+        user = get_object_or_404(Farmer, id=user_id)
     else:
-        user = get_object_or_404(Retailer, name=name)
+        user = get_object_or_404(Retailer, id=user_id)
 
     return render(request, "profile.html", {"user": user})
 
+
+
 def profile_update(request):
     user_type = request.session.get("user_type")
-    name = request.session.get("name")
+    user_id = request.session.get("id")
 
     if user_type == "farmer":
-        user = get_object_or_404(Farmer, name=name)
+        user = get_object_or_404(Farmer, id=user_id)
     else:
-        user = get_object_or_404(Retailer, name=name)
+        user = get_object_or_404(Retailer, id=user_id)
 
     if request.method == "POST":
-        user.name = request.POST.get("name")
-        user.email = request.POST.get("email")
+        user.name    = request.POST.get("name")
+        user.email   = request.POST.get("email")
         user.contact = request.POST.get("contact")
         user.address = request.POST.get("address")
+        user.gender  = request.POST.get("gender")
 
-        # 🔹 Only for Farmer - Bank Details Update
         if user_type == "farmer":
             user.bank_account_number = request.POST.get("bank_account_number")
-            user.ifsc_code = request.POST.get("ifsc_code")
+            user.ifsc_code           = request.POST.get("ifsc_code")
+
+        elif user_type == "retailer":           # ✅ ye add karo
+            user.shop_number = request.POST.get("shop_number")
+            user.gst_number  = request.POST.get("gst_number")
 
         if request.FILES.get("profile_image"):
             user.profile_image = request.FILES["profile_image"]
 
         user.save()
 
+        request.session['name']    = user.name
+        request.session['email']   = user.email
+        request.session['contact'] = user.contact
+        request.session['address'] = user.address
         request.session['profile_image'] = (
             user.profile_image.url if user.profile_image
             else '/static/images/no-image.jpg'
@@ -756,6 +766,8 @@ def profile_update(request):
         return redirect("profile")
 
     return render(request, "profile_update.html", {"user": user})
+
+
 
 def profile_delete(request):
     user_type = request.session.get("user_type")
@@ -875,6 +887,9 @@ def profile_delete_confirm(request):
 def delete_notification(request, id):
     n = get_object_or_404(Notification, id=id)
     n.delete()
+    referer = request.META.get('HTTP_REFERER', '')
+    if 'retailer_dashboard' in referer:
+        return redirect('retailer_dashboard')
     return redirect('notifications')
 
 
@@ -2651,12 +2666,12 @@ def request_sample(request, product_id):
         return redirect("browse_products")
 
     # 🆕 Get quantity from POST or default 2kg
-    quantity = float(request.POST.get('sample_quantity', 2))
-    if quantity not in [1.0, 2.0, 5.0]:
-        quantity = 2.0
+    # Isse replace karo
+    quantity = float(request.POST.get('sample_quantity', 0.3))
+    if quantity not in [0.1, 0.3, 0.5]:
+        quantity = 0.3  # default 300g
 
-    # 🆕 Charge based on quantity
-    charge_map = {1.0: 30.0, 2.0: 50.0, 5.0: 100.0}
+    charge_map = {0.1: 30.0, 0.3: 50.0, 0.5: 100.0}
     sample_charge = charge_map.get(quantity, 50.0)
 
     # 🆕 Expiry — 7 days from now
@@ -2719,14 +2734,26 @@ def approve_sample(request, id):
     sample = get_object_or_404(SampleRequest, id=id)
     sample.status = "approved"
     sample.save()
-    # sample.save() ke baad add karo
+
+    # ✅ Payment URL generate karo
+    from django.urls import reverse
+    payment_url = reverse('sample_payment', args=[sample.id])
+
+    # ✅ Retailer ko payment notification — link ke saath
     Notification.objects.create(
         receiver_retailer=sample.retailer,
-        message=f"Your sample request for '{sample.product.product}' has been approved!"
+        message=f"✅ Your sample request for '{sample.product.product}' ({sample.quantity}kg) has been approved by {sample.farmer.name}! Pay ₹{sample.sample_charge} to confirm delivery.",
+        link=payment_url   # ← ye retailer dashboard pe "Pay Now" dikhayega
     )
-    messages.success(request, "Sample request approved!")
-    return redirect("farmer_sample_requests")
 
+    # ✅ Farmer ko bhi confirmation
+    Notification.objects.create(
+        receiver_farmer=sample.farmer,
+        message=f"📩 You approved sample request for '{sample.product.product}' from {sample.retailer.name}. Waiting for payment of ₹{sample.sample_charge}."
+    )
+
+    messages.success(request, "Sample request approved! Retailer notified for payment.")
+    return redirect("farmer_sample_requests")
 
 def reject_sample(request, id):
     sample = get_object_or_404(SampleRequest, id=id)
@@ -2740,7 +2767,57 @@ def reject_sample(request, id):
     messages.success(request, "Sample request rejected!")
     return redirect("farmer_sample_requests")
 
+def sample_payment_page(request, sample_id):
+    sample = get_object_or_404(SampleRequest, id=sample_id)
 
+    # Security check
+    retailer_id = request.session.get('id')
+    if not retailer_id or sample.retailer.id != retailer_id:
+        return redirect('retailer_login')
+
+    # Razorpay order create
+    import razorpay
+    amount_paise = int(sample.sample_charge * 100)
+    client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+    razorpay_order = client.order.create({
+        "amount": amount_paise,
+        "currency": "INR",
+        "payment_capture": "1"
+    })
+
+    return render(request, "sample_payment_page.html", {
+        "sample": sample,
+        "amount": sample.sample_charge,
+        "razorpay_order_id": razorpay_order["id"],
+        "razorpay_key": settings.RAZORPAY_KEY_ID,
+    })
+
+
+@csrf_exempt
+def sample_payment_success(request, sample_id):
+    sample = get_object_or_404(SampleRequest, id=sample_id)
+
+    payment_id = request.POST.get('razorpay_payment_id')
+    if not payment_id:
+        return render(request, "payment_failed.html")
+
+    # ✅ Sample status update
+    sample.status = "paid"
+    sample.save()
+
+    # ✅ Farmer ko notify — payment mili
+    Notification.objects.create(
+        receiver_farmer=sample.farmer,
+        message=f"💰 Payment of ₹{sample.sample_charge} received for sample of '{sample.product.product}' from {sample.retailer.name}! Please arrange delivery."
+    )
+
+    # ✅ Retailer ko confirm
+    Notification.objects.create(
+        receiver_retailer=sample.retailer,
+        message=f"✅ Payment successful! ₹{sample.sample_charge} paid for '{sample.product.product}' sample. Delivery will be arranged soon."
+    )
+
+    return render(request, "sample_payment_success.html", {"sample": sample})
 # -------------------------------
 # Driver: Assign Sample & Deliver
 # -------------------------------
@@ -2792,8 +2869,7 @@ def deliver_sample_complete(request, id):
     sample.save()
 
     # 🆕 Driver commission — sample charge चा 20%
-    driver_earning = round(sample.sample_charge * 0.20, 2)
-
+    driver_earning = round(sample.sample_charge * 1.0, 2)  # ✅ 100% driver ko
     Notification.objects.create(
         receiver_retailer=sample.retailer,
         message=f"✅ Sample of '{sample.product.product}' ({sample.quantity}kg) delivered! "
