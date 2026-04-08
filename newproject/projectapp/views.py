@@ -1154,37 +1154,78 @@ from .models import Order, Notification
 
 @csrf_exempt
 @csrf_exempt
+@csrf_exempt
 def payment_success(request, order_id):
     order = get_object_or_404(Order, id=order_id)
 
     payment_id = request.POST.get('razorpay_payment_id')
 
     if not payment_id:
-        print("Error: Razorpay payment_id not found in request.")
         return render(request, "payment_failed.html")
 
     if order.status != "Paid":
         order.status = "Paid"
 
         product = order.product
-
-        # ✅ Stock आधीच place_order मध्ये कमी झाला — इथे नाही
-        # फक्त total_amount update कर
-        total_amount = order.quantity * product.price
+        total_amount = float(order.quantity) * float(product.price)
         order.total_amount = total_amount
         order.save()
 
-        # Farmer amount — default 95% (delivery नंतर adjust होईल)
-        farmer_amount = round(total_amount * 0.95, 2)
+        source_lat = getattr(product, 'latitude', None) or getattr(order.farmer, 'latitude', None)
+        source_lng = getattr(product, 'longitude', None) or getattr(order.farmer, 'longitude', None)
+        retailer_lat = getattr(order.retailer, 'latitude', None)
+        retailer_lng = getattr(order.retailer, 'longitude', None)
 
+        if all([source_lat, source_lng, retailer_lat, retailer_lng]):
+            # Exact distance available — exact % batao
+            delivery_dist = haversine_distance(source_lat, source_lng, retailer_lat, retailer_lng)
+            commission_rate = get_driver_commission(delivery_dist)
+            farmer_amount = round(total_amount * (1 - commission_rate), 2)
+            driver_pct = int(commission_rate * 100)
+            farmer_pct = int((1 - commission_rate) * 100)
+            dist_label = get_commission_label(delivery_dist)
+            dist_rounded = round(delivery_dist, 1)
+
+            farmer_msg = (
+                f"🎉 Order #{order.id} confirmed! "
+                f"{order.retailer.name} has ordered {order.quantity} kg of {order.product.product} | "
+                f"Total payment: ₹{total_amount:.2f} | "
+                f"Delivery distance: {dist_rounded} km ({dist_label}) | "
+                f"Driver commission: {driver_pct}% | "
+                f"Your amount: ₹{farmer_amount} ({farmer_pct}%) — "
+                f"will be credited to your bank account within 24 hours after delivery"
+            )
+        else:
+            # Location nahi — range dakhva
+            farmer_msg = (
+                f"🎉 Order #{order.id} confirmed! "
+                f"{order.retailer.name} has ordered {order.quantity} kg of {order.product.product} | "
+                f"Total payment: ₹{total_amount:.2f} | "
+                f"Your estimated amount: ₹{round(total_amount * 0.80, 2)} – ₹{round(total_amount * 0.95, 2)} "
+                f"(80%–95%, will be finalized based on driver's delivery distance) — "
+                f"will be credited to your bank account within 24 hours after delivery"
+            )
+
+        # Farmer notification
         Notification.objects.create(
             sender_retailer=order.retailer,
             receiver_farmer=order.farmer,
-            message=f"🎉 New Order #{order.id} confirmed! {order.retailer.name} has ordered {order.quantity}kg of {order.product.product}. Payment ₹{total_amount:.2f} received. Your amount ₹{farmer_amount} (95%) will be credited to your bank account within 24 hours after delivery."
+            message=farmer_msg
         )
-        print(f"Order #{order.id} status updated to Paid.")
+
+        # Retailer notification — English
+        Notification.objects.create(
+            receiver_retailer=order.retailer,
+            message=(
+                f"✅ Payment of ₹{total_amount:.2f} confirmed for Order #{order.id} "
+                f"({order.product.product} x {order.quantity} kg)! "
+                f"Your order is now being processed."
+            )
+        )
 
     return render(request, "payment_success.html", {"order": order})
+
+
 # ------------------------
 # Update Status (Farmer)
 # ------------------------
@@ -2277,48 +2318,50 @@ def driver_mark_delivered(request, delivery_id):
     order = delivery.order
 
     if delivery.status.lower() != "picked":
-        messages.warning(request, f"Cannot mark delivered. Current status: {delivery.status}")
+        messages.warning(request, f"Cannot mark as delivered. Current status: {delivery.status}")
         return redirect("driver_assigned_deliveries")
 
     product = order.product
     driver = delivery.driver
 
+    # Source: Farmer / Product
     src_lat = getattr(product, 'latitude', None) or getattr(order.farmer, 'latitude', None)
     src_lng = getattr(product, 'longitude', None) or getattr(order.farmer, 'longitude', None)
+
+    # Destination: Retailer (commission ke liye CORRECT distance)
+    ret_lat = getattr(order.retailer, 'latitude', None)
+    ret_lng = getattr(order.retailer, 'longitude', None)
+
+    # Fallback: driver location
     dr_lat = getattr(driver, 'latitude', None)
     dr_lng = getattr(driver, 'longitude', None)
 
-    dist = 0
-    if all([src_lat, src_lng, dr_lat, dr_lng]):
-        dist = haversine_distance(src_lat, src_lng, dr_lat, dr_lng)
+    delivery_dist = 0
+    dist_source = "estimated"
 
-    # 🆕 Updated commission rates
-    commission_rate = get_driver_commission(dist)
+    if all([src_lat, src_lng, ret_lat, ret_lng]):
+        # Best: Farmer -> Retailer (actual delivery route)
+        delivery_dist = haversine_distance(src_lat, src_lng, ret_lat, ret_lng)
+        dist_source = "actual"
+    elif all([src_lat, src_lng, dr_lat, dr_lng]):
+        # Fallback: Farmer -> Driver
+        delivery_dist = haversine_distance(src_lat, src_lng, dr_lat, dr_lng)
+        dist_source = "estimated"
+
+    # Commission
+    commission_rate = get_driver_commission(delivery_dist)
     order_total = float(order.quantity) * float(order.product.price)
-    delivery.driver_earning = round(order_total * commission_rate, 2)
+    driver_earning = round(order_total * commission_rate, 2)
     farmer_amount = round(order_total * (1 - commission_rate), 2)
+    driver_pct = int(commission_rate * 100)
+    farmer_pct = int((1 - commission_rate) * 100)
+    dist_label = get_commission_label(delivery_dist)
+    dist_rounded = round(delivery_dist, 1)
 
+    delivery.driver_earning = driver_earning
     delivery.status = "delivered"
     delivery.delivered_at = timezone.now()
     delivery.save()
-
-    # Retailer notification
-    Notification.objects.create(
-        receiver_retailer=order.retailer,
-        message=f"✅ Order #{order.id} ({order.product.product}) delivered by {driver.name}!"
-    )
-
-    # Farmer notification
-    Notification.objects.create(
-        receiver_farmer=order.farmer,
-        message=f"✅ Order #{order.id} delivered to {order.retailer.name}! Your amount ₹{farmer_amount} ({int((1-commission_rate)*100)}%) will be credited within 24 hours."
-    )
-
-    # Driver notification
-    Notification.objects.create(
-        receiver_driver=driver,
-        message=f"💰 Order #{order.id} delivered! Your earning ₹{delivery.driver_earning} ({int(commission_rate*100)}%) will be credited within 24 hours."
-    )
 
     order.status = "Delivered"
     order.save()
@@ -2327,8 +2370,47 @@ def driver_mark_delivered(request, delivery_id):
     driver.waiting_deadline = None
     driver.save()
 
-    messages.success(request, f"✅ Order #{order.id} delivered! You earned ₹{delivery.driver_earning}")
+    # RETAILER notification — English
+    Notification.objects.create(
+        receiver_retailer=order.retailer,
+        message=(
+            f"✅ Order #{order.id} ({order.product.product} x {order.quantity} kg) "
+            f"has been delivered by {driver.name}! "
+            f"Total order amount: ₹{order_total:.2f}"
+        )
+    )
+
+    # FARMER notification — English
+    Notification.objects.create(
+        receiver_farmer=order.farmer,
+        message=(
+            f"✅ Order #{order.id} delivered to {order.retailer.name}! "
+            f"Delivery distance: {dist_rounded} km ({dist_label}) | "
+            f"Driver commission: {driver_pct}% = ₹{driver_earning} | "
+            f"Your final amount: ₹{farmer_amount} ({farmer_pct}%) — "
+            f"will be credited to your bank account within 24 hours"
+        )
+    )
+
+    # DRIVER notification — English
+    Notification.objects.create(
+        receiver_driver=driver,
+        message=(
+            f"💰 Order #{order.id} delivered! "
+            f"Delivery distance: {dist_rounded} km ({dist_label}) | "
+            f"Your commission: {driver_pct}% = ₹{driver_earning} — "
+            f"will be credited to your account within 24 hours"
+        )
+    )
+
+    messages.success(
+        request,
+        f"✅ Order #{order.id} delivered! "
+        f"Distance: {dist_rounded} km | Earnings: ₹{driver_earning} ({driver_pct}%)"
+    )
     return redirect("driver_dashboard")
+
+
 # --- ADMIN/FARMER VIEWS ---
 
 import math
@@ -2339,24 +2421,36 @@ from datetime import timedelta
 # 1. Distance calculator
 # ----------------------------------------
 def haversine_distance(lat1, lon1, lat2, lon2):
+    """Do coordinates ke beech ka distance km mein"""
     R = 6371
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
     dphi = math.radians(lat2 - lat1)
     dlambda = math.radians(lon2 - lon1)
-    a = math.sin(dphi/2)**2 + math.cos(phi1)*math.cos(phi2)*math.sin(dlambda/2)**2
-    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    a = math.sin(dphi / 2) ** 2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
+    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
 
 # 🆕 2. Driver Commission नुसार distance
 # ----------------------------------------
 def get_driver_commission(dist_km):
+    """
+    Farmer to Retailer distance ke basis par commission rate.
+
+    <=  50 km  =>  5%   driver,  95% farmer
+    <= 200 km  =>  10%  driver,  90% farmer
+    <= 400 km  =>  15%  driver,  85% farmer
+    >  400 km  =>  20%  driver,  80% farmer
+    """
     if dist_km <= 50:
-        return 0.05    # 5%
+        return 0.05
     elif dist_km <= 200:
-        return 0.10    # 10%
+        return 0.10
     elif dist_km <= 400:
-        return 0.15    # 15%
+        return 0.15
     else:
-        return 0.20    # 20%
+        return 0.20
+
+
 # ----------------------------------------
 # 2. Distance नुसार max orders ठरवणे
 # ----------------------------------------
@@ -2367,8 +2461,19 @@ def get_max_orders_for_distance(dist_km):
         return 2
     elif dist_km <= 500:
         return 1
-    return 0  # 500km पेक्षा जास्त — assign नाही
+    return 0
 
+
+def get_commission_label(dist_km):
+    """Distance slab label in English"""
+    if dist_km <= 50:
+        return "up to 50 km"
+    elif dist_km <= 200:
+        return "51–200 km"
+    elif dist_km <= 400:
+        return "201–400 km"
+    else:
+        return "above 400 km"
 
 # ----------------------------------------
 # 3. Driver eligible आहे का check
@@ -2383,26 +2488,15 @@ def is_driver_eligible(driver, dist_km):
         status__in=['assigned', 'picked', 'in_transit']
     ).count()
 
-    # 50km driver साठी — deadline check
     if dist_km <= 50:
         now = timezone.now()
         deadline = getattr(driver, 'waiting_deadline', None)
-
-        # Deadline नाही — म्हणजे नवीन driver, deadline set करा
         if not deadline:
             driver.waiting_deadline = now + timedelta(hours=WAITING_HOURS)
             driver.save()
-            deadline = driver.waiting_deadline
 
-        # Deadline संपली आणि 5 orders नाहीत — तरी eligible
-        if now >= deadline:
-            return active_count < max_orders, active_count, max_orders
-
-        # Deadline संपली नाही — 5 orders भरले नाहीत तर eligible
-        return active_count < max_orders, active_count, max_orders
-
-    # 50km पेक्षा जास्त — simple check
     return active_count < max_orders, active_count, max_orders
+
 
 
 # ----------------------------------------
@@ -2414,7 +2508,7 @@ WAITING_HOURS = 4  # 🔧 हे तू बदलू शकतोस
 # ----------------------------------------
 # 5. मुख्य function — area-wise drivers
 # ----------------------------------------
-def get_nearby_drivers(source_lat, source_lng, retailer_lat=None, retailer_lng=None, max_km=500):
+def get_nearby_drivers(source_lat, source_lng, retailer_lat=None, retailer_lng=None):
     from django.db.models import Count
 
     busy_driver_ids = Delivery.objects.filter(
@@ -2425,65 +2519,50 @@ def get_nearby_drivers(source_lat, source_lng, retailer_lat=None, retailer_lng=N
         active_count__gte=5
     ).values_list('driver_id', flat=True)
 
-    all_drivers = Driver.objects.filter(
-        is_available=True
-    ).exclude(id__in=busy_driver_ids)
+    all_drivers = Driver.objects.filter(is_available=True).exclude(id__in=busy_driver_ids)
 
-    # ✅ Location नसेल तर 6-tuple return कर
     if not source_lat or not source_lng:
         result = []
         for d in all_drivers:
             active = Delivery.objects.filter(
-                driver=d,
-                status__in=['assigned', 'picked', 'in_transit']
+                driver=d, status__in=['assigned', 'picked', 'in_transit']
             ).count()
-            result.append((0.0, 0.0, 0.0, d, active, 5))  # 🆕 6-tuple
+            result.append((0.0, 0.0, 0.0, d, active, 5))
         return result, [], [], [], [], []
 
-    groups = {
-        '50': [], '100': [], '200': [],
-        '300': [], '400': [], '500': [],
-    }
+    groups = {'50': [], '100': [], '200': [], '300': [], '400': [], '500': []}
 
     for driver in all_drivers:
         driver_lat = getattr(driver, 'latitude', None)
         driver_lng = getattr(driver, 'longitude', None)
-
         if not driver_lat or not driver_lng:
             continue
 
-        # Farmer → Driver distance
-        farmer_dist = round(haversine_distance(
-            source_lat, source_lng,
-            driver_lat, driver_lng
-        ), 1)
+        farmer_to_driver = round(
+            haversine_distance(source_lat, source_lng, driver_lat, driver_lng), 1
+        )
 
-        # Retailer → Driver distance
         if retailer_lat and retailer_lng:
-            retailer_dist = round(haversine_distance(
-                retailer_lat, retailer_lng,
-                driver_lat, driver_lng
-            ), 1)
-            total_score = farmer_dist + retailer_dist
+            retailer_to_driver = round(
+                haversine_distance(retailer_lat, retailer_lng, driver_lat, driver_lng), 1
+            )
+            total_score = farmer_to_driver + retailer_to_driver
         else:
-            retailer_dist = 0.0
-            total_score = farmer_dist
+            retailer_to_driver = 0.0
+            total_score = farmer_to_driver
 
-        # Eligibility check
-        eligible, active, max_ord = is_driver_eligible(driver, farmer_dist)
-
+        eligible, active, max_ord = is_driver_eligible(driver, farmer_to_driver)
         if not eligible:
             continue
 
-        # ✅ 6-tuple
-        entry = (total_score, farmer_dist, retailer_dist, driver, active, max_ord)
+        entry = (total_score, farmer_to_driver, retailer_to_driver, driver, active, max_ord)
 
-        if farmer_dist <= 50:        groups['50'].append(entry)
-        elif farmer_dist <= 100:     groups['100'].append(entry)
-        elif farmer_dist <= 200:     groups['200'].append(entry)
-        elif farmer_dist <= 300:     groups['300'].append(entry)
-        elif farmer_dist <= 400:     groups['400'].append(entry)
-        elif farmer_dist <= 500:     groups['500'].append(entry)
+        if farmer_to_driver <= 50:      groups['50'].append(entry)
+        elif farmer_to_driver <= 100:   groups['100'].append(entry)
+        elif farmer_to_driver <= 200:   groups['200'].append(entry)
+        elif farmer_to_driver <= 300:   groups['300'].append(entry)
+        elif farmer_to_driver <= 400:   groups['400'].append(entry)
+        elif farmer_to_driver <= 500:   groups['500'].append(entry)
 
     for key in groups:
         groups[key].sort(key=lambda x: x[0])
@@ -2491,7 +2570,8 @@ def get_nearby_drivers(source_lat, source_lng, retailer_lat=None, retailer_lng=N
     return (
         groups['50'], groups['100'], groups['200'],
         groups['300'], groups['400'], groups['500'],
-    )# ----------------------------------------
+    )
+
 # 6. update_status view
 # ----------------------------------------
 def update_status(request, order_id):
@@ -2500,14 +2580,11 @@ def update_status(request, order_id):
     product = order.product
     source_lat = getattr(product, 'latitude', None) or getattr(order.farmer, 'latitude', None)
     source_lng = getattr(product, 'longitude', None) or getattr(order.farmer, 'longitude', None)
-
-    # 🆕 Retailer ची location
     retailer_lat = getattr(order.retailer, 'latitude', None)
     retailer_lng = getattr(order.retailer, 'longitude', None)
 
     d50, d100, d200, d300, d400, d500 = get_nearby_drivers(
-        source_lat, source_lng,
-        retailer_lat, retailer_lng  # 🆕
+        source_lat, source_lng, retailer_lat, retailer_lng
     )
 
     if request.method == "POST":
@@ -2524,19 +2601,23 @@ def update_status(request, order_id):
 
         if driver_id:
             driver = get_object_or_404(Driver, id=driver_id)
-
             driver_lat = getattr(driver, 'latitude', None)
             driver_lng = getattr(driver, 'longitude', None)
 
-            dist = 0
+            # Distance 1: Farmer -> Driver (eligibility ke liye)
+            farmer_to_driver_dist = 0
             if all([source_lat, source_lng, driver_lat, driver_lng]):
-                dist = haversine_distance(source_lat, source_lng, driver_lat, driver_lng)
+                farmer_to_driver_dist = haversine_distance(
+                    source_lat, source_lng, driver_lat, driver_lng
+                )
 
-            eligible, active, max_ord = is_driver_eligible(driver, dist)
+            eligible, active, max_ord = is_driver_eligible(driver, farmer_to_driver_dist)
 
             if not eligible:
-                messages.error(request,
-                    f"⚠️ Driver {driver.name} already has {active}/{max_ord} active orders!")
+                messages.error(
+                    request,
+                    f"⚠️ Driver {driver.name} already has {active}/{max_ord} active orders!"
+                )
                 return render(request, "update_status.html", {
                     "order": order,
                     "d50": d50, "d100": d100, "d200": d200,
@@ -2544,6 +2625,27 @@ def update_status(request, order_id):
                     "waiting_hours": WAITING_HOURS,
                 })
 
+            # Distance 2: Farmer -> Retailer (commission ke liye — actual delivery route)
+            delivery_dist = 0
+            if all([source_lat, source_lng, retailer_lat, retailer_lng]):
+                delivery_dist = haversine_distance(
+                    source_lat, source_lng, retailer_lat, retailer_lng
+                )
+            elif farmer_to_driver_dist > 0:
+                # Fallback agar retailer location nahi
+                delivery_dist = farmer_to_driver_dist
+
+            # Commission calculation
+            commission_rate = get_driver_commission(delivery_dist)
+            order_total = float(order.quantity) * float(order.product.price)
+            driver_expected_earning = round(order_total * commission_rate, 2)
+            farmer_expected_amount = round(order_total * (1 - commission_rate), 2)
+            driver_pct = int(commission_rate * 100)
+            farmer_pct = int((1 - commission_rate) * 100)
+            dist_label = get_commission_label(delivery_dist)
+            delivery_dist_rounded = round(delivery_dist, 1)
+
+            # Delivery object
             order.driver = driver
             order.status = "Driver Assigned"
 
@@ -2559,6 +2661,7 @@ def update_status(request, order_id):
                     status="assigned", assigned_at=timezone.now()
                 )
 
+            # Waiting deadline
             def get_waiting_minutes(d):
                 if d <= 50:    return 120
                 elif d <= 100: return 90
@@ -2567,16 +2670,14 @@ def update_status(request, order_id):
                 elif d <= 400: return 30
                 else:          return 15
 
-            wait_mins = get_waiting_minutes(dist)
+            wait_mins = get_waiting_minutes(farmer_to_driver_dist)
             new_deadline = timezone.now() + timedelta(minutes=wait_mins)
-
             if not driver.waiting_deadline or new_deadline > driver.waiting_deadline:
                 driver.waiting_deadline = new_deadline
 
-            if dist <= 50:
+            if farmer_to_driver_dist <= 50:
                 active_now = Delivery.objects.filter(
-                    driver=driver,
-                    status__in=['assigned', 'picked', 'in_transit']
+                    driver=driver, status__in=['assigned', 'picked', 'in_transit']
                 ).count()
                 if active_now >= 5:
                     driver.waiting_deadline = None
@@ -2584,11 +2685,47 @@ def update_status(request, order_id):
 
             driver.save()
 
+            # DRIVER notification — English
             Notification.objects.create(
                 receiver_driver=driver,
-                message=f"Order #{order.id} has been assigned to you!"
+                message=(
+                    f"🚚 Order #{order.id} has been assigned to you! "
+                    f"Product: {order.product.product} ({order.quantity} kg) | "
+                    f"Delivery distance: {delivery_dist_rounded} km ({dist_label}) | "
+                    f"Your commission: {driver_pct}% = ₹{driver_expected_earning} "
+                    f"(will be credited to your account within 24 hours after delivery)"
+                )
             )
-            messages.success(request, f"✅ Driver {driver.name} assigned!")
+
+            # FARMER notification — English
+            Notification.objects.create(
+                receiver_farmer=order.farmer,
+                message=(
+                    f"🚗 Driver '{driver.name}' has been assigned for Order #{order.id} "
+                    f"({order.product.product} x {order.quantity} kg) | "
+                    f"Delivery distance: {delivery_dist_rounded} km ({dist_label}) | "
+                    f"Driver commission: {driver_pct}% | "
+                    f"Your share: {farmer_pct}% = ₹{farmer_expected_amount} "
+                    f"(will be credited to your bank account within 24 hours after delivery)"
+                )
+            )
+
+            # RETAILER notification — English
+            Notification.objects.create(
+                receiver_retailer=order.retailer,
+                message=(
+                    f"🚚 Driver '{driver.name}' has been assigned for your Order #{order.id} "
+                    f"({order.product.product}) | "
+                    f"Delivery distance: {delivery_dist_rounded} km | "
+                    f"Your goods will arrive soon!"
+                )
+            )
+
+            messages.success(
+                request,
+                f"✅ Driver {driver.name} assigned! "
+                f"Distance: {delivery_dist_rounded} km | Commission: {driver_pct}% (₹{driver_expected_earning})"
+            )
 
         order.save()
         return redirect("farmer_order")
@@ -2604,26 +2741,102 @@ from django.utils import timezone
 from .models import Delivery, Driver
 
 def assign_driver_to_order(order):
-    driver = Driver.objects.filter(is_available=True).first()
-    if not driver:
+    product = order.product
+
+    source_lat = getattr(product, 'latitude', None) or getattr(order.farmer, 'latitude', None)
+    source_lng = getattr(product, 'longitude', None) or getattr(order.farmer, 'longitude', None)
+    retailer_lat = getattr(order.retailer, 'latitude', None)
+    retailer_lng = getattr(order.retailer, 'longitude', None)
+
+    available_drivers = Driver.objects.filter(is_available=True)
+
+    best_driver = None
+    best_farmer_to_driver_dist = float('inf')
+
+    for d in available_drivers:
+        d_lat = getattr(d, 'latitude', None)
+        d_lng = getattr(d, 'longitude', None)
+
+        if source_lat and source_lng and d_lat and d_lng:
+            f_to_d = haversine_distance(source_lat, source_lng, d_lat, d_lng)
+            eligible, _, _ = is_driver_eligible(d, f_to_d)
+            if eligible and f_to_d < best_farmer_to_driver_dist:
+                best_farmer_to_driver_dist = f_to_d
+                best_driver = d
+        else:
+            if not best_driver:
+                best_driver = d
+                best_farmer_to_driver_dist = 0
+
+    if not best_driver:
         return None
 
-    DELIVERY_CHARGE = 50   # tum chaaho to dynamic bana sakte ho
+    # Commission: Farmer -> Retailer distance se
+    delivery_dist = 0
+    if all([source_lat, source_lng, retailer_lat, retailer_lng]):
+        delivery_dist = haversine_distance(source_lat, source_lng, retailer_lat, retailer_lng)
+    elif best_farmer_to_driver_dist > 0:
+        delivery_dist = best_farmer_to_driver_dist
+
+    commission_rate = get_driver_commission(delivery_dist)
+    order_total = float(order.quantity) * float(order.product.price)
+    driver_expected_earning = round(order_total * commission_rate, 2)
+    farmer_expected_amount = round(order_total * (1 - commission_rate), 2)
+    driver_pct = int(commission_rate * 100)
+    farmer_pct = int((1 - commission_rate) * 100)
+    dist_label = get_commission_label(delivery_dist)
+    dist_rounded = round(delivery_dist, 1)
 
     delivery = Delivery.objects.create(
         order=order,
-        driver=driver,
-        delivery_charge=DELIVERY_CHARGE,
+        driver=best_driver,
+        delivery_charge=50,
         driver_earning=0,
         status="assigned",
         assigned_at=timezone.now()
     )
 
-    driver.is_available = False
-    driver.save()
+    best_driver.is_available = False
+    best_driver.save()
+
+    order.driver = best_driver
+    order.status = "Driver Assigned"
+    order.save()
+
+    # Driver notification — English
+    Notification.objects.create(
+        receiver_driver=best_driver,
+        message=(
+            f"🚚 Order #{order.id} has been auto-assigned to you! "
+            f"Product: {order.product.product} ({order.quantity} kg) | "
+            f"Delivery distance: {dist_rounded} km ({dist_label}) | "
+            f"Your commission: {driver_pct}% = ₹{driver_expected_earning} "
+            f"(will be credited to your account within 24 hours after delivery)"
+        )
+    )
+
+    # Farmer notification — English
+    Notification.objects.create(
+        receiver_farmer=order.farmer,
+        message=(
+            f"🚗 Driver '{best_driver.name}' has been auto-assigned for Order #{order.id} | "
+            f"Delivery distance: {dist_rounded} km ({dist_label}) | "
+            f"Driver commission: {driver_pct}% | "
+            f"Your share: {farmer_pct}% = ₹{farmer_expected_amount} "
+            f"(will be credited to your bank account within 24 hours after delivery)"
+        )
+    )
+
+    # Retailer notification — English
+    Notification.objects.create(
+        receiver_retailer=order.retailer,
+        message=(
+            f"🚚 Driver '{best_driver.name}' has been assigned for your Order #{order.id} "
+            f"({order.product.product}) | Your goods will arrive soon!"
+        )
+    )
 
     return delivery
-
 
 
 
