@@ -325,41 +325,58 @@
     /* OTP — ORIGINAL LOGIC UNCHANGED */
     let generatedOTP; let isVerified=false;
 
-   function sendOTP() {
-    const email = document.getElementById('email').value;
-    if (!email || !email.includes('@')) {
-      setMsg('emailMsg', '⚠ Please enter a valid email address!', 'err'); return;
+function sendOTP() {
+    const email = document.getElementById('email').value.trim();
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,6}$/;
+    if (!email || !emailRegex.test(email)) {
+        setMsg('emailMsg', '⚠ Please enter a valid email address!', 'err');
+        setFld('email', false);
+        return;
     }
+
+    // Disable button while sending
+    const btn = document.getElementById("sendOTPBtn");
+    btn.disabled = true;
+    btn.innerText = "Sending...";
+
     fetch("{% url 'send_email_otp' %}", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
-      },
-      body: "email=" + encodeURIComponent(email)
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: "email=" + encodeURIComponent(email)
     })
-    .then(r => r.json())
-    .then(d => {
-      if (d.status === "success") {
-        document.getElementById("otpBox").style.display = "block";
-        setMsg('emailMsg', '📩 OTP sent! Check your inbox.', 'ok');
-      } else {
-        setMsg('emailMsg', '⚠ ' + d.message, 'err');
-      }
-    })
-    .catch(() => setMsg('emailMsg', '⚠ Server error while sending OTP.', 'err'));
-  }
-    document.getElementById('otp_input').oninput=function(){
-        if(this.value==generatedOTP){
-            isVerified=true;
-            document.getElementById("otpError").innerText="Email Verified ✅";
-            document.getElementById("otpError").className="text-success fw-bold small";
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+
+            // Show OTP input box
+            document.getElementById("otpBox").style.display = "block";
+
+            setMsg('emailMsg', '📩 OTP sent! Check your email.', 'ok');
+            setFld('email', true);
+
+            // Button update
+            btn.innerText = "Resend OTP";
+            btn.disabled = false;
+
         } else {
-            isVerified=false;
-            document.getElementById("otpError").innerText="Invalid OTP";
-            document.getElementById("otpError").className="text-danger small";
+            setMsg('emailMsg', '⚠ ' + data.message, 'err');
+            setFld('email', false);
+
+            btn.innerText = "Verify";
+            btn.disabled = false;
         }
-    };
+    })
+    .catch(() => {
+        setMsg('emailMsg', '⚠ Server error while sending OTP.', 'err');
+        btn.innerText = "Verify";
+        btn.disabled = false;
+    });
+}
 
     /* FORM SUBMIT */
     document.getElementById('driverForm').onsubmit=function(e){
