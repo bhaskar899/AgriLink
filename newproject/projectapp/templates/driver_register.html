@@ -103,8 +103,12 @@
 
                     <div id="otpBox" class="mb-3" style="display:none;">
                         <label class="form-label text-success">Verification OTP</label>
-                        <input class="form-control border-success" id="otp_input" placeholder="Enter 6-digit OTP" maxlength="6">
-                        <div class="invalid-feedback d-block" id="otpError"></div>
+                        <div class="input-group gap-2">
+                            <input class="form-control border-success" id="otp_input" placeholder="Enter 6-digit OTP" maxlength="6" oninput="this.value=this.value.replace(/\D/g,'')">
+                            <button type="button" class="btn btn-verify px-3" id="verifyOTPBtn" onclick="verifyOTP()">Confirm</button>
+                        </div>
+                        <div class="mt-1" id="otpError"></div>
+                        <input type="hidden" name="otp_verified" id="otp_verified" value="false">
                     </div>
 
                     <!-- Phone + Password row -->
@@ -325,6 +329,60 @@
     /* OTP — ORIGINAL LOGIC UNCHANGED */
     let generatedOTP; let isVerified=false;
 
+function verifyOTP() {
+    const entered = document.getElementById('otp_input').value.trim();
+    const btn = document.getElementById('verifyOTPBtn');
+    const errorEl = document.getElementById('otpError');
+
+    if (!entered || entered.length !== 6) {
+        errorEl.className = 'val-msg err';
+        errorEl.textContent = '⚠ Please enter the 6-digit OTP';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = 'Verifying...';
+
+    fetch("{% url 'verify_email_otp' %}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: "otp=" + encodeURIComponent(entered) + "&email=" + encodeURIComponent(document.getElementById('email').value.trim())
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === "success") {
+            isVerified = true;
+            document.getElementById('otp_verified').value = 'true';
+            errorEl.className = 'val-msg ok';
+            errorEl.textContent = '✔ Email verified successfully!';
+            document.getElementById('otp_input').classList.add('is-valid');
+            btn.innerText = '✔ Verified';
+            btn.disabled = true;
+            btn.style.background = '#198754';
+            // Lock email field so it can't be changed after verification
+            document.getElementById('email').readOnly = true;
+            document.getElementById('sendOTPBtn').disabled = true;
+        } else {
+            isVerified = false;
+            document.getElementById('otp_verified').value = 'false';
+            errorEl.className = 'val-msg err';
+            errorEl.textContent = '⚠ ' + (data.message || 'Incorrect OTP. Please try again.');
+            document.getElementById('otp_input').classList.add('is-invalid');
+            btn.innerText = 'Confirm';
+            btn.disabled = false;
+        }
+    })
+    .catch(() => {
+        errorEl.className = 'val-msg err';
+        errorEl.textContent = '⚠ Server error. Please try again.';
+        btn.innerText = 'Confirm';
+        btn.disabled = false;
+    });
+}
+
 function sendOTP() {
     const email = document.getElementById('email').value.trim();
 
@@ -355,6 +413,16 @@ function sendOTP() {
 
             // Show OTP input box
             document.getElementById("otpBox").style.display = "block";
+
+            // Reset verified state on resend
+            isVerified = false;
+            document.getElementById('otp_verified').value = 'false';
+            document.getElementById('otp_input').value = '';
+            document.getElementById('otp_input').className = 'form-control border-success';
+            document.getElementById('otpError').textContent = '';
+            const vBtn = document.getElementById('verifyOTPBtn');
+            vBtn.innerText = 'Confirm'; vBtn.disabled = false; vBtn.style.background = '';
+            document.getElementById('email').readOnly = false;
 
             setMsg('emailMsg', '📩 OTP sent! Check your email.', 'ok');
             setFld('email', true);
