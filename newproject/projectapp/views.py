@@ -2868,7 +2868,7 @@ def deliver_sample_complete(request, id):
     sample.delivered_at = timezone.now()
     sample.save()
 
-    # 🆕 Driver commission — sample charge चा 20%
+    # 🆕 Driver commission
     driver_earning = round(sample.sample_charge * 1.0, 2)  # ✅ 100% driver ko
     Notification.objects.create(
         receiver_retailer=sample.retailer,

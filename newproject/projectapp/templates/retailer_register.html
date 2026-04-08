@@ -367,21 +367,55 @@
     })
     .catch(() => setMsg('emailMsg', '⚠ Server error while sending OTP.', 'err'));
   }
-  /* GST OCR — original unchanged */
-  document.getElementById('gstFile').onchange=async function(){
-    const gstNum=document.getElementById('gstInput').value.toUpperCase();
-    const status=document.getElementById('gstStatus');
-    if(gstNum.length<15){ alert("Please enter a valid 15-digit GST number first!"); this.value=""; return; }
-    status.style.color='#f59e0b'; status.innerText="⏳ Scanning GST Certificate...";
-    try{
-      const worker=await Tesseract.createWorker('eng');
-      const{data:{text}}=await worker.recognize(this.files[0]);
-      await worker.terminate();
-      if(text.toUpperCase().includes(gstNum)){ status.style.color='#15803d'; status.innerText="✅ GST Verified Successfully!"; }
-      else{ status.style.color='#ef4444'; status.innerText="❌ GST number not found in document."; }
-    }catch(e){ status.style.color='#ef4444'; status.innerText="❌ Scanning error. Try JPG/PNG."; }
-  };
+ // GST OCR — PDF + Image support
+document.getElementById('gstFile').onchange = async function() {
+    const gstNum = document.getElementById('gstInput').value.toUpperCase();
+    const status = document.getElementById('gstStatus');
+    const file = this.files[0];
 
+    if (gstNum.length < 15) {
+        alert("Please enter a valid 15-digit GST number first!");
+        this.value = ""; return;
+    }
+
+    status.style.color = '#f59e0b';
+    status.innerText = "⏳ Scanning GST Certificate...";
+
+    try {
+        let src = file;
+
+        // ✅ PDF Support add kiya
+        if (file.type === "application/pdf") {
+            const pdfData = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({data: pdfData}).promise;
+            const page = await pdf.getPage(1);
+            const vp = page.getViewport({scale: 2.0});
+            const canvas = document.createElement('canvas');
+            canvas.width = vp.width;
+            canvas.height = vp.height;
+            await page.render({
+                canvasContext: canvas.getContext('2d'),
+                viewport: vp
+            }).promise;
+            src = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.95));
+        }
+
+        const worker = await Tesseract.createWorker('eng');
+        const { data: { text } } = await worker.recognize(src);
+        await worker.terminate();
+
+        if (text.toUpperCase().includes(gstNum)) {
+            status.style.color = '#15803d';
+            status.innerText = "✅ GST Verified Successfully!";
+        } else {
+            status.style.color = '#ef4444';
+            status.innerText = "❌ GST number not found in document.";
+        }
+    } catch(e) {
+        status.style.color = '#ef4444';
+        status.innerText = "❌ Scanning error. Try JPG/PNG.";
+    }
+};
   /* FORM SUBMIT */
   document.getElementById('retailerForm').onsubmit=function(e){
     let valid=true; const errors=[];

@@ -56,9 +56,6 @@ class Retailer(models.Model):
     def __str__(self):
         return self.name
 
-def __str__(self):
-        return self.name
-
 
 # Product model (unchanged)
 # ------------------------
@@ -67,8 +64,8 @@ class Product(models.Model):
     description = models.TextField()
     created_at = models.DateTimeField(default=timezone.now)
     price = models.FloatField()
-    latitude = models.FloatField(null=True, blank=True)  # 🆕
-    longitude = models.FloatField(null=True, blank=True)  # 🆕
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
     quantity = models.IntegerField()
     location = models.CharField(max_length=50)
     image = models.ImageField(upload_to='product_images/', blank=True, null=True)
