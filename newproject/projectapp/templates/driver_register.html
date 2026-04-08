@@ -326,7 +326,7 @@
     let generatedOTP; let isVerified=false;
 
    function sendOTP() {
-    const email = document.getElementById('emailInput').value;
+    const email = document.getElementById('email').value;
     if (!email || !email.includes('@')) {
       setMsg('emailMsg', '⚠ Please enter a valid email address!', 'err'); return;
     }
