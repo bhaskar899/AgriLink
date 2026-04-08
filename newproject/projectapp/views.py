@@ -1278,8 +1278,8 @@ def driver_register(request):
         vehicle_img = request.FILES.get('vehicle_image')
         issue_date = request.POST.get('license_issue_date')
         expiry_date = request.POST.get('license_expiry_date')
-        latitude = request.POST.get('latitude') or None,
-        longitude = request.POST.get('longitude') or None,
+        latitude = request.POST.get('latitude') or None
+        longitude = request.POST.get('longitude') or None
 
         try:
             # 🟢 Yahan badlav kiya gaya hai
