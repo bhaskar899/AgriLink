@@ -2626,14 +2626,7 @@ def update_status(request, order_id):
                 })
 
             # Distance 2: Farmer -> Retailer (commission ke liye — actual delivery route)
-            delivery_dist = 0
-            if all([source_lat, source_lng, retailer_lat, retailer_lng]):
-                delivery_dist = haversine_distance(
-                    source_lat, source_lng, retailer_lat, retailer_lng
-                )
-            elif farmer_to_driver_dist > 0:
-                # Fallback agar retailer location nahi
-                delivery_dist = farmer_to_driver_dist
+            delivery_dist = farmer_to_driver_dist
 
             # Commission calculation
             commission_rate = get_driver_commission(delivery_dist)
