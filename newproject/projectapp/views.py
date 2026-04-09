@@ -2281,11 +2281,10 @@ def driver_dashboard(request):
     # 🆕 Remaining orders
     remaining = max(0, max_orders - len(pending))
 
-    # 🆕 Deadline — नसेल तर set कर फक्त pending असतील तर
-    if pending and not driver.waiting_deadline:
+    if pending and not driver.waiting_deadline and max_orders > 1:
         from datetime import timedelta
-        minutes_map = {5: 120, 2: 90, 1: 60}
-        wait_mins = minutes_map.get(max_orders, 60)
+        minutes_map = {5: 120, 2: 90}
+        wait_mins = minutes_map.get(max_orders, 90)
         driver.waiting_deadline = timezone.now() + timedelta(minutes=wait_mins)
         driver.save()
 
